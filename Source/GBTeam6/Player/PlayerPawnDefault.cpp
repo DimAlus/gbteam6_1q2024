@@ -25,13 +25,14 @@ APlayerPawnDefault::APlayerPawnDefault()
 	CameraBoom->SetWorldRotation(CameraBoomDefaultRotation);
 
 	// Create an isometric camera
-	IsometricViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	IsometricViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Isometric Camera"));
 	IsometricViewCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	IsometricViewCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->UpdatedComponent = CameraBoom;
 
+	CameraTurnEnabled = false;
 }
 
 // Called when the game starts or when spawned
@@ -57,6 +58,12 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		// Move camera binging
 		EnhancedInputComponent->BindAction(CameraMoveAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::CameraMove);
+		// Enable camera turn binding
+		EnhancedInputComponent->BindAction(EnableCameraTurnAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::EnableCameraTurn);
+		// EDisable camera turn binding
+		EnhancedInputComponent->BindAction(EnableCameraTurnAction, ETriggerEvent::Completed, this, &APlayerPawnDefault::DisableCameraTurn);
+		// Camera turn binding
+		EnhancedInputComponent->BindAction(CameraTurnAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::CameraTurn);
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(CameraZoomAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::CameraZoom);
 	}
@@ -68,16 +75,13 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value)
 {
-
-	UE_LOG(LogTemp, Warning, TEXT("Hello"));
-	
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	const FVector2D MovementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
 		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
+		const FRotator Rotation = RootComponent->GetComponentRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 
 		// get forward vector
@@ -91,6 +95,34 @@ void APlayerPawnDefault::CameraMove(const FInputActionValue& Value)
 		AddMovementInput(RightDirection, MovementVector.X);
 	}
 }
+
+void APlayerPawnDefault::EnableCameraTurn(const FInputActionValue& Value)
+{
+	CameraTurnEnabled = true;
+}
+
+void APlayerPawnDefault::DisableCameraTurn(const FInputActionValue& Value)
+{
+	CameraTurnEnabled = false;
+}
+
+void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value)
+{
+	if (CameraTurnEnabled)
+	{
+		// input is a float
+		const float InYaw = Value.Get<float>();
+
+		//Get current rotation
+		const FRotator CurrentRotation = RootComponent->GetComponentRotation();
+		//Make addition rotation
+		const FRotator AdditionRotation = {0.f, InYaw, 0.f};
+
+		//Set new rotation
+		RootComponent->SetWorldRotation(CurrentRotation+AdditionRotation);
+	}
+}
+
 
 void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value)
 {

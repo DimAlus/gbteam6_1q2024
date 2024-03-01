@@ -28,12 +28,29 @@ protected:
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
+	/** Called for enable camera turn input */
+	void EnableCameraTurn(const FInputActionValue& Value);
+
+	/** Called for disable camera turn input */
+	void DisableCameraTurn(const FInputActionValue& Value);
+	
+	/** Called for camera turn input */
+	void CameraTurn(const FInputActionValue& Value);
+
 	/** Called for camera zoom input */
 	void CameraZoom(const FInputActionValue& Value);
-
+	
 	/** Pawn movement component */
-	UPROPERTY(Category = Pawn, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<UPawnMovementComponent> MovementComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement,  meta = (AllowPrivateAccess = "true"))
+	UPawnMovementComponent* MovementComponent;
+	
+	/** Camera boom positioning the camera to isometric view */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USpringArmComponent* CameraBoom;
+
+	/** Isometric view camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* IsometricViewCamera;
 
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -43,18 +60,22 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CameraMoveAction;
 
+	/** Camera Turn Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* EnableCameraTurnAction;
+	
+	/** Camera Turn Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CameraTurnAction;
+
 	/** Camera Zoom Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CameraZoomAction;
 
-	/** Camera boom positioning the camera to isometric view */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	/** Isometric view camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* IsometricViewCamera;
-
+private:
+	//Flag to enable or disable camera turn input
+	bool CameraTurnEnabled;
+	
 public:	
 	// Called every frame
 	//virtual void Tick(float DeltaTime) override;
