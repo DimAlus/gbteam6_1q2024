@@ -1,30 +1,56 @@
 #include "./GameStateDefault.h"
+#include "PaperTileMapActor.h"
+#include "PaperTileMapComponent.h"
+#include "PaperTileMap.h"
+#include "../Lib/Typing.h"
 #include "../Service/MappingService.h"
 
 void AGameStateDefault::InitializeServices() {
+	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
 	this->MappingService = NewObject<UMappingService>();
-	this->MappingService->Initialize();
+	this->MappingService->Initialize(this);
 }
 
 void AGameStateDefault::ClearServices() {
+	UE_LOG(LgService, Log, TEXT("<%s>: Clearing Services"), *GetNameSafe(this));
 	this->MappingService->DestroyService();
 	this->MappingService = nullptr;
 }
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
+	InitializeServices();
 
 	const TArray<ULevel*>& levels = GetWorld()->GetLevels();
+	bool isFinded = false;
 	for (ULevel* lvl : levels) {
-		UE_LOG(LogTemp, Error, TEXT("World level load: %s"), *lvl->GetFullName());
+		for (TObjectPtr<AActor> actr : lvl->Actors) {
+			if (IsValid(actr.Get())
+				&& actr.Get()->GetActorLabel() == TileMapName) {
+				UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"), 
+														*GetNameSafe(this), 
+														*TileMapName, 
+														*GetNameSafe(lvl));
+				if (auto tm = Cast<APaperTileMapActor>(actr.Get())) {
+					if (auto ptm = tm->GetRenderComponent()->TileMap.Get()) {
+						isFinded = true;
+						this->MappingService->GenerateMap(ptm, TileLayerName);
+						tm->Destroy();
+					}
+				}
+			}
+			
+		}
+		if (isFinded) {
+			break;
+		}
+	}
+	if (!isFinded) {
+		UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s'"), *GetNameSafe(this), *TileMapName);
 	}
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	Super::EndPlay(EndPlayReason);
-
-	const TArray<ULevel*>& levels = GetWorld()->GetLevels();
-	for (ULevel* lvl : levels) {
-		UE_LOG(LogTemp, Error, TEXT("World level remove: %s"), *lvl->GetFullName());
-	}
+	ClearServices();
 }

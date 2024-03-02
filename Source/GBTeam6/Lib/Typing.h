@@ -13,6 +13,11 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 	
 };
 
+UENUM(BlueprintType)
+enum class ETileState : uint8 {
+	Free UMETA(DisplayName = "Free"),
+	Busy UMETA(DisplayName = "Busy")
+};
 
 UENUM(BlueprintType)
 enum class ETileType : uint8 {

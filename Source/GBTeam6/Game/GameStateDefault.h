@@ -23,7 +23,9 @@ private:
 	UMappingService* MappingService;
 
 public:
+	// Initialize All Services
 	void InitializeServices();
+	// DEstroy All Services
 	void ClearServices();
 
 	virtual void BeginPlay() override;
@@ -35,6 +37,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_TileTypeTree;
 
+	// Name of TileMapActor at scene
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
+	FString TileMapName;
 
+	// Name of Layer at TileMap, included info about tile types
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
+	FString TileLayerName;
 
 };
