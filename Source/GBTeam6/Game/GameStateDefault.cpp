@@ -4,11 +4,37 @@
 #include "PaperTileMap.h"
 #include "../Lib/Typing.h"
 #include "../Service/MappingService.h"
+#include "../Service/SaveService.h"
+
+void AGameStateDefault::InitMapping(ULevel* level){
+	for (TObjectPtr<AActor> actr : level->Actors) {
+		if (IsValid(actr.Get())
+			&& actr.Get()->GetActorLabel() == TileMapName) {
+			UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"),
+																			*GetNameSafe(this),
+																			*TileMapName,
+																			*GetNameSafe(level));
+			if (auto tm = Cast<APaperTileMapActor>(actr.Get())) {
+				if (auto ptm = tm->GetRenderComponent()->TileMap.Get()) {
+					this->MappingService->GenerateMap(ptm, TileLayerName);
+					tm->Destroy();
+					return;
+				}
+			}
+		}
+	}
+	UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s' with layer '%s'"), 
+																	*GetNameSafe(this), 
+																	*TileMapName,
+																	*TileLayerName);
+}
 
 void AGameStateDefault::InitializeServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
 	this->MappingService = NewObject<UMappingService>();
 	this->MappingService->Initialize(this);
+
+	this->SaveService = NewObject<USaveService>();
 }
 
 void AGameStateDefault::ClearServices() {
@@ -21,36 +47,28 @@ void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
 	InitializeServices();
 
-	const TArray<ULevel*>& levels = GetWorld()->GetLevels();
-	bool isFinded = false;
-	for (ULevel* lvl : levels) {
-		for (TObjectPtr<AActor> actr : lvl->Actors) {
-			if (IsValid(actr.Get())
-				&& actr.Get()->GetActorLabel() == TileMapName) {
-				UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"), 
-														*GetNameSafe(this), 
-														*TileMapName, 
-														*GetNameSafe(lvl));
-				if (auto tm = Cast<APaperTileMapActor>(actr.Get())) {
-					if (auto ptm = tm->GetRenderComponent()->TileMap.Get()) {
-						isFinded = true;
-						this->MappingService->GenerateMap(ptm, TileLayerName);
-						tm->Destroy();
-					}
-				}
-			}
-			
-		}
-		if (isFinded) {
-			break;
-		}
+	/*ULevel* lvl = GetWorld()->GetCurrentLevel();
+	if (IsValid(lvl)) {
+		InitMapping(lvl);
 	}
-	if (!isFinded) {
-		UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s'"), *GetNameSafe(this), *TileMapName);
-	}
+	else {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to initialize services: Level not valid."), *GetNameSafe(this));
+	}*/
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	Super::EndPlay(EndPlayReason);
 	ClearServices();
 }
+
+
+
+/*
+const TArray<ULevel*>& levels = GetWorld()->GetLevels();
+	bool isFinded = false;
+	for (ULevel* lvl : levels) {
+		
+		if (isFinded) {
+			break;
+		}
+	}*/

@@ -9,6 +9,7 @@
 
 
 class UMappingService;
+class USaveService;
 
 /**
  * 
@@ -21,15 +22,12 @@ class GBTEAM6_API AGameStateDefault : public AGameStateBase
 private:
 
 	UMappingService* MappingService;
+	USaveService* SaveService;
+
+private:
+	void InitMapping(ULevel* level);
 
 public:
-	// Initialize All Services
-	void InitializeServices();
-	// DEstroy All Services
-	void ClearServices();
-
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_TileType;
@@ -44,5 +42,21 @@ public:
 	// Name of Layer at TileMap, included info about tile types
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
 	FString TileLayerName;
+
+public:
+	// Initialize All Services
+	void InitializeServices();
+	// DEstroy All Services
+	void ClearServices();
+
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	/** Returns Mapping Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
+	/** Returns Mapping Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
 
 };

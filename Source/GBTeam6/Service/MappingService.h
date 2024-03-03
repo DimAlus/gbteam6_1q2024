@@ -35,10 +35,6 @@ private:
 
 // Unsafe!!!
 private:
-	struct FTileInfo {
-		ETileType type;
-		ETileState state;
-	};
 	FTileInfo* TileInfoArray;
 	void ClearTileInfoArray();
 	int MapWidth;
@@ -71,5 +67,14 @@ public:
 	/// </summary>
 	/// <param name="tileMap"> TileMap with data about TileTypes </param>
 	/// <param name="layerName"> The Name of TileMapLayer with data about TileTypes </param>
+	UFUNCTION(BlueprintCallable)
 	void GenerateMap(UPaperTileMap* tileMap, FString layerName);
+
+	void LoadMap(const TArray<ETileType>& tiles, int width, int height);
+
+
+	FORCEINLINE int GetWidth() const { return MapWidth; }
+	FORCEINLINE int GetHeight() const { return MapHeight; }
+	FORCEINLINE FTileInfo& GetTileInfo(int x, int y) const { return TileInfoArray[x + y * MapWidth]; }
+	FORCEINLINE FTileInfo* GetTileInfoArrayUnsafe() const { return TileInfoArray; }
 };

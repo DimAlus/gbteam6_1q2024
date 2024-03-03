@@ -100,9 +100,8 @@ void UMappingService::DestroyService() {
 
 void UMappingService::GenerateMap(UPaperTileMap* tileMap, FString layerName) {
 	UE_LOG(LgService, Log, TEXT("<%s>: GenerateMap '%s' with layer '%s'"), *GetNameSafe(this), *GetNameSafe(tileMap), *layerName);
-	if (this->TileInfoArray) {
-		ClearTileInfoArray();
-	}
+	
+	ClearTileInfoArray();
 	if (!IsValid(tileMap)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: Failed to GenerateMap! TileMap not Valid"), *GetNameSafe(this));
 		return;
@@ -116,6 +115,23 @@ void UMappingService::GenerateMap(UPaperTileMap* tileMap, FString layerName) {
 		}
 	}
 	UE_LOG(LgService, Error, TEXT("<%s>: Failed to find the Layer '%s' at TileMap '%s'!"), *GetNameSafe(this), *layerName, *GetNameSafe(tileMap));
+}
+
+void UMappingService::LoadMap(const TArray<ETileType>& tiles, int width, int height) {
+	ClearTileInfoArray();
+
+	if (tiles.Num() != width * height) {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to load map! Uncorrect num tiles: %d != %d"), *GetNameSafe(this), tiles.Num(), width * height);
+	}
+	else {
+		this->MapHeight = height;
+		this->MapWidth = width;
+		this->TileInfoArray = new FTileInfo[this->MapHeight * this->MapWidth];
+
+		for (int i = 0; i < tiles.Num(); i++) {
+			this->TileInfoArray[i] = { tiles[i], ETileState::Free };
+		}
+	}
 }
 
 void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {

@@ -9,6 +9,8 @@
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 
+FString GetLevelName(ULevel* level);
+
 UCLASS()
 class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
@@ -63,6 +65,12 @@ enum class ETileType : uint8 {
 };
 
 
+struct FTileInfo {
+	ETileType type;
+	ETileState state;
+};
+
+
 USTRUCT(BlueprintType)
 struct FTRTileTypeTree : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
@@ -85,5 +93,21 @@ struct FTRTileType : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere)
 	ETileType TileType = ETileType::Any;
+
+};
+
+
+USTRUCT(BlueprintType)
+struct FObjectSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	TSubclassOf<AActor> ClassType{ nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	FVector Location;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	FRotator Rotation;
 
 };
