@@ -68,10 +68,10 @@ struct FTRTileTypeTree : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	ETileType TileType;
+	ETileType TileType = ETileType::Any;
 
 	UPROPERTY(EditAnywhere)
-	ETileType ParentType;
+	ETileType ParentType = ETileType::Any;
 
 };
 
@@ -81,9 +81,9 @@ struct FTRTileType : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	int TileIndex;
+	int TileIndex = 0;
 
 	UPROPERTY(EditAnywhere)
-	ETileType TileType;
+	ETileType TileType = ETileType::Any;
 
 };
