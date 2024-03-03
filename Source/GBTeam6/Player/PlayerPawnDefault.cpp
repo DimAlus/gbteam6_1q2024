@@ -15,7 +15,7 @@
 APlayerPawnDefault::APlayerPawnDefault()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	// Create a camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
@@ -50,7 +50,9 @@ void APlayerPawnDefault::BeginPlay()
 	
 	//Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController())) {
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())) {
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
@@ -70,17 +72,23 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		// Move camera binging
-		EnhancedInputComponent->BindAction(CameraMoveAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::CameraMove);
+		EnhancedInputComponent->BindAction(CameraMoveAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::CameraMove);
 		// Enable mouse camera turn binding
-		EnhancedInputComponent->BindAction(EnableCameraTurnAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::EnableCameraTurn);
+		EnhancedInputComponent->BindAction(CameraTurnEnableAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::EnableCameraTurn);
 		// Disable mouse camera turn binding
-		EnhancedInputComponent->BindAction(EnableCameraTurnAction, ETriggerEvent::Completed, this, &APlayerPawnDefault::DisableCameraTurn);
+		EnhancedInputComponent->BindAction(CameraTurnEnableAction, ETriggerEvent::Completed, this,
+			&APlayerPawnDefault::DisableCameraTurn);
 		// Camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnAction, ETriggerEvent::Triggered, this, &APlayerPawnDefault::CameraTurn);
+		EnhancedInputComponent->BindAction(CameraTurnAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::CameraTurn);
 		// Keyboard camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnKeyboardAction, ETriggerEvent::Started, this, &APlayerPawnDefault::CameraTurnKeyboard);
+		EnhancedInputComponent->BindAction(CameraTurnKeyboardAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::CameraTurnKeyboard);
 		// Zoom camera binding
-		EnhancedInputComponent->BindAction(CameraZoomAction, ETriggerEvent::Started, this, &APlayerPawnDefault::CameraZoom);
+		EnhancedInputComponent->BindAction(CameraZoomAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::CameraZoom);
 	}
 	else
 	{
@@ -213,7 +221,6 @@ void APlayerPawnDefault::CameraZoomTick()
 void APlayerPawnDefault::ResetKeyboardCameraTurnParameters()
 {
 	CurrentCameraTurnKeyboardRotation = RootComponent->GetComponentRotation();
-	PreviousCameraTurnKeyboardRotation = RootComponent->GetComponentRotation();
 	TargetCameraTurnKeyboardRotation = RootComponent->GetComponentRotation();
 }
 
