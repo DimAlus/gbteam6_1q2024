@@ -37,8 +37,20 @@ protected:
 	/** Called for camera turn input */
 	void CameraTurn(const FInputActionValue& Value);
 
+	/** Called for camera turn keyboard input */
+	void CameraTurnKeyboard(const FInputActionValue& Value);
+
+	/** Keyboard camera turn tick function */
+	void CameraTurnKeyboardTick();
+
 	/** Called for camera zoom input */
 	void CameraZoom(const FInputActionValue& Value);
+
+	/** Camera zoom tick function */
+	void CameraZoomTick();
+
+	/** Sets the rotation parameters of the keyboard camera turn to match the current rotation of the root component. */
+	void ResetKeyboardCameraTurnParameters();
 	
 	/** Pawn movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement,  meta = (AllowPrivateAccess = "true"))
@@ -56,29 +68,55 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Camera Move Input Action */
+	/** Camera move input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CameraMoveAction;
 
-	/** Camera Turn Input Action */
+	/** Camera turn input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* EnableCameraTurnAction;
 	
-	/** Camera Turn Input Action */
+	/** Camera turn input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CameraTurnAction;
 
-	/** Camera Zoom Input Action */
+	/** Keyboard camera turn input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* CameraTurnKeyboardAction;
+
+	/** Camera zoom input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* CameraZoomAction;
 
-private:
-	//Flag to enable or disable camera turn input
+	/** Flag to enable or disable mouse camera turn input */
+	UPROPERTY()
 	bool CameraTurnEnabled;
+
+	/** Keyboard camera turn parameters */
+	UPROPERTY()
+	FRotator CurrentCameraTurnKeyboardRotation;
+	UPROPERTY()
+	FRotator PreviousCameraTurnKeyboardRotation;
+	UPROPERTY()
+	FRotator TargetCameraTurnKeyboardRotation;
+
+	/** Camera zoom parameters */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
+	float MinCameraBoomLength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
+	float MaxCameraBoomLength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
+	float CameraZoomDelta;
+	UPROPERTY()
+	float TargetCameraBoomLength;
+
+	/** Timers handles */
+	UPROPERTY()
+	FTimerHandle CameraTurnKeyboardTimerHandle;
+	UPROPERTY()
+	FTimerHandle CameraZoomTimerHandle;
 	
 public:	
-	// Called every frame
-	//virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
