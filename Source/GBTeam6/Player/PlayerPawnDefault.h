@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "../Lib/Typing.h"
 #include "PlayerPawnDefault.generated.h"
 
 class USpringArmComponent;
@@ -42,26 +43,10 @@ protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
-
-	/** Camera move input action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CameraMoveAction;
-
-	/** Camera turn enable input action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CameraTurnEnableAction;
 	
-	/** Camera turn input action */
+	/** Input actions */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CameraTurnAction;
-
-	/** Keyboard camera turn input action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CameraTurnKeyboardAction;
-
-	/** Camera zoom input action */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
-	UInputAction* CameraZoomAction;
+	FPlayerInputAction PlayerInputAction;
 
 protected:
 	/** Flag to enable or disable mouse camera turn input */

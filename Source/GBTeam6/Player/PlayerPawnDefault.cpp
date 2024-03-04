@@ -9,7 +9,7 @@
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "../Lib/Typing.h"
+
 
 // Sets default values
 APlayerPawnDefault::APlayerPawnDefault()
@@ -72,22 +72,22 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
 		// Move camera binging
-		EnhancedInputComponent->BindAction(CameraMoveAction, ETriggerEvent::Triggered, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraMoveAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraMove);
 		// Enable mouse camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnEnableAction, ETriggerEvent::Triggered, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnEnableAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::EnableCameraTurn);
 		// Disable mouse camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnEnableAction, ETriggerEvent::Completed, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnEnableAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::DisableCameraTurn);
 		// Camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnAction, ETriggerEvent::Triggered, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraTurn);
 		// Keyboard camera turn binding
-		EnhancedInputComponent->BindAction(CameraTurnKeyboardAction, ETriggerEvent::Started, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnKeyboardAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraTurnKeyboard);
 		// Zoom camera binding
-		EnhancedInputComponent->BindAction(CameraZoomAction, ETriggerEvent::Started, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraZoom);
 	}
 	else
