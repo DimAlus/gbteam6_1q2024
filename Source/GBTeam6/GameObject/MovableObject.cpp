@@ -12,6 +12,8 @@ AMovableObject::AMovableObject()
 	
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->SetUpdatedComponent(RootComponent);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
 }
 
 // Called when the game starts or when spawned

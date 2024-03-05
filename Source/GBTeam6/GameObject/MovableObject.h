@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "GameFramework/PawnMovementComponent.h"
+#include "../Component/Health/HealthComponent.h"
 #include "MovableObject.generated.h"
 
 
@@ -25,5 +25,9 @@ protected:
 	/** Pawn movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
 	UPawnMovementComponent* MovementComponent;
+
+	/** Health component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health)
+	UHealthComponent* HealthComponent;	
 	
 };

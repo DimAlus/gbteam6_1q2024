@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "../Component/Health/HealthComponent.h"
 #include "SimpleObject.generated.h"
 
 UCLASS()
@@ -18,5 +19,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	/** Health component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health)
+	UHealthComponent* HealthComponent;	
 
 };
