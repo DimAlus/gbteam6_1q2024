@@ -38,4 +38,12 @@ public:
 	/** Camera zoom input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CameraZoomAction {nullptr};
+
+	/** Select input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SelectAction {nullptr};
+
+	/** Command input action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* CommandAction {nullptr};
 };

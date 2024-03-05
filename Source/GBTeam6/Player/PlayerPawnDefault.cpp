@@ -8,6 +8,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 
@@ -47,14 +48,16 @@ APlayerPawnDefault::APlayerPawnDefault()
 void APlayerPawnDefault::BeginPlay()
 {
 	Super::BeginPlay();
+	PlayerController = Cast<APlayerController>(GetController());
 	
 	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetController())) {
+	if (PlayerController) {
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
 				ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
+		PlayerController->SetShowMouseCursor(true); //For testing purposes
 	}
 	else
 	{
@@ -89,6 +92,12 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraZoom);
+		// Select action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
+			&APlayerPawnDefault::Select);
+		// Command action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
+			&APlayerPawnDefault::Command);
 	}
 	else
 	{
@@ -216,6 +225,54 @@ void APlayerPawnDefault::CameraZoomTick()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
 	}
+}
+
+void APlayerPawnDefault::Select(const FInputActionValue& Value)
+{
+
+	FVector MouseWorldLocation, MouseWorldDirection;
+	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
+
+	FVector LookPointPosition =
+	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
+	
+	
+	FHitResult Hit;
+	FVector TraceStart = LookPointPosition;
+	FVector TraceEnd = LookPointPosition+500*MouseWorldDirection;
+	FCollisionQueryParams QueryParams;
+	
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Camera);
+
+	DrawDebugLine(
+			GetWorld(),
+			TraceStart,
+			Hit.Location,
+			FColor(255, 0, 0),
+			false, 5, 0,
+			12.333
+		);
+	
+	SelectedActor = Hit.GetActor();
+	
+	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
+	
+}
+
+void APlayerPawnDefault::Command(const FInputActionValue& Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
+	if (SelectedActor)
+	{
+		UGameplayStatics::ApplyDamage(
+			SelectedActor,
+			1.f,
+			PlayerController,
+			this,
+			nullptr
+			);
+	}
+
 }
 
 void APlayerPawnDefault::ResetKeyboardCameraTurnParameters()
