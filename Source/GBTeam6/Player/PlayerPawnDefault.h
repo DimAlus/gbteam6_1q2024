@@ -26,7 +26,11 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-protected:	
+protected:
+	/** Player controller */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Controller,  meta = (AllowPrivateAccess = "true"))
+	APlayerController* PlayerController;
+	
 	/** Pawn movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement,  meta = (AllowPrivateAccess = "true"))
 	UPawnMovementComponent* MovementComponent;
@@ -75,6 +79,10 @@ protected:
 	UPROPERTY()
 	FTimerHandle CameraZoomTimerHandle;
 
+	/** Selected actor for test purposes*/
+	UPROPERTY()
+	AActor* SelectedActor;
+
 protected:
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
@@ -99,6 +107,12 @@ protected:
 
 	/** Camera zoom tick function */
 	void CameraZoomTick();
+
+	/** Select object function*/
+	void Select(const FInputActionValue& Value);
+
+	/** Command object function*/
+	void Command(const FInputActionValue& Value);
 
 	/** Sets the rotation parameters of the keyboard camera turn to match the current rotation of the root component. */
 	void ResetKeyboardCameraTurnParameters();
