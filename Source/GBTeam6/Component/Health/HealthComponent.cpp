@@ -13,7 +13,7 @@ UHealthComponent::UHealthComponent()
 	//Current health initialization
 	CurrentHealth = MaxHealth;
 	
-	IsDead = false;
+	bDead = false;
 }
 
 
@@ -28,13 +28,16 @@ void UHealthComponent::BeginPlay()
 void UHealthComponent::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 	class AController* InstigatedBy, AActor* DamageCauser)
 {
-	if (!IsDead)
+	if (!bDead)
 	{
 		CurrentHealth-=Damage;
+		OnDamage.Broadcast(Damage);
+		
 		if(CurrentHealth<=0.f)
 		{
 			CurrentHealth = 0.f;
-			IsDead = true;
+			bDead = true;
+			OnDeath.Broadcast();
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Pawn damaged! Damage = %f; Current health = %f"), Damage, CurrentHealth);
 	}
