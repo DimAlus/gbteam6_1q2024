@@ -34,20 +34,25 @@ protected:
 	UPROPERTY()
 	float CurrentHealth;
 
-	/** Delegates */
-	UPROPERTY(BlueprintAssignable)
-	FOnDamage OnDamage;
-	UPROPERTY(BlueprintAssignable)
-	FOnDeath OnDeath;
-
 protected:
 	UFUNCTION()
 	void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser);
 
 public:
+	/** Delegates */
+	UPROPERTY(BlueprintAssignable)
+	FOnDamage OnDamage;
+	UPROPERTY(BlueprintAssignable)
+	FOnDeath OnDeath;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetMaxHealth() { return MaxHealth; }
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetCurrentHealth() { return CurrentHealth; }
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetPercentageHealth() {return CurrentHealth/MaxHealth;}
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsDead() { return bDead; }
 };
