@@ -15,6 +15,12 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 };
 
 
+UENUM(BlueprintType)
+enum class EGameComponentType : uint8
+{
+	Health UMETA(DisplayName = "Health component")
+};
+
 USTRUCT(BlueprintType)
 struct FPlayerInputAction {
 	GENERATED_BODY()
@@ -46,4 +52,36 @@ public:
 	/** Command input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CommandAction {nullptr};
+};
+
+USTRUCT(BlueprintType)
+struct FHealthComponentInitializer {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	float MaxHealth = 10.f;
+};
+
+
+USTRUCT(BlueprintType)
+struct FHealthComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	TSubclassOf<UActorComponent> ComponentClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	FHealthComponentInitializer ComponentInitializer;
+		
+};
+
+USTRUCT(BlueprintType)
+struct FGameObjectInitData : public FTableRowBase {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	FHealthComponentInitData HealthComponentInitData;
+
+	//ToDo: add other components	
+
 };

@@ -16,6 +16,11 @@ UHealthComponent::UHealthComponent()
 	bDead = false;
 }
 
+void UHealthComponent::Initialize(FHealthComponentInitializer Initializer)
+{
+	MaxHealth = Initializer.MaxHealth;
+	CurrentHealth = MaxHealth;
+}
 
 // Called when the game starts
 void UHealthComponent::BeginPlay()

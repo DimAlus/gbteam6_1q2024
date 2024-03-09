@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "../../Lib/Typing.h"
 #include "HealthComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
@@ -18,12 +19,13 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
+	void Initialize(FHealthComponentInitializer Initializer);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 protected:
-
 	/** Is dead flag */
 	UPROPERTY()
 	bool bDead;

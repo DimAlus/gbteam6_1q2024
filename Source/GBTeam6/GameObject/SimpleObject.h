@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "../Component/Health/HealthComponent.h"
+#include "../Interface/GameObjectInterface.h"
 #include "SimpleObject.generated.h"
 
 UCLASS()
