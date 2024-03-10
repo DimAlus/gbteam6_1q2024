@@ -23,7 +23,7 @@ void AMovableObject::BeginPlay()
 	GetInitData(InitData);	
 	
 	//Test create and bind health component
-	if (!GetComponent(EGameComponentType::Health))
+	if (!Execute_GetComponent(this, EGameComponentType::Health))
 	{
 		if (InitData.HealthComponentInitData.ComponentClass)
 		{
@@ -31,7 +31,7 @@ void AMovableObject::BeginPlay()
 				NewObject<UHealthComponent>(this, InitData.HealthComponentInitData.ComponentClass);
 		
 			NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
-			BindComponent(EGameComponentType::Health, NewHealthComponent);
+			Execute_BindComponent(this, EGameComponentType::Health, NewHealthComponent);
 		}
 		else
 		{

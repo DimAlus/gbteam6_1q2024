@@ -41,17 +41,9 @@ protected:
 
 public:
 
-	/** Game object interface functions */
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	void BindComponent(EGameComponentType ComponentType, UActorComponent* NewComponent);
+	/** Game object interface blueprint native events implementation*/
 	virtual void BindComponent_Implementation(EGameComponentType ComponentType, UActorComponent* NewComponent) override;
-	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	void UnbindComponent(EGameComponentType ComponentType);
 	virtual void UnbindComponent_Implementation(EGameComponentType ComponentType) override;
-	
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	UActorComponent* GetComponent(EGameComponentType ComponentType);
 	virtual UActorComponent* GetComponent_Implementation(EGameComponentType ComponentType) override;
 	
 };
