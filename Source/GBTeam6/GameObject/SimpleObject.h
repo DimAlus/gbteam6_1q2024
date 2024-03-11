@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "../Component/Health/HealthComponent.h"
+#include "../Component/Health/HealthBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "SimpleObject.generated.h"
 
@@ -23,6 +23,6 @@ protected:
 
 	/** Health component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health)
-	UHealthComponent* HealthComponent;	
+	UHealthBaseComponent* HealthComponent;	
 
 };

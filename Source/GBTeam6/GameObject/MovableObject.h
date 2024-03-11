@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "../Component/Health/HealthComponent.h"
+#include "../Component/Health/HealthBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "MovableObject.generated.h"
 
