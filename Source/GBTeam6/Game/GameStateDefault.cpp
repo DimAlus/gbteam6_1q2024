@@ -60,15 +60,3 @@ void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	Super::EndPlay(EndPlayReason);
 	ClearServices();
 }
-
-
-
-/*
-const TArray<ULevel*>& levels = GetWorld()->GetLevels();
-	bool isFinded = false;
-	for (ULevel* lvl : levels) {
-		
-		if (isFinded) {
-			break;
-		}
-	}*/
