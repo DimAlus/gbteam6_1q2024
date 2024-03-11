@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "../Component/Health/HealthComponent.h"
+#include "../Component/Health/HealthBaseComponent.h"
+#include "../Interface/GameObjectInterface.h"
 #include "MovableObject.generated.h"
 
 
 UCLASS()
-class GBTEAM6_API AMovableObject : public APawn
+class GBTEAM6_API AMovableObject : public APawn, public IGameObjectInterface
 {
 	GENERATED_BODY()
 
@@ -21,13 +22,35 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	UFUNCTION()
+	void GetInitData(FGameObjectInitData& InitData) const;
+	
+	UFUNCTION()
+	void GenerateComponentSetRuntime(const FGameObjectInitData& InitData);
+
 protected:
+	//Object name to get InitData from table
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Object Name")
+	FName ObjectName = TEXT("Default");
+	
+	FGameObjectInitData GameObjectInitData;
+		
+	/** Currently existing actor components */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
+	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
+
 	/** Pawn movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Movement)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
 	UPawnMovementComponent* MovementComponent;
 
-	/** Health component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health)
-	UHealthComponent* HealthComponent;	
+protected:
+	UFUNCTION(BlueprintCallable)
+	void BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent);
+
+public:
+	/** Game object interface blueprint native events implementation*/
+	virtual void BindComponent_Implementation(EGameComponentType ComponentType, UActorComponent* NewComponent) override;
+	virtual void UnbindComponent_Implementation(EGameComponentType ComponentType) override;
+	virtual UActorComponent* GetComponent_Implementation(EGameComponentType ComponentType) override;
 	
 };
