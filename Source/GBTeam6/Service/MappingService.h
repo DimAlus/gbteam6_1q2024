@@ -75,6 +75,11 @@ public:
 
 	FORCEINLINE int GetWidth() const { return MapWidth; }
 	FORCEINLINE int GetHeight() const { return MapHeight; }
-	FORCEINLINE FTileInfo& GetTileInfo(int x, int y) const { return TileInfoArray[x + y * MapWidth]; }
+	FORCEINLINE const FTileInfo& GetTileInfo(int x, int y) const { return InPlace(x, y) ? TileInfoArray[x + y * MapWidth] : voidInfo; }
+	FORCEINLINE void SetTileBusy(int x, int y, ETileState state) const { if (InPlace(x, y)) TileInfoArray[x + y * MapWidth].state = state; }
+	FORCEINLINE bool GetTileIsParent(ETileType child, ETileType parent) const { return TileTypesTree.Contains(child) && TileTypesTree[child].Contains(parent); }
 	FORCEINLINE FTileInfo* GetTileInfoArrayUnsafe() const { return TileInfoArray; }
+private:
+	const FTileInfo voidInfo { ETileType::Any, ETileState::Busy };
+	FORCEINLINE bool InPlace(int x, int y) const { return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight; }
 };
