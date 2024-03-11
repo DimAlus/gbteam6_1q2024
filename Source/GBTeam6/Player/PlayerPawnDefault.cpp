@@ -22,6 +22,7 @@ APlayerPawnDefault::APlayerPawnDefault()
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->TargetArmLength = 800.0f;
+	CameraBoom->bDoCollisionTest = false;
 
 	//Set isometric
 	const FRotator CameraBoomDefaultRotation = {-70.f,0.f,0.f};
