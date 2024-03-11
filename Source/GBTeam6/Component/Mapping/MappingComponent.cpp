@@ -1,6 +1,5 @@
 #include "./MappingComponent.h"
 #include "../../Game/GameStateDefault.h"
-#include "../../GameObject/MapPreview.h"
 #include "../../Service/MappingService.h"
 
 UMappingComponent::UMappingComponent() {
