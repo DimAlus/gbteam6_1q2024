@@ -24,12 +24,16 @@ protected:
 
 	UFUNCTION()
 	void GetInitData(FGameObjectInitData& InitData) const;
+	
+	UFUNCTION()
+	void GenerateComponentSetRuntime(const FGameObjectInitData& InitData);
 
 protected:
-
 	//Object name to get InitData from table
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Object Name")
 	FName ObjectName = TEXT("Default");
+	
+	FGameObjectInitData GameObjectInitData;
 
 	/** Pawn movement component */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
@@ -39,8 +43,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
 
-public:
+protected:
+	void BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent);
 
+public:
 	/** Game object interface blueprint native events implementation*/
 	virtual void BindComponent_Implementation(EGameComponentType ComponentType, UActorComponent* NewComponent) override;
 	virtual void UnbindComponent_Implementation(EGameComponentType ComponentType) override;
