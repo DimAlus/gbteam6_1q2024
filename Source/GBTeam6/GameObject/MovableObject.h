@@ -34,16 +34,17 @@ protected:
 	FName ObjectName = TEXT("Default");
 	
 	FGameObjectInitData GameObjectInitData;
-
-	/** Pawn movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
-	UPawnMovementComponent* MovementComponent;
-	
+		
 	/** Currently existing actor components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
 
+	/** Pawn movement component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
+	UPawnMovementComponent* MovementComponent;
+
 protected:
+	UFUNCTION(BlueprintCallable)
 	void BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent);
 
 public:

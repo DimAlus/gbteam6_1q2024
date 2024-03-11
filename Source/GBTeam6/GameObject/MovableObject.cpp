@@ -104,7 +104,6 @@ void AMovableObject::UnbindComponent_Implementation(EGameComponentType Component
 
 UActorComponent* AMovableObject::GetComponent_Implementation(EGameComponentType ComponentType)
 {
-	
 	if(UActorComponent** TargetComponent = ExistingComponents.Find(ComponentType))
 	{
 		return *TargetComponent;
