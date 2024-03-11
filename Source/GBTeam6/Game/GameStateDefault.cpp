@@ -39,7 +39,10 @@ void AGameStateDefault::InitializeServices() {
 
 void AGameStateDefault::ClearServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Clearing Services"), *GetNameSafe(this));
-	this->MappingService->DestroyService();
+	if(this->MappingService->IsValidLowLevelFast())
+	{
+		this->MappingService->DestroyService();
+	}
 	this->MappingService = nullptr;
 }
 
