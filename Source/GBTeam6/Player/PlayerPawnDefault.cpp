@@ -105,6 +105,57 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
+void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult) const
+{
+	FVector MouseWorldLocation, MouseWorldDirection;
+	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
+
+	const FVector LookPointPosition =
+	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
+	
+	FVector TraceStart = LookPointPosition;
+	FVector TraceEnd = LookPointPosition+500*MouseWorldDirection;
+	FCollisionQueryParams QueryParams;
+	
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Camera);
+
+	DrawDebugLine(
+			GetWorld(),
+			TraceStart,
+			HitResult.Location,
+			FColor(255, 0, 0),
+			false, 5, 0,
+			12.333
+		);
+}
+
+void APlayerPawnDefault::Select(const FInputActionValue& Value)
+{
+	OnSelect();
+}
+
+void APlayerPawnDefault::Command(const FInputActionValue& Value)
+{
+	OnCommand();
+}
+
+void APlayerPawnDefault::OnSelect_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit);
+	SelectedActor = Hit.GetActor();
+}
+
+void APlayerPawnDefault::OnCommand_Implementation()
+{
+	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit);
+	PointOfInterest = Hit.Location;
+}
+
+
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -225,54 +276,6 @@ void APlayerPawnDefault::CameraZoomTick()
 	{
 		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
 	}
-}
-
-void APlayerPawnDefault::Select(const FInputActionValue& Value)
-{
-
-	FVector MouseWorldLocation, MouseWorldDirection;
-	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
-
-	FVector LookPointPosition =
-	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
-	
-	
-	FHitResult Hit;
-	FVector TraceStart = LookPointPosition;
-	FVector TraceEnd = LookPointPosition+500*MouseWorldDirection;
-	FCollisionQueryParams QueryParams;
-	
-	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Camera);
-
-	DrawDebugLine(
-			GetWorld(),
-			TraceStart,
-			Hit.Location,
-			FColor(255, 0, 0),
-			false, 5, 0,
-			12.333
-		);
-	
-	SelectedActor = Hit.GetActor();
-	
-	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
-	
-}
-
-void APlayerPawnDefault::Command(const FInputActionValue& Value)
-{
-	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
-	if (SelectedActor)
-	{
-		UGameplayStatics::ApplyDamage(
-			SelectedActor,
-			1.f,
-			PlayerController,
-			this,
-			nullptr
-			);
-	}
-
 }
 
 void APlayerPawnDefault::ResetKeyboardCameraTurnParameters()

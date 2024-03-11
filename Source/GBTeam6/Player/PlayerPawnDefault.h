@@ -80,10 +80,29 @@ protected:
 	FTimerHandle CameraZoomTimerHandle;
 
 	/** Selected actor for test purposes*/
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	AActor* SelectedActor;
 
+	/** Selected actor for test purposes*/
+	UPROPERTY(BlueprintReadOnly)
+	FVector PointOfInterest;
+
 protected:
+	
+	/** Select object function*/
+	void Select(const FInputActionValue& Value);
+
+	/** Command object function*/
+	void Command(const FInputActionValue& Value);
+
+	/** Select object function*/
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnSelect(); void OnSelect_Implementation();
+
+	/** Command object function*/
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void OnCommand(); void OnCommand_Implementation();
+
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
@@ -108,17 +127,13 @@ protected:
 	/** Camera zoom tick function */
 	void CameraZoomTick();
 
-	/** Select object function*/
-	void Select(const FInputActionValue& Value);
-
-	/** Command object function*/
-	void Command(const FInputActionValue& Value);
-
 	/** Sets the rotation parameters of the keyboard camera turn to match the current rotation of the root component. */
 	void ResetKeyboardCameraTurnParameters();
 	
 public:	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void GetHitUnderMouseCursor(FHitResult& HitResult) const;
 
 };
