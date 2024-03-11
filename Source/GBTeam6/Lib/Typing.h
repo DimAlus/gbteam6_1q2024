@@ -7,6 +7,9 @@
 #include "Typing.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
+
+FString GetLevelName(ULevel* level);
 
 UCLASS()
 class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
@@ -14,6 +17,18 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 	
 };
 
+UENUM(BlueprintType)
+enum class ETileState : uint8 {
+	Free UMETA(DisplayName = "Free"),
+	Busy UMETA(DisplayName = "Busy")
+};
+
+UENUM(BlueprintType)
+enum class ETileType : uint8 {
+	Any UMETA(DisplayName = "Any"),
+	Earth UMETA(DisplayName = "Earth"),
+	Water UMETA(DisplayName = "Water")
+};
 
 UENUM(BlueprintType)
 enum class EGameComponentType : uint8
@@ -52,6 +67,53 @@ public:
 	/** Command input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CommandAction {nullptr};
+};
+
+struct FTileInfo {
+	ETileType type;
+	ETileState state;
+};
+
+
+USTRUCT(BlueprintType)
+struct FTRTileTypeTree : public FTableRowBase {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	ETileType TileType = ETileType::Any;
+
+	UPROPERTY(EditAnywhere)
+	ETileType ParentType = ETileType::Any;
+
+};
+
+
+USTRUCT(BlueprintType)
+struct FTRTileType : public FTableRowBase {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	int TileIndex = 0;
+
+	UPROPERTY(EditAnywhere)
+	ETileType TileType = ETileType::Any;
+
+};
+
+
+USTRUCT(BlueprintType)
+struct FObjectSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	TSubclassOf<AActor> ClassType{ nullptr };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	FVector Location;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = SaveData)
+	FRotator Rotation;
+
 };
 
 USTRUCT(BlueprintType)
