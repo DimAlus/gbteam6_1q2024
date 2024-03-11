@@ -102,6 +102,23 @@ struct FTRTileType : public FTableRowBase {
 
 
 USTRUCT(BlueprintType)
+struct FMapInfo {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FIntVector Location{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FIntVector Size{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ETileType TileType{ ETileType::Any };
+
+};
+
+
+
+USTRUCT(BlueprintType)
 struct FObjectSaveData {
 	GENERATED_BODY()
 public:

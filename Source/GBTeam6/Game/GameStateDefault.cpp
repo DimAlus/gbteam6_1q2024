@@ -39,24 +39,14 @@ void AGameStateDefault::InitializeServices() {
 
 void AGameStateDefault::ClearServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Clearing Services"), *GetNameSafe(this));
-	if(this->MappingService->IsValidLowLevel())
-	{
+	if (IsValid(this->MappingService))
 		this->MappingService->DestroyService();
-	}
 	this->MappingService = nullptr;
 }
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
 	InitializeServices();
-
-	/*ULevel* lvl = GetWorld()->GetCurrentLevel();
-	if (IsValid(lvl)) {
-		InitMapping(lvl);
-	}
-	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to initialize services: Level not valid."), *GetNameSafe(this));
-	}*/
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
