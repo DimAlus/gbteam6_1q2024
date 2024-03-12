@@ -1,7 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "./SimpleObject.h"
+#include "../Component/Mapping/MappingDefaultComponent.h"
 
 // Sets default values
 ASimpleObject::ASimpleObject()
@@ -10,7 +8,9 @@ ASimpleObject::ASimpleObject()
 	PrimaryActorTick.bCanEverTick = false;
 
 	GetInitData(GameObjectInitData);	
-	
+
+	UMappingDefaultComponent* mappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
+	BindComponentNoRegister(EGameComponentType::Mapping, mappingComponent);
 }
 
 // Called when the game starts or when spawned

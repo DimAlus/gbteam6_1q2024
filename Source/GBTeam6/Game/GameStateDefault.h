@@ -20,8 +20,9 @@ class GBTEAM6_API AGameStateDefault : public AGameStateBase
 	GENERATED_BODY()
 
 private:
-
+	UPROPERTY()
 	UMappingService* MappingService;
+	UPROPERTY()
 	USaveService* SaveService;
 
 private:

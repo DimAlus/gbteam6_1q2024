@@ -9,6 +9,11 @@
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 
+class UHealthBaseComponent;
+class UMappingBaseComponent;
+
+
+
 FString GetLevelName(ULevel* level);
 
 UCLASS()
@@ -27,13 +32,18 @@ UENUM(BlueprintType)
 enum class ETileType : uint8 {
 	Any UMETA(DisplayName = "Any"),
 	Earth UMETA(DisplayName = "Earth"),
-	Water UMETA(DisplayName = "Water")
+	Water UMETA(DisplayName = "Water"),
+	Nothing UMETA(DisplayName = "Nothing")
 };
 
 UENUM(BlueprintType)
-enum class EGameComponentType : uint8
-{
-	Health UMETA(DisplayName = "Health component")
+enum class EGameComponentType : uint8 {
+	Health UMETA(DisplayName = "Health component"),
+	Movement UMETA(DisplayName = "Movement component"),
+	Mapping UMETA(DisplayName = "Mapping component"),
+	Spawner UMETA(DisplayName = "Work Spawner component"),
+	Generator UMETA(DisplayName = "Work Generator component"),
+	UI UMETA(DisplayName = "User Interface component")
 };
 
 USTRUCT(BlueprintType)
@@ -147,11 +157,59 @@ struct FHealthComponentInitData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
-	TSubclassOf<UActorComponent> ComponentClass;
+	TSubclassOf<UHealthBaseComponent> ComponentClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
 	FHealthComponentInitializer ComponentInitializer;
 		
+};
+
+
+USTRUCT(BlueprintType)
+struct FMappingComponentInitializer {
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
+	bool IsPreview = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
+	FVector ComponentLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
+	TArray<FMapInfo> MapInfos;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float borderMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float heightMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UStaticMesh* staticMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* enabledMatMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* disabledMatMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UActorComponent* staticMeshOwner;
+};
+
+
+USTRUCT(BlueprintType)
+struct FMappingComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	TSubclassOf<UMappingBaseComponent> ComponentClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	FMappingComponentInitializer ComponentInitializer;
+
 };
 
 USTRUCT(BlueprintType)
@@ -161,6 +219,6 @@ struct FGameObjectInitData : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
 	FHealthComponentInitData HealthComponentInitData;
 
-	//ToDo: add other components	
+	//ToDo: add other components
 
 };

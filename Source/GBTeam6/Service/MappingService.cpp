@@ -40,6 +40,7 @@ void UMappingService::InitTileTypesTree(AGameStateDefault* GameState) {
 	UDataTable* dt = GameState->DT_TileTypeTree;
 	if (IsValid(dt)) {
 		this->TileTypesTree.Add(ETileType::Any, { ETileType::Any });
+		this->TileTypesTree.Add(ETileType::Nothing, { });
 
 		TArray<FTRTileTypeTree*> DataTableRowInfos;
 		dt->GetAllRows<FTRTileTypeTree>(TEXT("ReadDTTileTypeContext"), DataTableRowInfos);
@@ -132,6 +133,20 @@ void UMappingService::LoadMap(const TArray<ETileType>& tiles, int width, int hei
 			this->TileInfoArray[i] = { tiles[i], ETileState::Free };
 		}
 	}
+}
+
+const FTileInfo& UMappingService::GetTileInfo(int x, int y) { 
+	return InPlace(x, y) ? TileInfoArray[x + y * MapWidth] : voidInfo; 
+}
+
+void UMappingService::SetTileBusy(int x, int y, ETileState state) {
+	if (InPlace(x, y)) {
+		TileInfoArray[x + y * MapWidth].state = state;
+	}
+}
+
+bool UMappingService::GetTileIsParent(ETileType child, ETileType parent) { 
+	return TileTypesTree.Contains(child) && TileTypesTree[child].Contains(parent); 
 }
 
 void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
