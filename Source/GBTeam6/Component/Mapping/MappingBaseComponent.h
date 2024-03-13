@@ -39,7 +39,7 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetOwnerLocation(FVector TargetLocation);
+	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetPreviewVisibility(bool isVilible);

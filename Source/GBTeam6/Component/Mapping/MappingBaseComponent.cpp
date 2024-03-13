@@ -9,7 +9,7 @@ void UMappingBaseComponent::Initialize(const FMappingComponentInitializer& initi
 	this->Initializer = initializer;
 }
 
-void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation) {
+void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) {
 }
 
 void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {
