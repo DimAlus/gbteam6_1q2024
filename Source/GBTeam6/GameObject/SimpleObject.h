@@ -38,6 +38,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
 
+	bool isLoading = false;
+	int loadIndex;
+	bool isCreated = false;
+
 protected:
 	UFUNCTION()
 	void OnDeathBehaviour();
@@ -51,6 +55,8 @@ public:
 	virtual void BindComponent_Implementation(EGameComponentType ComponentType, UActorComponent* NewComponent) override;
 	virtual void UnbindComponent_Implementation(EGameComponentType ComponentType) override;
 	virtual UActorComponent* GetComponent_Implementation(EGameComponentType ComponentType) override;
+	virtual void SetSaveLoadIndex_Implementation(int index) override;
+	virtual bool GetIsCreated_Implementation() override;
 	
 };
 

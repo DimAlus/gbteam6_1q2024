@@ -1,25 +1,22 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "./HealthBaseComponent.h"
 
-// Sets default values for this component's properties
-UHealthBaseComponent::UHealthBaseComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+UHealthBaseComponent::UHealthBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
 }
 
-void UHealthBaseComponent::Initialize(const FHealthComponentInitializer& Initializer)
-{
-	//Virtual function. Nothing to initialize in base at the moment.
+void UHealthBaseComponent::Initialize(const FHealthComponentInitializer& Initializer) {
+	// Virtual function. Nothing to initialize in base at the moment.
+}
+
+void UHealthBaseComponent::SaveComponent(FHealthSaveData& saveData) {
+	// Virtual function.
+}
+
+void UHealthBaseComponent::LoadComponent(const FHealthSaveData& saveData) {
+	// Virtual function.
 }
 
 void UHealthBaseComponent::TakeDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* InstigatedBy, AActor* DamageCauser)
-{
-	//Virtual function.
+	AController* InstigatedBy, AActor* DamageCauser) {
+	// Virtual function.
 }

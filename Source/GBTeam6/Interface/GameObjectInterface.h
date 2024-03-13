@@ -30,4 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
 	UActorComponent* GetComponent(EGameComponentType ComponentType);
 	
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
+	void SetSaveLoadIndex(int index);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
+	bool GetIsCreated();
 };

@@ -22,6 +22,14 @@ void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Init
 	CurrentHealth = MaxHealth;
 }
 
+void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
+	saveData.Health = CurrentHealth;
+}
+
+void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
+	CurrentHealth = saveData.Health;
+}
+
 // Called when the game starts
 void UHealthDefaultComponent::BeginPlay()
 {

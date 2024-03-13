@@ -4,6 +4,7 @@
 #include "GameFramework/SaveGame.h"
 
 #include "./Typing.h"
+#include "./SavingStructures.h"
 
 #include "SaveTileMap.generated.h"
 

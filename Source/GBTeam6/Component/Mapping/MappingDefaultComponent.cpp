@@ -45,6 +45,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 					GetOwner()->AddInstanceComponent(preview);
 					preview->ComponentTags.Add(FName("Preview Mesh"));
 					preview->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+					preview->SetWorldRotation(FRotator());
 
 					preview->RegisterComponent();
 					if (IsValid(preview)) {
@@ -70,6 +71,30 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 	}
 }
 
+void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
+	saveData.MappingLocation = currentLocation;
+}
+
+void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
+	currentLocation = saveData.MappingLocation;
+	this->GetOwner()->SetActorLocation(
+		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+	UpdateCanBuild();
+	if (!SetIsBuilded(true)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to load GameObject '%s' at <%d; %d>! Map already Busy!"), 
+			*GetNameSafe(this),
+			*GetNameSafe(this->GetOwner()),
+			currentLocation.X,
+			currentLocation.Y
+		);
+		GetOwner()->Destroy();
+	}
+}
+
 
 void UMappingDefaultComponent::SetMeshTileSize(UStaticMeshComponent* mesh) {
 	mesh->SetWorldScale3D(FVector(
@@ -88,17 +113,7 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 }
 
 
-
-void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
-	currentLocation = FIntVector((TargetLocation + this->Initializer.ComponentLocation) / FVector(this->tileSize));
-	this->GetOwner()->SetActorLocation(
-		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation, 
-		false, 
-		nullptr, 
-		ETeleportType::TeleportPhysics
-	);
-	bCanBuild = true;
-
+void UMappingDefaultComponent::UpdateCanBuild() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
@@ -109,6 +124,7 @@ void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
 		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
 		return;
 	}
+	bCanBuild = true;
 
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		int x = currentLocation.X + iter.Key().Key;
@@ -123,6 +139,24 @@ void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
 		bCanBuild = bCanBuild && IsCanBuild;
 	}
 }
+
+
+
+void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) {
+	currentLocation = FIntVector((TargetLocation/* + this->Initializer.ComponentLocation */ ) / FVector(this->tileSize));
+	currentLocation += FIntVector(this->Initializer.ComponentLocation.X / tileSize.X, this->Initializer.ComponentLocation.Y / tileSize.Y, 0);
+
+	this->GetOwner()->SetActorLocation(
+		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+	if (bUpdateCanBuild) {
+		UpdateCanBuild();
+	}
+}
+
 
 void UMappingDefaultComponent::SetPreviewVisibility(bool isVilible) {
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
