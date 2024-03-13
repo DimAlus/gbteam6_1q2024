@@ -1,5 +1,7 @@
 #include "./SimpleObject.h"
 #include "../Component/Mapping/MappingDefaultComponent.h"
+#include "../Game/GameStateDefault.h"
+#include "../Service/SaveService.h"
 
 // Sets default values
 ASimpleObject::ASimpleObject()
@@ -19,7 +21,18 @@ void ASimpleObject::BeginPlay()
 	Super::BeginPlay();
 
 	GenerateComponentSetRuntime(GameObjectInitData);
-	
+
+	if (isLoading) {
+		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+		if (IsValid(gameState)) {
+			USaveService* saveService = gameState->GetSaveService();
+			saveService->InitGameObjectByIndex(this, loadIndex);
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("<%s>: Failed to load object: AGameStateDefault invalid!"), *GetNameSafe(this));
+		}
+	}
+	isCreated = true;
 }
 
 void ASimpleObject::GetInitData(FGameObjectInitData& InitData) const
@@ -109,5 +122,14 @@ UActorComponent* ASimpleObject::GetComponent_Implementation(EGameComponentType C
 	{
 		return nullptr;
 	}
+}
+
+void ASimpleObject::SetSaveLoadIndex_Implementation(int index) {
+	isLoading = true;
+	loadIndex = index;
+}
+
+bool ASimpleObject::GetIsCreated_Implementation() {
+	return isCreated;
 }
 

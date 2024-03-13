@@ -3,6 +3,13 @@
 #include "../Game/GameStateDefault.h"
 #include "./MappingService.h"
 #include "../Lib/SaveTileMap.h"
+#include "../Lib/SaveGameObjects.h"
+#include "../GameObject/SimpleObject.h"
+#include "../GameObject/MovableObject.h"
+#include "../Interface/GameObjectInterface.h"
+#include "../Component/Health/HealthBaseComponent.h"
+#include "../Component/Mapping/MappingBaseComponent.h"
+
 
 void USaveService::SaveTileMap() {
 	if (auto gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
@@ -80,4 +87,127 @@ void USaveService::LoadTileMapByGameState(AGameStateDefault* gameState) {
 		saveTileMapInstance->Height
 	);
 
+}
+
+
+void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData) {
+	for (AActor* act : actors) {
+		if (IsValid(act)) {
+			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+			FGameObjectSaveData SaveData;
+			
+			SaveData.ObjectClass = act->GetClass();
+			SaveData.ActorSaveData.ActorLocation = act->GetActorLocation();
+			SaveData.ActorSaveData.ActorRotation = act->GetActorRotation();
+
+			if (auto health = Cast<UHealthBaseComponent>(obj->Execute_GetComponent(act, EGameComponentType::Health))) {
+				health->SaveComponent(SaveData.HealthData);
+			}
+			if (auto mapping = Cast<UMappingBaseComponent>(obj->Execute_GetComponent(act, EGameComponentType::Mapping))) {
+				mapping->SaveComponent(SaveData.MappingData);
+			}
+			saveData.Add(SaveData);
+		}
+	}
+}
+
+
+void USaveService::SaveObjectsByGameState(AGameStateDefault* gameState) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start save GameObjects"), *GetNameSafe(this));
+	if (!IsValid(gameState)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		return;
+	}
+	USaveGameObjects* saveGameObjectsInstance = Cast<USaveGameObjects>(UGameplayStatics::CreateSaveGameObject(USaveGameObjects::StaticClass()));
+	if (!IsValid(saveGameObjectsInstance)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: USaveGameObjects not Valid!"), *GetNameSafe(this));
+		return;
+	}
+
+	FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
+
+	saveGameObjectsInstance->SetParams(FString("test"), 0, mapName, true);
+
+	TArray<AActor*> objects;
+	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), ASimpleObject::StaticClass(), objects);
+	AddObjectsToSave(objects, saveGameObjectsInstance->Objects);
+	objects.Empty();
+	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), AMovableObject::StaticClass(), objects);
+	AddObjectsToSave(objects, saveGameObjectsInstance->Objects);
+
+	if (UGameplayStatics::SaveGameToSlot(saveGameObjectsInstance,
+		saveGameObjectsInstance->SaveSlotName,
+		saveGameObjectsInstance->UserIndex)) {
+		UE_LOG(LgService, Log, TEXT("<%s>: Save GameObjects success at '%s'"),
+			*GetNameSafe(this),
+			*saveGameObjectsInstance->SaveSlotName);
+	}
+}
+
+
+void USaveService::LoadObjectsByGameState(AGameStateDefault* gameState) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start load GameObjects"), *GetNameSafe(this));
+	if (!IsValid(gameState)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		return;
+	}
+	USaveGameObjects* saveGameObjectsInstance = Cast<USaveGameObjects>(UGameplayStatics::LoadGameFromSlot(
+		USaveGameObjects::GetSlotNameLevel(GetLevelName(gameState->GetWorld()->GetCurrentLevel())),
+		0));
+	if (!IsValid(saveGameObjectsInstance)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: USaveGameObjects not Valid!"), *GetNameSafe(this));
+		return;
+	}
+	
+	
+	for (FGameObjectSaveData& saveData : saveGameObjectsInstance->Objects) {
+		// GetWorld()->GetMapName()
+		AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
+		IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+		if (!(IsValid(act) && obj)) {
+			UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
+			act->Destroy();
+			continue;
+		}
+
+		if (obj->Execute_GetIsCreated(act)) {
+			InitGameObject(act, obj, saveData);
+		}
+		else {
+			LoadingDataMap.Add(loadingMapIndex, saveData);
+			obj->Execute_SetSaveLoadIndex(act, loadingMapIndex);
+		}
+	}
+	if (LoadingDataMap.Num() == 0) {
+		UE_LOG(LgService, Log, TEXT("<%s>: Loading of all actors ended!"), *GetNameSafe(this));
+	}
+}
+
+void USaveService::InitGameObjectByIndex(AActor* gameObject, int index) {
+	if (!LoadingDataMap.Contains(index)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: LoadingDataMap not contains index '%d' of actor '%s'!"), 
+			*GetNameSafe(this), index, *GetNameSafe(gameObject));
+		return;
+	}
+	IGameObjectInterface* obj = Cast<IGameObjectInterface>(gameObject);
+	FGameObjectSaveData& SaveData = LoadingDataMap[index];
+	InitGameObject(gameObject, obj, SaveData);
+
+	LoadingDataMap.Remove(index);
+	if (LoadingDataMap.Num() == 0) {
+		UE_LOG(LgService, Log, TEXT("<%s>: Loading of all actors ended!"), *GetNameSafe(this));
+	}
+}
+
+void USaveService::InitGameObject(AActor* gameObject, IGameObjectInterface* gameInterface, FGameObjectSaveData& objectSaveData) {
+
+	gameObject->SetActorLocation(objectSaveData.ActorSaveData.ActorLocation);
+	gameObject->SetActorRotation(objectSaveData.ActorSaveData.ActorRotation);
+
+	if (auto health = Cast<UHealthBaseComponent>(gameInterface->Execute_GetComponent(gameObject, EGameComponentType::Health))) {
+		health->LoadComponent(objectSaveData.HealthData);
+	}
+	if (auto mapping = Cast<UMappingBaseComponent>(gameInterface->Execute_GetComponent(gameObject, EGameComponentType::Mapping))) {
+		mapping->LoadComponent(objectSaveData.MappingData);
+	}
 }

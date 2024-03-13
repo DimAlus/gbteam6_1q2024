@@ -19,6 +19,9 @@ public:
 
 	virtual void Initialize(const FHealthComponentInitializer& Initializer) override;
 
+	virtual void SaveComponent(FHealthSaveData& saveData) override;
+	virtual void LoadComponent(const FHealthSaveData& saveData) override;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

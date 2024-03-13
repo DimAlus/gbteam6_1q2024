@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "../../Lib/Typing.h"
+#include "../../Lib/SavingStructures.h"
 #include "HealthBaseComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
@@ -21,6 +22,8 @@ public:
 
 	virtual void Initialize(const FHealthComponentInitializer& Initializer);
 
+	virtual void SaveComponent(FHealthSaveData& saveData);
+	virtual void LoadComponent(const FHealthSaveData& saveData);
 public:
 	/** Delegates */
 	UPROPERTY(BlueprintAssignable)

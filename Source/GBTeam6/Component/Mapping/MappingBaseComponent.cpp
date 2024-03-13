@@ -9,6 +9,12 @@ void UMappingBaseComponent::Initialize(const FMappingComponentInitializer& initi
 	this->Initializer = initializer;
 }
 
+void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
+}
+
+void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
+}
+
 void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) {
 }
 

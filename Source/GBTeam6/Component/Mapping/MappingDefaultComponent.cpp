@@ -71,6 +71,30 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 	}
 }
 
+void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
+	saveData.MappingLocation = currentLocation;
+}
+
+void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
+	currentLocation = saveData.MappingLocation;
+	this->GetOwner()->SetActorLocation(
+		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+	UpdateCanBuild();
+	if (!SetIsBuilded(true)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to load GameObject '%s' at <%d; %d>! Map already Busy!"), 
+			*GetNameSafe(this),
+			*GetNameSafe(this->GetOwner()),
+			currentLocation.X,
+			currentLocation.Y
+		);
+		GetOwner()->Destroy();
+	}
+}
+
 
 void UMappingDefaultComponent::SetMeshTileSize(UStaticMeshComponent* mesh) {
 	mesh->SetWorldScale3D(FVector(

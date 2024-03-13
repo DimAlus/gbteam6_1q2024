@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 
 #include "../../Lib/Typing.h"
+#include "../../Lib/SavingStructures.h"
 
 #include "MappingBaseComponent.generated.h"
 
@@ -21,6 +22,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void Initialize(const FMappingComponentInitializer& initializer);
+
+	virtual void SaveComponent(FMappingSaveData& saveData);
+	virtual void LoadComponent(const FMappingSaveData& saveData);
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Initializer)
@@ -46,6 +50,5 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsBuilded(bool isBuilded);
-
 
 };

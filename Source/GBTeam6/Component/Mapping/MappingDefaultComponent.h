@@ -15,8 +15,10 @@ public:
 
 	virtual void DestroyComponent(bool bPromoteChildren = false) override;
 
-	virtual void Initialize(const FMappingComponentInitializer& initializer);
+	virtual void Initialize(const FMappingComponentInitializer& initializer) override;
 
+	virtual void SaveComponent(FMappingSaveData& saveData) override;
+	virtual void LoadComponent(const FMappingSaveData& saveData) override;
 
 private:
 	bool wasInitialized = false;
