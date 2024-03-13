@@ -77,11 +77,13 @@ protected:
 	UPROPERTY()
 	FTimerHandle CameraZoomTimerHandle;
 
-	/** Selected actor for test purposes*/
+	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
 	AActor* SelectedActor;
-
-	/** Selected actor for test purposes*/
+	
+	UPROPERTY(BlueprintReadOnly)
+	AActor* TargetActor;
+	
 	UPROPERTY(BlueprintReadOnly)
 	FVector PointOfInterest;
 
@@ -133,6 +135,6 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	void GetHitUnderMouseCursor(FHitResult& HitResult) const;
+	void GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const;
 
 };

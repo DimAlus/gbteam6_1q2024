@@ -5,6 +5,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -18,7 +19,7 @@ APlayerPawnDefault::APlayerPawnDefault()
 	// Create a camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 800.0f;
+	CameraBoom->TargetArmLength = 1600.0f;
 	CameraBoom->bDoCollisionTest = false;
 
 	//Set isometric
@@ -37,9 +38,9 @@ APlayerPawnDefault::APlayerPawnDefault()
 	CameraTurnEnabled = false;
 
 	//Set camera zoom default parameters
-	MinCameraBoomLength = 400.f;
-	MaxCameraBoomLength = 800.f;
-	CameraZoomDelta = 100.f;
+	MinCameraBoomLength = 0.f;
+	MaxCameraBoomLength = 6000.f;
+	CameraZoomDelta = 500.f;
 }
 
 // Called when the game starts or when spawned
@@ -103,7 +104,7 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
-void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult) const
+void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const
 {
 	FVector MouseWorldLocation, MouseWorldDirection;
 	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
@@ -115,16 +116,16 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult) const
 	FVector TraceEnd = LookPointPosition+500*MouseWorldDirection;
 	FCollisionQueryParams QueryParams;
 	
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, ECC_Camera);
+	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel);
 
-	DrawDebugLine(
+	/*DrawDebugLine(
 			GetWorld(),
 			TraceStart,
 			HitResult.Location,
 			FColor(255, 0, 0),
 			false, 5, 0,
 			12.333
-		);
+		);*/
 }
 
 void APlayerPawnDefault::Select(const FInputActionValue& Value)
@@ -141,7 +142,7 @@ void APlayerPawnDefault::OnSelect_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit);
+	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
 	SelectedActor = Hit.GetActor();
 }
 
@@ -149,8 +150,16 @@ void APlayerPawnDefault::OnCommand_Implementation()
 {
 	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit);
+	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
 	PointOfInterest = Hit.Location;
+	if(Cast<IGameObjectInterface>(Hit.GetActor()))
+	{
+		TargetActor = Hit.GetActor();
+	}
+	else
+	{
+		TargetActor = nullptr;
+	}
 }
 
 
@@ -195,7 +204,7 @@ void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value)
 		ResetKeyboardCameraTurnParameters();
 		
 		FRotator NewRotation = RootComponent->GetComponentRotation();
-		const float InYaw = Value.Get<float>();
+		const float InYaw = Value.Get<float>() * 4;
 		const FRotator AdditionRotation = {0.f, InYaw, 0.f};
 		NewRotation+=AdditionRotation;
 		RootComponent->SetWorldRotation(NewRotation);

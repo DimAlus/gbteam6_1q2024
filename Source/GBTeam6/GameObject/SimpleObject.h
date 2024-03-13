@@ -39,6 +39,10 @@ protected:
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
 
 protected:
+	UFUNCTION()
+	void OnDeathBehaviour();
+
+protected:
 	UFUNCTION(BlueprintCallable)
 	void BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent);
 
