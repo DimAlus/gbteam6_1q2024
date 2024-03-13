@@ -1,4 +1,5 @@
 #include "./MovableObject.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/FloatingPawnMovement.h"
 #include "../Game/GameStateDefault.h"
 #include "../Service/SaveService.h"
@@ -7,11 +8,10 @@
 AMovableObject::AMovableObject()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	GetInitData(GameObjectInitData);
 	
-	bUseControllerRotationYaw = true;	
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->SetUpdatedComponent(RootComponent);
 }
@@ -34,6 +34,21 @@ void AMovableObject::BeginPlay()
 		}
 	}
 	isCreated = true;
+}
+
+void AMovableObject::Tick(float DeltaSeconds)
+{
+	const FVector Velocity = GetVelocity();
+	if(Velocity.Length() > 0.01f)
+	{
+		FRotator Rot = UKismetMathLibrary::RInterpTo(
+		   GetActorRotation(),
+		   Velocity.GetSafeNormal().Rotation(),
+		   GetWorld()->GetDeltaSeconds(),
+		   5.f
+		   );
+		SetActorRotation(Rot);
+	}
 }
 
 void AMovableObject::GetInitData(FGameObjectInitData& InitData) const

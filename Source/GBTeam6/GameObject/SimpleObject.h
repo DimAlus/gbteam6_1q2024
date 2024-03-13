@@ -43,6 +43,10 @@ protected:
 	bool isCreated = false;
 
 protected:
+	UFUNCTION()
+	void OnDeathBehaviour();
+
+protected:
 	UFUNCTION(BlueprintCallable)
 	void BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent);
 
