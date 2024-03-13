@@ -19,6 +19,10 @@ void ASimpleObject::BeginPlay()
 	Super::BeginPlay();
 
 	GenerateComponentSetRuntime(GameObjectInitData);
+
+	/** OnDeath logic for testing purposes*/
+	auto HealthComponent = Cast<UHealthBaseComponent>(Execute_GetComponent(this, EGameComponentType::Health));
+	HealthComponent->OnDeath.AddDynamic(this, &ASimpleObject::OnDeathBehaviour);
 	
 }
 
@@ -70,6 +74,11 @@ void ASimpleObject::GenerateComponentSetRuntime(const FGameObjectInitData& InitD
 	//Create another component
 	// .  .  .
 }
+
+void ASimpleObject::OnDeathBehaviour()
+{
+	K2_DestroyActor();
+};
 
 void ASimpleObject::BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent)
 {

@@ -7,7 +7,7 @@
 #include "../Service/SaveService.h"
 
 void AGameStateDefault::InitMapping(ULevel* level){
-	for (TObjectPtr<AActor> actr : level->Actors) {
+	/*for (TObjectPtr<AActor> actr : level->Actors) {
 		if (IsValid(actr.Get())
 			&& actr.Get()->GetActorLabel() == TileMapName) {
 			UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"),
@@ -26,7 +26,7 @@ void AGameStateDefault::InitMapping(ULevel* level){
 	UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s' with layer '%s'"), 
 																	*GetNameSafe(this), 
 																	*TileMapName,
-																	*TileLayerName);
+																	*TileLayerName);*/
 }
 
 void AGameStateDefault::InitializeServices() {
