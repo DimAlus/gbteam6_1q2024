@@ -9,6 +9,7 @@
 #include "../Interface/GameObjectInterface.h"
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Component/Mapping/MappingBaseComponent.h"
+#include "../Interface/GameObjectCore.h"
 
 
 void USaveService::SaveTileMap() {
@@ -94,16 +95,17 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 	for (AActor* act : actors) {
 		if (IsValid(act)) {
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+			UGameObjectCore* core = obj->Execute_GetCore(act);
 			FGameObjectSaveData SaveData;
 			
 			SaveData.ObjectClass = act->GetClass();
 			SaveData.ActorSaveData.ActorLocation = act->GetActorLocation();
 			SaveData.ActorSaveData.ActorRotation = act->GetActorRotation();
 
-			if (auto health = Cast<UHealthBaseComponent>(obj->Execute_GetComponent(act, EGameComponentType::Health))) {
+			if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 				health->SaveComponent(SaveData.HealthData);
 			}
-			if (auto mapping = Cast<UMappingBaseComponent>(obj->Execute_GetComponent(act, EGameComponentType::Mapping))) {
+			if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 				mapping->SaveComponent(SaveData.MappingData);
 			}
 			saveData.Add(SaveData);
@@ -164,18 +166,18 @@ void USaveService::LoadObjectsByGameState(AGameStateDefault* gameState) {
 		// GetWorld()->GetMapName()
 		AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
 		IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+		UGameObjectCore* core = obj->Execute_GetCore(act);
 		if (!(IsValid(act) && obj)) {
 			UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
 			act->Destroy();
 			continue;
 		}
 
-		if (obj->Execute_GetIsCreated(act)) {
-			InitGameObject(act, obj, saveData);
+		if (core->GetIsCreated()) {
+			InitGameObject(core, saveData);
 		}
 		else {
-			LoadingDataMap.Add(loadingMapIndex, saveData);
-			obj->Execute_SetSaveLoadIndex(act, loadingMapIndex);
+			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created!"), *GetNameSafe(this));
 		}
 	}
 	if (LoadingDataMap.Num() == 0) {
@@ -183,31 +185,15 @@ void USaveService::LoadObjectsByGameState(AGameStateDefault* gameState) {
 	}
 }
 
-void USaveService::InitGameObjectByIndex(AActor* gameObject, int index) {
-	if (!LoadingDataMap.Contains(index)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: LoadingDataMap not contains index '%d' of actor '%s'!"), 
-			*GetNameSafe(this), index, *GetNameSafe(gameObject));
-		return;
-	}
-	IGameObjectInterface* obj = Cast<IGameObjectInterface>(gameObject);
-	FGameObjectSaveData& SaveData = LoadingDataMap[index];
-	InitGameObject(gameObject, obj, SaveData);
+void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData) {
 
-	LoadingDataMap.Remove(index);
-	if (LoadingDataMap.Num() == 0) {
-		UE_LOG(LgService, Log, TEXT("<%s>: Loading of all actors ended!"), *GetNameSafe(this));
-	}
-}
+	core->GetOwner()->SetActorLocation(objectSaveData.ActorSaveData.ActorLocation);
+	core->GetOwner()->SetActorRotation(objectSaveData.ActorSaveData.ActorRotation);
 
-void USaveService::InitGameObject(AActor* gameObject, IGameObjectInterface* gameInterface, FGameObjectSaveData& objectSaveData) {
-
-	gameObject->SetActorLocation(objectSaveData.ActorSaveData.ActorLocation);
-	gameObject->SetActorRotation(objectSaveData.ActorSaveData.ActorRotation);
-
-	if (auto health = Cast<UHealthBaseComponent>(gameInterface->Execute_GetComponent(gameObject, EGameComponentType::Health))) {
+	if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 		health->LoadComponent(objectSaveData.HealthData);
 	}
-	if (auto mapping = Cast<UMappingBaseComponent>(gameInterface->Execute_GetComponent(gameObject, EGameComponentType::Mapping))) {
+	if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 		mapping->LoadComponent(objectSaveData.MappingData);
 	}
 }

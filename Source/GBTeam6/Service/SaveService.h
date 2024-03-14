@@ -9,6 +9,7 @@
 
 class AGameStateDefault;
 class IGameObjectInterface;
+class UGameObjectCore;
 
 /** Service to Save or Load data
  * 
@@ -39,10 +40,8 @@ public:
 	void LoadObjectsByGameState(AGameStateDefault* gameState);
 
 
-	UFUNCTION(BlueprintCallable)
-	void InitGameObjectByIndex(AActor* gameObject, int index);
 private:
 
-	void InitGameObject(AActor* gameObject, IGameObjectInterface* gameInterface, FGameObjectSaveData& objectSaveData);
+	void InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData);
 
 };
