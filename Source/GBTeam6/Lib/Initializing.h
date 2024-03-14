@@ -71,9 +71,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	UMaterial* disabledMatMesh = nullptr;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UActorComponent* staticMeshOwner = nullptr;
 };
 
 
