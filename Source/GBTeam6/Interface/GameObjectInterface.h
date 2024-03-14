@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Components/ActorComponent.h"
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 #include "GameObjectInterface.generated.h"
 
 // This class does not need to be modified.

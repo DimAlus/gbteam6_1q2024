@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "../Lib/Typing.h"
-#include "../Lib/SavingStructures.h"
+#include "../Lib/Lib.h"
 
 #include "SaveService.generated.h"
 

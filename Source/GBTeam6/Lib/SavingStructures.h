@@ -20,10 +20,10 @@ struct FActorSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector ActorLocation;
+	FVector ActorLocation{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FRotator ActorRotation;
+	FRotator ActorRotation{};
 };
 
 
@@ -32,7 +32,7 @@ struct FHealthSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Health;
+	float Health = 0.f;
 };
 
 
@@ -41,7 +41,7 @@ struct FMappingSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FIntVector MappingLocation;
+	FIntVector MappingLocation{};
 };
 
 
@@ -50,14 +50,14 @@ struct FGameObjectSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AActor> ObjectClass;
+	TSubclassOf<AActor> ObjectClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FActorSaveData ActorSaveData;
+	FActorSaveData ActorSaveData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FHealthSaveData HealthData;
+	FHealthSaveData HealthData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FMappingSaveData MappingData;
+	FMappingSaveData MappingData{};
 };

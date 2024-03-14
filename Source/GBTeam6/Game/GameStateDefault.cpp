@@ -2,7 +2,7 @@
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
 #include "PaperTileMap.h"
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 #include "../Service/MappingService.h"
 #include "../Service/SaveService.h"
 

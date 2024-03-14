@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 #include "PlayerPawnDefault.generated.h"
 
 class USpringArmComponent;

@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 
 #include "GameStateDefault.generated.h"
 

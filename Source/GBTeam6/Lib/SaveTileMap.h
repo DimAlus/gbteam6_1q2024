@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
 
-#include "./Typing.h"
-#include "./SavingStructures.h"
+#include "./Lib.h"
 
 #include "SaveTileMap.generated.h"
 

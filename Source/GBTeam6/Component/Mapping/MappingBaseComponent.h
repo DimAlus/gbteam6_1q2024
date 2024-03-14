@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "../../Lib/Typing.h"
-#include "../../Lib/SavingStructures.h"
+#include "../../Lib/Lib.h"
 
 #include "MappingBaseComponent.generated.h"
 
