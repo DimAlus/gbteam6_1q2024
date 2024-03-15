@@ -18,7 +18,7 @@ void UGameObjectCore::SetIsCreated() {
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState());
 	if (!gameState) {
 		UE_LOG(LgObject, Error, TEXT("<%s>: Failed to get AGameStateDefault at InitDataByName!"), *GetNameSafe(this));
 		return;

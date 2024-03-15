@@ -51,27 +51,28 @@ protected:
 	FPlayerInputAction PlayerInputAction;
 
 protected:
-	/** Flag to enable or disable mouse camera turn input */
-	UPROPERTY()
-	bool CameraTurnEnabled;
-
 	/** Keyboard camera turn parameters */
 	UPROPERTY()
-	FRotator CurrentCameraTurnKeyboardRotation;
-	UPROPERTY()
-	FRotator TargetCameraTurnKeyboardRotation;
+	FRotator TargetCameraTurnRotation;
 
 	/** Camera zoom parameters */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MinCameraBoomLength;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MaxCameraBoomLength;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
-	float CameraZoomDelta;
 	UPROPERTY()
 	float TargetCameraBoomLength;
 
+	UPROPERTY()
+	float MinCameraZoomRotationPitch;
+	UPROPERTY()
+	float MaxCameraZoomRotationPitch;
+	UPROPERTY()
+	FRotator TargetCameraZoomRotation;
+
 	/** Timers handles */
+	UPROPERTY()
+	FTimerHandle CameraTurnMouseTimerHandle;
 	UPROPERTY()
 	FTimerHandle CameraTurnKeyboardTimerHandle;
 	UPROPERTY()
@@ -106,20 +107,26 @@ protected:
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
-	/** Called for enable camera turn input */
-	void EnableCameraTurn(const FInputActionValue& Value);
+	/** Enable camera turn by timer handle */
+	void EnableCameraTurn(FTimerHandle& TimerHandle);
+
+	/** Called for enable camera turn mouse input */
+	void EnableCameraTurnMouse(const FInputActionValue& Value);
+	
+	/** Called for enable camera turn keyboard input */
+	void EnableCameraTurnKeyboard(const FInputActionValue& Value);
 
 	/** Called for disable camera turn input */
-	void DisableCameraTurn(const FInputActionValue& Value);
+	void DisableCameraTurnMouse(const FInputActionValue& Value);
+	
+	/** Called for disable camera turn input */
+	void DisableCameraTurnKeyboard(const FInputActionValue& Value);
 	
 	/** Called for camera turn input */
 	void CameraTurn(const FInputActionValue& Value);
 
-	/** Called for camera turn keyboard input */
-	void CameraTurnKeyboard(const FInputActionValue& Value);
-
 	/** Keyboard camera turn tick function */
-	void CameraTurnKeyboardTick();
+	void CameraTurnTick();
 
 	/** Called for camera zoom input */
 	void CameraZoom(const FInputActionValue& Value);
@@ -127,8 +134,6 @@ protected:
 	/** Camera zoom tick function */
 	void CameraZoomTick();
 
-	/** Sets the rotation parameters of the keyboard camera turn to match the current rotation of the root component. */
-	void ResetKeyboardCameraTurnParameters();
 	
 public:	
 	// Called to bind functionality to input
