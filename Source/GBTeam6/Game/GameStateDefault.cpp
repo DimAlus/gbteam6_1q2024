@@ -6,27 +6,31 @@
 #include "../Service/MappingService.h"
 #include "../Service/SaveService.h"
 
-void AGameStateDefault::InitMapping(ULevel* level){
-	/*for (TObjectPtr<AActor> actr : level->Actors) {
-		if (IsValid(actr.Get())
-			&& actr.Get()->GetActorLabel() == TileMapName) {
-			UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"),
-																			*GetNameSafe(this),
-																			*TileMapName,
-																			*GetNameSafe(level));
-			if (auto tm = Cast<APaperTileMapActor>(actr.Get())) {
-				if (auto ptm = tm->GetRenderComponent()->TileMap.Get()) {
-					this->MappingService->GenerateMap(ptm, TileLayerName);
-					tm->Destroy();
-					return;
-				}
+
+void AGameStateDefault::LoadConfig() {
+	TSet<EConfig> ignore = { EConfig::TileSize };
+
+	Configs = {
+		{ EConfig::TileSize, {} }
+	};
+	Configs[EConfig::TileSize].VectorValue = { 100.f, 100.f, 1.f };
+
+	if (DT_Config) {
+		FString context;
+		TArray<FTRConfig*> data;
+		DT_Config->GetAllRows(context, data);
+		for (FTRConfig* row : data) {
+			if (!ignore.Contains(row->Config)) {
+				if (Configs.Contains(row->Config))
+					Configs[row->Config] = row->Value;
+				else
+					Configs.Add(row->Config, row->Value);
 			}
 		}
 	}
-	UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s' with layer '%s'"), 
-																	*GetNameSafe(this), 
-																	*TileMapName,
-																	*TileLayerName);*/
+	else {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to get DT_Config!"), *GetNameSafe(this));
+	}
 }
 
 void AGameStateDefault::InitializeServices() {
@@ -46,12 +50,22 @@ void AGameStateDefault::ClearServices()
 	this->MappingService = nullptr;
 }
 
+
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
+	LoadConfig();
 	InitializeServices();
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	ClearServices();
 	Super::EndPlay(EndPlayReason);
+}
+
+bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {
+	if (Configs.Contains(configType)) {
+		config = Configs[configType];
+		return true;
+	}
+	return false;
 }

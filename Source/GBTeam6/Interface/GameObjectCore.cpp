@@ -1,5 +1,6 @@
 #include "./GameObjectCore.h"
 #include "../Component/Health/HealthBaseComponent.h"
+#include "../Game/GameStateDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
 }
@@ -17,26 +18,26 @@ void UGameObjectCore::SetIsCreated() {
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
-	const auto InitDataPath = TEXT("/Game/Table/DT_GameObjectInitData.DT_GameObjectInitData");
-	const FSoftObjectPath DataTablePath = FSoftObjectPath(InitDataPath);
-
-	if (const UDataTable* DataTable = Cast<UDataTable>(DataTablePath.TryLoad()))
-	{
-		if (const FGameObjectInitData* InitDataRow = DataTable->FindRow<FGameObjectInitData>(ObjectName, ""))
-		{
-			FGameObjectInitData InitData = *InitDataRow;
-			GenerateComponentSetRuntime(InitData);
-		}
-		else
-		{
-			const FString Name = ObjectName.ToString();
-			UE_LOG(LogTemp, Error, TEXT("'%s' Failed to get InitDataTable Row with name '%s'!"), *GetNameSafe(this), *Name);
-		}
+	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+	if (!gameState) {
+		UE_LOG(LgObject, Error, TEXT("<%s>: Failed to get AGameStateDefault at InitDataByName!"), *GetNameSafe(this));
+		return;
 	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("'%s' Failed to get InitDataTable in '%s'!"), *GetNameSafe(this), InitDataPath);
+	if (!gameState->DT_ObjectsData) {
+		UE_LOG(LgObject, Error, TEXT("<%s>: Failed to get DT_ObjectsData!"), *GetNameSafe(this));
+		return;
 	}
+	
+	if (const FGameObjectInitData* InitDataRow = gameState->DT_ObjectsData->FindRow<FGameObjectInitData>(ObjectName, "")) {
+		FGameObjectInitData InitData = *InitDataRow;
+		GenerateComponentSetRuntime(*InitDataRow);
+	}
+	else {
+		UE_LOG(LgObject, Error, TEXT("<%s>: Failed to get InitDataTable Row with name '%s'!"),
+			*GetNameSafe(this), *ObjectName.ToString()
+		);
+	}
+	
 }
 
 void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& InitData) {
@@ -52,7 +53,7 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 			BindComponent(EGameComponentType::Health, NewHealthComponent);
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("'%s' Failed to initialize Health Component!"), *GetNameSafe(this));
+			UE_LOG(LgObject, Error, TEXT("'%s' Failed to initialize Health Component!"), *GetNameSafe(this));
 		};
 	}
 

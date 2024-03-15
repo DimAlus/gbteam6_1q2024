@@ -25,8 +25,9 @@ private:
 	UPROPERTY()
 	USaveService* SaveService;
 
-private:
-	void InitMapping(ULevel* level);
+	UPROPERTY()
+	TMap<EConfig, FConfig> Configs;
+	
 
 public:
 
@@ -36,19 +37,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_TileTypeTree;
 
-	// Name of TileMapActor at scene
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
-	FString TileMapName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_Config;
 
-	// Name of Layer at TileMap, included info about tile types
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
-	FString TileLayerName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_ObjectsData;
 
+private:
+	void LoadConfig();
 public:
 	// Initialize All Services
 	void InitializeServices();
 	// DEstroy All Services
 	void ClearServices();
+
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -56,8 +58,12 @@ public:
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
+
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetConfig(EConfig configType, FConfig& config);
 
 };

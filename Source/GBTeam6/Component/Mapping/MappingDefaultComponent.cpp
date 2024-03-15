@@ -4,7 +4,7 @@
 
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
-	UE_LOG(LogTemp, Error, TEXT("Destroy Mapping Component"));
+	UE_LOG(LgComponent, Error, TEXT("Destroy Mapping Component"));
 	SetIsBuilded(false);
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		iter->Value.Preview->DestroyComponent();
@@ -63,7 +63,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 						this->SetMeshIsVisible(preview, this->Initializer.IsPreview);
 					}
 					else {
-						UE_LOG(LgService, Error, TEXT("<%s>: created AMapPreview not Valid!"), *GetNameSafe(this));
+						UE_LOG(LgComponent, Error, TEXT("<%s>: created AMapPreview not Valid!"), *GetNameSafe(this));
 					}
 				}
 			}
@@ -85,7 +85,7 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 	);
 	UpdateCanBuild();
 	if (!SetIsBuilded(true)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to load GameObject '%s' at <%d; %d>! Map already Busy!"), 
+		UE_LOG(LgComponent, Error, TEXT("<%s>: Failed to load GameObject '%s' at <%d; %d>! Map already Busy!"), 
 			*GetNameSafe(this),
 			*GetNameSafe(this->GetOwner()),
 			currentLocation.X,
@@ -116,12 +116,12 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 void UMappingDefaultComponent::UpdateCanBuild() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
 		return;
 	}
 	UMappingService* mappingService = gameState->GetMappingService();
 	if (!IsValid(mappingService)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+		UE_LOG(LgComponent, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
 		return;
 	}
 	bCanBuild = true;
@@ -172,12 +172,12 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 
 		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 		if (!IsValid(gameState)) {
-			UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+			UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
 			return false;
 		}
 		UMappingService* mappingService = gameState->GetMappingService();
 		if (!IsValid(mappingService)) {
-			UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+			UE_LOG(LgComponent, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
 			return false;
 		}
 

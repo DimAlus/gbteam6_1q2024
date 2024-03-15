@@ -9,6 +9,8 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
 
 
@@ -84,6 +86,42 @@ struct FTRTileType : public FTableRowBase {
 	UPROPERTY(EditAnywhere)
 	ETileType TileType = ETileType::Any;
 
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FConfig {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere)
+	bool BoolValue = 0;
+
+	UPROPERTY(EditAnywhere)
+	int IntValue = 0;
+
+	UPROPERTY(EditAnywhere)
+	float FloatValue = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	FString StringValue{};
+
+	UPROPERTY(EditAnywhere)
+	FVector VectorValue{};
+
+	UPROPERTY(EditAnywhere)
+	FIntVector IntVectorValue{};
+};
+
+USTRUCT(BlueprintType)
+struct FTRConfig : public FTableRowBase {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EConfig Config;
+
+	UPROPERTY(EditAnywhere)
+	FConfig Value;
 };
 
 

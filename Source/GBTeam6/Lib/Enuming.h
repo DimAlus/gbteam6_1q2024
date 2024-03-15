@@ -31,10 +31,21 @@ enum class ETileType : uint8 {
 
 UENUM(BlueprintType)
 enum class EGameComponentType : uint8 {
-	Health UMETA(DisplayName = "Health component"),
-	Movement UMETA(DisplayName = "Movement component"),
-	Mapping UMETA(DisplayName = "Mapping component"),
-	Spawner UMETA(DisplayName = "Work Spawner component"),
-	Generator UMETA(DisplayName = "Work Generator component"),
-	UI UMETA(DisplayName = "User Interface component")
+	Health UMETA(DisplayName = "Health"),
+	Movement UMETA(DisplayName = "Movement"),
+	Mapping UMETA(DisplayName = "Mapping"),
+	Spawner UMETA(DisplayName = "Work Spawner"),
+	Generator UMETA(DisplayName = "Work Generator"),
+	UI UMETA(DisplayName = "User Interface")
+};
+
+UENUM(BlueprintType)
+enum class EConfig : uint8 {
+	TileSize UMETA(DisplayName = "Tile Size"),
+
+	/** Sound Values */
+	SoundValue UMETA(DisplayName = "Sound Value"),
+	MusicValue UMETA(DisplayName = "Music Value"),
+	EffectValue UMETA(DisplayName = "Effect Value"),
+	VoiceValue UMETA(DisplayName = "Voice Value")
 };

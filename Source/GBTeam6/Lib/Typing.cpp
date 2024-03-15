@@ -4,6 +4,8 @@
 
 DEFINE_LOG_CATEGORY(LgPlayer);
 DEFINE_LOG_CATEGORY(LgService);
+DEFINE_LOG_CATEGORY(LgComponent);
+DEFINE_LOG_CATEGORY(LgObject);
 
 FString GetLevelName(ULevel* level) {
     FString path = level->GetPathName();

@@ -52,6 +52,6 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 			bDead = true;
 			OnDeath.Broadcast();
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Pawn damaged! Damage = %f; Current health = %f"), Damage, CurrentHealth);
+		UE_LOG(LgComponent, Warning, TEXT("<%s>: Pawn damaged! Damage = %f; Current health = %f"), *GetNameSafe(this), Damage, CurrentHealth);
 	}
 }

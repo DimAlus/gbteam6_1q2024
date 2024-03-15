@@ -64,13 +64,25 @@ public:
 	float heightMesh = 0.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UStaticMesh* staticMesh = nullptr;
+	UStaticMesh* staticMesh = Cast<UStaticMesh>(StaticLoadObject(
+		UStaticMesh::StaticClass(),
+		NULL, 
+		TEXT("/Engine/BasicShapes/Cube")
+	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* enabledMatMesh = nullptr;
+	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(), 
+		NULL, 
+		TEXT("/Engine/MapTemplates/Materials/BasicAsset03")
+	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* disabledMatMesh = nullptr;
+	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(),
+		NULL,
+		TEXT("/Engine/MapTemplates/Materials/BasicAsset01")
+	));
 };
 
 
