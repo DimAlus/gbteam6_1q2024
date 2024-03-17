@@ -29,4 +29,16 @@ public:
 	virtual void ChangeGenerationSelection(int index, bool isSelected);
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeGenerationLimit(int index, int newLimit);
+
+	UFUNCTION(BlueprintCallable)
+	virtual FGenerator GetCurrentGenerator();
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetTime();
+
+	UFUNCTION(BlueprintCallable)
+	virtual float GetTimePercents();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool IsWorking();
 };

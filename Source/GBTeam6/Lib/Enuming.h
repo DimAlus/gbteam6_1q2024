@@ -34,8 +34,8 @@ enum class EGameComponentType : uint8 {
 	Health		UMETA(DisplayName = "Health"),
 	Movement	UMETA(DisplayName = "Movement"),
 	Mapping		UMETA(DisplayName = "Mapping"),
-	Spawner		UMETA(DisplayName = "Work Spawner"),
-	Generator	UMETA(DisplayName = "Work Generator"),
+	Generator	UMETA(DisplayName = "Generator"),
+	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface")
 };
 
@@ -61,5 +61,7 @@ enum class EResource : uint8 {
 	Actor		UMETA(DisplayName = "Actor"),
 
 	Mushroom	UMETA(DisplayName = "Mushroom"),
-	Berry		UMETA(DisplayName = "Berry")
+	Berry		UMETA(DisplayName = "Berry"),
+	Potion		UMETA(DisplayName = "Potion"),
+	Infusion	UMETA(DisplayName = "Infusion")
 };

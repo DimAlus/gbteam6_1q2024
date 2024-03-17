@@ -7,6 +7,8 @@
 
 #include "MappingBaseComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildedEventSignature, bool, IsBuilded);
+
 class AMapPreview;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -50,4 +52,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsBuilded(bool isBuilded);
 
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnBuildedEventSignature OnBuilded;
 };

@@ -21,3 +21,19 @@ void UGeneratorBaseComponent::ChangeGenerationSelection(int index, bool isSelect
 
 void UGeneratorBaseComponent::ChangeGenerationLimit(int index, int newLimit) {
 }
+
+FGenerator UGeneratorBaseComponent::GetCurrentGenerator() {
+	return FGenerator();
+}
+
+float UGeneratorBaseComponent::GetTime() {
+	return 0.0f;
+}
+
+float UGeneratorBaseComponent::GetTimePercents() {
+	return 0.0f;
+}
+
+bool UGeneratorBaseComponent::IsWorking() {
+	return false;
+}

@@ -61,6 +61,11 @@ USTRUCT(BlueprintType)
 struct FInventorySaveData {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CountStacks{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<EResource, int> Resources;
 };
 
 

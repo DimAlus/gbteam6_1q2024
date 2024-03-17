@@ -4,6 +4,9 @@
 #include "./GeneratorBaseComponent.h"
 #include "GeneratorStandardComponent.generated.h"
 
+
+class UInventoryBaseComponent;
+
 /**
  * 
  */
@@ -34,6 +37,7 @@ private:
 
 private:
 	TMap<EResource, int> GetNeeds(int steps);
+	UInventoryBaseComponent* GetInventory();
 	bool IsGeneratorEnabled(int index);
 	bool FindWork();
 	void ApplyWork();
@@ -41,8 +45,15 @@ private:
 	void Generate(const FGenerator& generator);
 	void WorkLoop();
 	void CreateTimer();
+
+	void SpawnActors(const TArray<FPrice>& resources);
 public:
 	virtual void SetWorkEnabled(bool isEnabled) override;
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;
+
+	virtual FGenerator GetCurrentGenerator() override;
+	virtual float GetTime() override;
+	virtual float GetTimePercents() override;
+	virtual bool IsWorking() override;
 };

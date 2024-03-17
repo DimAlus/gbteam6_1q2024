@@ -1,5 +1,7 @@
 #include "./GameObjectCore.h"
 #include "../Component/Health/HealthBaseComponent.h"
+#include "../Component/Inventory/InventoryBaseComponent.h"
+#include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
@@ -18,7 +20,7 @@ void UGameObjectCore::SetIsCreated() {
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState());
 	if (!gameState) {
 		UE_LOG(LgObject, Error, TEXT("<%s>: Failed to get AGameStateDefault at InitDataByName!"), *GetNameSafe(this));
 		return;
@@ -40,25 +42,38 @@ void UGameObjectCore::InitDataByName(FName ObjectName) {
 	
 }
 
+TSubclassOf<UActorComponent> GetNvlClass(TSubclassOf<UActorComponent> cls, TSubclassOf<UActorComponent> clsDefault) {
+	if (cls)
+		return cls;
+	return clsDefault;
+}
+
+
 void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& InitData) {
 	//Create health component
-	if (!HasComponent(EGameComponentType::Health)) {
-		if (InitData.HealthComponentInitData.ComponentClass) {
-			UHealthBaseComponent* NewHealthComponent = NewObject<UHealthBaseComponent>(
-				owner, 
-				InitData.HealthComponentInitData.ComponentClass
-			);
+	UHealthBaseComponent* NewHealthComponent = NewObject<UHealthBaseComponent>(
+		owner, 
+		GetNvlClass(InitData.HealthComponentInitData.ComponentClass, UHealthBaseComponent::StaticClass())
+	);
+	NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Health, NewHealthComponent);
+		
+	//Create Inventory component
+	UInventoryBaseComponent* NewInventoryComponent = NewObject<UInventoryBaseComponent>(
+		owner,
+		GetNvlClass(InitData.InventoryComponentInitData.ComponentClass, UInventoryBaseComponent::StaticClass())
+	);
+	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Inventory, NewInventoryComponent);
 
-			NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
-			BindComponent(EGameComponentType::Health, NewHealthComponent);
-		}
-		else {
-			UE_LOG(LgObject, Error, TEXT("'%s' Failed to initialize Health Component!"), *GetNameSafe(this));
-		};
-	}
+	//Create health component
+	UGeneratorBaseComponent* NewGeneratorComponent = NewObject<UGeneratorBaseComponent>(
+		owner,
+		GetNvlClass(InitData.GeneratorComponentInitData.ComponentClass, UGeneratorBaseComponent::StaticClass())
+	);
+	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Generator, NewGeneratorComponent);
 
-	//Create another component
-	// .  .  .
 }
 
 void UGameObjectCore::BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent) {

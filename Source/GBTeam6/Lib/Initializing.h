@@ -144,7 +144,8 @@ USTRUCT(BlueprintType)
 struct FInventoryComponentInitializer {
 	GENERATED_BODY()
 public:
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CountStacks;
 };
 
 

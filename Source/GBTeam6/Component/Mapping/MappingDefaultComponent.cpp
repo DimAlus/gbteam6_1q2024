@@ -191,6 +191,7 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 			mappingService->SetTileBusy(x, y, isBuilded ? ETileState::Busy : ETileState::Free);
 		}
 		bIsBuilded = isBuilded;
+		OnBuilded.Broadcast(isBuilded);
 		return true;
 	}
 	return false;
