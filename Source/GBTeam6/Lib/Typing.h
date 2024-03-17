@@ -124,6 +124,17 @@ struct FTRConfig : public FTableRowBase {
 	FConfig Value;
 };
 
+USTRUCT(BlueprintType)
+struct FTRResourceStack : public FTableRowBase {
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere)
+	EResource Resource;
+
+	UPROPERTY(EditAnywhere)
+	int Size;
+};
+
 
 USTRUCT(BlueprintType)
 struct FMapInfo {
@@ -138,4 +149,47 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ETileType TileType{ ETileType::Any };
 
+};
+
+
+USTRUCT(BlueprintType)
+struct FPrice {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EResource Resource{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Count{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<AActor> ActorClass{};
+};
+
+USTRUCT(BlueprintType)
+struct FBarter {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPrice> Price{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPrice> Result{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Time{};
+};
+
+USTRUCT(BlueprintType)
+struct FGenerator {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FBarter Barter{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int Limit = 100;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool Selected = true;
 };

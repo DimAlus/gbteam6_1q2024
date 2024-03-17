@@ -46,6 +46,25 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FGeneratorSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGenerator> Generics{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsWorked{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FInventorySaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FGameObjectSaveData {
 	GENERATED_BODY()
 public:
@@ -60,4 +79,10 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FMappingSaveData MappingData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGeneratorSaveData GeneratorData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FInventorySaveData InventoryData{};
 };
