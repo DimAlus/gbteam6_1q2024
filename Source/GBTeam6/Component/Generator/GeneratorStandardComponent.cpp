@@ -43,13 +43,13 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 }
 
 
-TMap<EResource, int> UGeneratorStandardComponent::GetNeeds(int steps) {
+TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 	TMap<EResource, int> needs;
 	for (int i = 0; i < Generics.Num(); i++) {
 		FGenerator& gen = Generics[i];
-		if (IsGeneratorEnabled(i)) {
+		if (gen.Selected) {
 			for (const FPrice& price : gen.Barter.Price) {
-				if (needs.Contains(price.Resource)) {
+				if (!needs.Contains(price.Resource)) {
 					needs.Add(price.Resource, price.Count * steps);
 				}
 				else {
@@ -58,7 +58,14 @@ TMap<EResource, int> UGeneratorStandardComponent::GetNeeds(int steps) {
 			}
 		}
 	}
-	return needs;
+
+	TArray<FPrice> Tasks{};
+	for (auto need : needs)
+	{
+		FPrice CurrentTask = {need.Key, need.Value};
+		Tasks.Add(CurrentTask);
+	}
+	return Tasks;
 }
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {

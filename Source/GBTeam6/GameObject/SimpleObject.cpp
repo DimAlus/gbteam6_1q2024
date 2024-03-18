@@ -2,11 +2,13 @@
 #include "../Component/Mapping/MappingDefaultComponent.h"
 #include "../Game/GameStateDefault.h"
 #include "../Service/SaveService.h"
+#include "GBTeam6/Service/TaskManagerService.h"
 
 ASimpleObject::ASimpleObject() {
 	PrimaryActorTick.bCanEverTick = false;
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
+	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
 
 }
 
@@ -31,6 +33,16 @@ void ASimpleObject::BeginPlay() {
 	HealthComponent->OnDeath.AddDynamic(this, &ASimpleObject::OnDeathBehaviour);
 
 	this->GameObjectCore->SetIsCreated();
+}
+
+void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)
+{
+	if (!IsBuilded)
+		return;
+	if (AGameStateDefault* GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+	{
+		GameState->GetTaskManagerService()->AddClientObject(this);
+	};
 }
 
 

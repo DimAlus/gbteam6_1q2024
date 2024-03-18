@@ -36,7 +36,6 @@ private:
 	bool IsWorked = false;
 
 private:
-	TMap<EResource, int> GetNeeds(int steps);
 	UInventoryBaseComponent* GetInventory();
 	bool IsGeneratorEnabled(int index);
 	bool FindWork();
@@ -48,6 +47,9 @@ private:
 
 	void SpawnActors(const TArray<FPrice>& resources);
 public:
+
+	virtual TArray<FPrice> GetNeeds(int steps) override;
+	
 	virtual void SetWorkEnabled(bool isEnabled) override;
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;

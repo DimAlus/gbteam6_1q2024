@@ -22,6 +22,10 @@ public:
 	virtual void LoadComponent(const FGeneratorSaveData& saveData);
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<FPrice> GetNeeds(int steps);
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWorkEnabled(bool isEnabled);
 

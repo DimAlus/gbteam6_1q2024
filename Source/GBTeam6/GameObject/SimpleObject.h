@@ -38,6 +38,10 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
+
+	UFUNCTION()
+	void OnBuildedBehaviour(bool IsBuilded);
+	
 	UFUNCTION()
 	void OnDeathBehaviour();
 

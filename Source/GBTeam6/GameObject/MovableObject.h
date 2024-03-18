@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Pawn.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "../Interface/GameObjectCore.h"
@@ -13,7 +14,7 @@
 class UMappingDefaultComponent;
 
 UCLASS()
-class GBTEAM6_API AMovableObject : public APawn, public IGameObjectInterface
+class GBTEAM6_API AMovableObject : public ACharacter, public IGameObjectInterface
 {
 	GENERATED_BODY()
 
@@ -38,8 +39,9 @@ protected:
 	FName ObjectName = TEXT("Default");
 
 	/** Pawn movement component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
+	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
 	UPawnMovementComponent* MovementComponent;
+	*/
 	
 public:
 	virtual UGameObjectCore* GetCore_Implementation() override;

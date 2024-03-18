@@ -10,6 +10,7 @@
 
 class UMappingService;
 class USaveService;
+class UTaskManagerService;
 
 /**
  * 
@@ -24,6 +25,8 @@ private:
 	UMappingService* MappingService;
 	UPROPERTY()
 	USaveService* SaveService;
+	UPROPERTY()
+	UTaskManagerService* TaskManagerService;
 
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
@@ -65,6 +68,10 @@ public:
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
+
+	/** Returns TaskManager Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
 
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);

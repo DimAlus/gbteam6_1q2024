@@ -7,11 +7,19 @@
 
 AMovableObject::AMovableObject() {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
-	MovementComponent->SetUpdatedComponent(RootComponent);
-
 	MappingComponent = CreateDefaultSubobject<UMappingBaseComponent>(TEXT("MappingComponent"));
+
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	
+	UCharacterMovementComponent* const MovementComponent = GetCharacterMovement();
+	if (MovementComponent)
+	{
+		MovementComponent->bUseRVOAvoidance = true;
+		MovementComponent->bOrientRotationToMovement = true;
+		MovementComponent->bUseControllerDesiredRotation = false;
+	}
 
 }
 
@@ -24,7 +32,7 @@ void AMovableObject::BeginPlay() {
 
 	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Movement,
-		MovementComponent
+		GetMovementComponent()
 	);
 
 	this->GameObjectCore->BindComponentNoRegister(
@@ -38,17 +46,7 @@ void AMovableObject::BeginPlay() {
 
 void AMovableObject::Tick(float DeltaSeconds)
 {
-	const FVector Velocity = GetVelocity();
-	if(Velocity.Length() > 0.01f)
-	{
-		FRotator Rot = UKismetMathLibrary::RInterpTo(
-		   GetActorRotation(),
-		   Velocity.GetSafeNormal().Rotation(),
-		   GetWorld()->GetDeltaSeconds(),
-		   5.f
-		   );
-		SetActorRotation(Rot);
-	}
+
 }
 
 

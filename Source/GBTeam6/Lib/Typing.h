@@ -156,13 +156,13 @@ USTRUCT(BlueprintType)
 struct FPrice {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EResource Resource{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Count{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> ActorClass{};
 };
 
@@ -192,4 +192,27 @@ struct FGenerator {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool Selected = true;
+};
+
+USTRUCT(BlueprintType)
+struct FGameTask {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* TaskPerformer {nullptr};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EResource ResType {};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int ResAmount = 0;
+	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* From {};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* To {};
+
+
+	
 };
