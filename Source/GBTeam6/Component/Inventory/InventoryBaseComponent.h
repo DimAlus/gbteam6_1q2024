@@ -37,4 +37,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<FPrice> GetStacks();
+
+	UFUNCTION(BlueprintCallable)
+	virtual int GetResourceCount(EResource resource);
 };

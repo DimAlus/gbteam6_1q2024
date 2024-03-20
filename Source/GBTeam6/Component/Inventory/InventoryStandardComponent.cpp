@@ -3,22 +3,15 @@
 
 void UInventoryStandardComponent::BeginPlay() {
 	Super::BeginPlay();
+}
+
+AGameStateDefault* UInventoryStandardComponent::GetGameState() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
 		UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
+		return nullptr;
 	}
-	if (!gameState->DT_ResourceStack) {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to get DT_ResourceStack!"), *GetNameSafe(this));
-		return;
-	}
-
-	FString context;
-	TArray<FTRResourceStack*> data;
-	gameState->DT_ResourceStack->GetAllRows(context, data);
-	for (FTRResourceStack* row : data) {
-		StackSizes.Add(row->Resource, row->Size);
-	}
+	return gameState;
 }
 
 void UInventoryStandardComponent::Initialize(const FInventoryComponentInitializer& initializer) {
@@ -57,8 +50,7 @@ void UInventoryStandardComponent::RollBack(bool isBack) {
 }
 
 int UInventoryStandardComponent::StackCount(EResource res, int count) {
-	return count == 0 ? 0 :
-		StackSizes.Contains(res) ? (count - 1) / StackSizes[res] + 1 : count;
+	return count == 0 ? 0 : (count - 1) / GetGameState()->GetStackSize(res) + 1;
 }
 
 bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
@@ -128,7 +120,7 @@ TArray<FPrice> UInventoryStandardComponent::GetStacks() {
 	for (auto iter = Resources.begin(); iter != Resources.end(); ++iter) {
 		FPrice price;
 		int stacks = StackCount(iter.Key(), iter.Value());
-		int stackSize = StackSizes.Contains(iter.Key()) ? StackSizes[iter.Key()] : 1;
+		int stackSize = GetGameState()->GetStackSize(iter.Key());
 		price.Resource = iter.Key();
 		price.Count = stackSize;
 		for (int i = 0; i < stacks - 1; i++) {
@@ -139,4 +131,11 @@ TArray<FPrice> UInventoryStandardComponent::GetStacks() {
 			result.Add(price);
 	}
 	return result;
+}
+
+int UInventoryStandardComponent::GetResourceCount(EResource resource) {
+	if (Resources.Contains(resource)) {
+		return Resources[resource];
+	}
+	return 0;
 }

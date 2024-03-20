@@ -6,6 +6,7 @@
 
 
 class UInventoryBaseComponent;
+class AGameStateDefault;
 
 /**
  * 
@@ -36,8 +37,9 @@ private:
 	bool IsWorked = false;
 
 private:
-	TMap<EResource, int> GetNeeds(int steps);
+	TArray<FPrice> GetNeeds(int steps);
 	UInventoryBaseComponent* GetInventory();
+	AGameStateDefault* GetGameState();
 	bool IsGeneratorEnabled(int index);
 	bool FindWork();
 	void ApplyWork();

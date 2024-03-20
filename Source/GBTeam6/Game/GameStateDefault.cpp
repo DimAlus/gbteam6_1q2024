@@ -33,6 +33,15 @@ void AGameStateDefault::LoadConfig() {
 	}
 }
 
+void AGameStateDefault::LoadSizeStacks() {
+	FString context;
+	TArray<FTRResourceStack*> data;
+	DT_ResourceStack->GetAllRows(context, data);
+	for (FTRResourceStack* row : data) {
+		StackSizes.Add(row->Resource, row->Size);
+	}
+}
+
 void AGameStateDefault::InitializeServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
 	this->MappingService = NewObject<UMappingService>();
@@ -50,10 +59,18 @@ void AGameStateDefault::ClearServices()
 	this->MappingService = nullptr;
 }
 
+int AGameStateDefault::GetStackSize(EResource resource) {
+	if (StackSizes.Contains(resource)) {
+		return StackSizes[resource];
+	}
+	return 1;
+}
+
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
 	LoadConfig();
+	LoadSizeStacks();
 	InitializeServices();
 }
 

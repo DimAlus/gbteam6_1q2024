@@ -4,6 +4,8 @@
 #include "./InventoryBaseComponent.h"
 #include "InventoryStandardComponent.generated.h"
 
+class AGameStateDefault;
+
 /**
  * 
  */
@@ -13,6 +15,7 @@ class GBTEAM6_API UInventoryStandardComponent : public UInventoryBaseComponent
 	GENERATED_BODY()
 public:
 	virtual void BeginPlay() override;
+
 
 	virtual void Initialize(const FInventoryComponentInitializer& initializer) override;
 
@@ -30,8 +33,8 @@ protected:
 	};
 	TArray<FSaveStruct> Saves;
 
-	TMap<EResource, int> StackSizes;
 private:
+	AGameStateDefault* GetGameState();
 	void SavePoint();
 	void RollBack(bool isBack);
 	int StackCount(EResource res, int count);
@@ -41,4 +44,5 @@ public:
 	virtual bool Push(const TArray<FPrice>& resources) override;
 	virtual bool Pop(const TArray<FPrice>& resources) override;
 	virtual TArray<FPrice> GetStacks() override;
+	virtual int GetResourceCount(EResource resource) override;
 };
