@@ -24,9 +24,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void Tick(float DeltaSeconds) override;
-
-
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* GameObjectCore;
@@ -38,12 +35,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Object Name")
 	FName ObjectName = TEXT("Default");
 
-	/** Pawn movement component */
-	/*UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Built-in components")
-	UPawnMovementComponent* MovementComponent;
-	*/
+	//Attitude team
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team attitude")
+	ETeam Team = ETeam::None;
 	
 public:
 	virtual UGameObjectCore* GetCore_Implementation() override;
-	
+
+	virtual ETeam GetTeam_Implementation() override;
 };

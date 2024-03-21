@@ -26,5 +26,8 @@ class GBTEAM6_API IGameObjectInterface
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
 	UGameObjectCore* GetCore();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
+	ETeam GetTeam();
 	
 };

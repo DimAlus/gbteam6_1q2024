@@ -65,3 +65,12 @@ enum class EResource : uint8 {
 	Potion		UMETA(DisplayName = "Potion"),
 	Infusion	UMETA(DisplayName = "Infusion")
 };
+
+UENUM(BlueprintType)
+enum class ETeam : uint8 {
+	None		UMETA(DisplayName = "None"),
+	Neutral		UMETA(DisplayName = "Neutral"),
+	Friendly	UMETA(DisplayName = "Friendly"),
+	Hostile		UMETA(DisplayName = "Hostile")
+};
+

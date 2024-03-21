@@ -47,13 +47,13 @@ void AMovableObject::BeginPlay() {
 	this->GameObjectCore->SetIsCreated();
 }
 
-void AMovableObject::Tick(float DeltaSeconds)
+UGameObjectCore* AMovableObject::GetCore_Implementation()
 {
-
+	return GameObjectCore;
 }
 
-
-UGameObjectCore* AMovableObject::GetCore_Implementation() {
-	return GameObjectCore;
+ETeam AMovableObject::GetTeam_Implementation()
+{
+	return Team;
 }
 
