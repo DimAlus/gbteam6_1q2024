@@ -43,6 +43,9 @@ protected:
 	void OnBuildedBehaviour(bool IsBuilded);
 	
 	UFUNCTION()
+	void OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes);
+	
+	UFUNCTION()
 	void OnDeathBehaviour();
 
 public:

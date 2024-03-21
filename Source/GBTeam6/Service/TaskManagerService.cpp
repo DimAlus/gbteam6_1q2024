@@ -4,6 +4,7 @@
 #include "../Service/TaskManagerService.h"
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
 
 void UTaskManagerService::ShowGameTasksDebug()
@@ -41,12 +42,14 @@ bool UTaskManagerService::AddClientObject(AActor* ClientObject)
 	return true;
 }
 
-bool UTaskManagerService::AddTask(FGameTask GameTask)
+void UTaskManagerService::AddTasksByObject(AActor* ClientObject, TArray<FPrice> InTasks)
 {
-	FGameTask NewTask = {nullptr,GameTask.ResType,GameTask.ResAmount, GameTask.From, GameTask.To};
-	if (GameTasks.Add(NewTask))
-		return true;
-	return false;
+	UE_LOG(LogTemp, Warning, TEXT("TaskManager : AddTasksByObject"));
+	for (auto& Task : InTasks)
+	{
+		FGameTask NewTask = {nullptr,Task.Resource,Task.Count, ClientObject, Storage};
+		GameTasks.Add(NewTask);
+	}
 }
 
 bool UTaskManagerService::RefreshNeeds()
@@ -105,6 +108,8 @@ bool UTaskManagerService::ReserveTask(AActor* TaskPerformer, FGameTask& TaskToRe
 
 bool UTaskManagerService::CompleteTask(AActor* TaskPerformer)
 {
+	RefreshNeeds();
+	
 	for (int i = 0; i < GameTasks.Num(); ++i)
 	{
 		if (GameTasks[i].TaskPerformer && GameTasks[i].TaskPerformer == TaskPerformer)

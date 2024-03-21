@@ -4,6 +4,7 @@
 #include "../Component/Mapping/MappingBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 #include "../Service/SaveService.h"
+#include "Components/CapsuleComponent.h"
 
 AMovableObject::AMovableObject() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -20,6 +21,8 @@ AMovableObject::AMovableObject() {
 		MovementComponent->bOrientRotationToMovement = true;
 		MovementComponent->bUseControllerDesiredRotation = false;
 	}
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("GameObject"));
 
 }
 

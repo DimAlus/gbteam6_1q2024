@@ -25,8 +25,6 @@ private:
 
 	UPROPERTY()
 	TArray<FGameTask> GameTasks;
-	
-	//TMap<AActor*, TMap<EResource, TArray<int>>> TasksByObjects{};
 
 public:
 
@@ -44,7 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool AddClientObject(AActor* ClientObject);
 
-	bool AddTask(FGameTask GameTask);
+	void AddTasksByObject(AActor* ClientObject, TArray<FPrice> InTasks);
 
 	UFUNCTION(BlueprintCallable)
 	bool RefreshNeeds();
