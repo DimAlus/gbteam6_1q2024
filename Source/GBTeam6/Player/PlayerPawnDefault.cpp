@@ -74,24 +74,21 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Move camera binging
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraMoveAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraMove);
+
 		// Enable mouse camera turn binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnEnableAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::EnableCameraTurnMouse);
 		// Disable mouse camera turn binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnEnableAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::DisableCameraTurnMouse);
-		// Enable keyboard camera turn binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnKeyboardAction, ETriggerEvent::Started, this,
-			&APlayerPawnDefault::EnableCameraTurnKeyboard);
-		// Disable keyboard camera turn binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnKeyboardAction, ETriggerEvent::Completed, this,
-			&APlayerPawnDefault::DisableCameraTurnKeyboard);
+
 		// Mouse camera turn binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnAction, ETriggerEvent::Triggered, this,
-			&APlayerPawnDefault::CameraTurn);
+			&APlayerPawnDefault::CameraTurnMouse);
 		// Keyboard camera turn binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraTurnKeyboardAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraTurn);
+
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraZoom);
@@ -121,59 +118,42 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 	FCollisionQueryParams QueryParams;
 	
 	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel);
-
-	/*DrawDebugLine(
-			GetWorld(),
-			TraceStart,
-			HitResult.Location,
-			FColor(255, 0, 0),
-			false, 5, 0,
-			12.333
-		);*/
 }
 
-void APlayerPawnDefault::Select(const FInputActionValue& Value)
-{
+void APlayerPawnDefault::Select(const FInputActionValue& Value) {
 	OnSelect();
 }
 
-void APlayerPawnDefault::Command(const FInputActionValue& Value)
-{
+void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 	OnCommand();
 }
 
-void APlayerPawnDefault::OnSelect_Implementation()
-{
+void APlayerPawnDefault::OnSelect_Implementation() {
 	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
 	SelectedActor = Hit.GetActor();
 }
 
-void APlayerPawnDefault::OnCommand_Implementation()
-{
+void APlayerPawnDefault::OnCommand_Implementation() {
 	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
 	PointOfInterest = Hit.Location;
-	if(Cast<IGameObjectInterface>(Hit.GetActor()))
-	{
+	if(Cast<IGameObjectInterface>(Hit.GetActor())) {
 		TargetActor = Hit.GetActor();
 	}
-	else
-	{
+	else {
 		TargetActor = nullptr;
 	}
 }
 
 
-void APlayerPawnDefault::CameraMove(const FInputActionValue& Value)
-{
+void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
 	// input is a Vector2D
 	const FVector2D MovementVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
-	{
+	if (Controller != nullptr) {
 		// find out which way is forward
 		const FRotator Rotation = RootComponent->GetComponentRotation();
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -190,101 +170,42 @@ void APlayerPawnDefault::CameraMove(const FInputActionValue& Value)
 	}
 }
 
-void APlayerPawnDefault::EnableCameraTurn(FTimerHandle& TimerHandle)
-{
-	GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
-	TargetCameraTurnRotation = RootComponent->GetComponentRotation();
-	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
-	
-	GetWorld()->GetTimerManager().SetTimer(
-		TimerHandle,
-		this,
-		&APlayerPawnDefault::CameraTurnTick,
-		GetWorld()->GetDeltaSeconds(),
-		true);
+void APlayerPawnDefault::EnableCameraTurnMouse(const FInputActionValue& Value) {
+	isScrollPressed = true;
 }
 
-void APlayerPawnDefault::EnableCameraTurnMouse(const FInputActionValue& Value)
-{
-	EnableCameraTurn(CameraTurnMouseTimerHandle);
+void APlayerPawnDefault::DisableCameraTurnMouse(const FInputActionValue& Value) {
+	isScrollPressed = false;
 }
 
-void APlayerPawnDefault::EnableCameraTurnKeyboard(const FInputActionValue& Value)
-{
-	EnableCameraTurn(CameraTurnKeyboardTimerHandle);
+void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value) {
+	FRotator rot = GetActorRotation();
+	rot.Yaw += Value.Get<float>() * 4.f;
+	SetActorRotation(rot);
 }
 
-void APlayerPawnDefault::DisableCameraTurnMouse(const FInputActionValue& Value)
-{
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnMouseTimerHandle);
-}
-
-void APlayerPawnDefault::DisableCameraTurnKeyboard(const FInputActionValue& Value)
-{
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnKeyboardTimerHandle);
-}
-
-void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value)
-{
-	TargetCameraTurnRotation.Yaw += Value.Get<float>()*4.f;
-}
-
-void APlayerPawnDefault::CameraTurnTick()
-{
-	FRotator CurrentRotation = RootComponent->GetComponentRotation();
-	FRotator NewCameraTurnRotation =
-		UKismetMathLibrary::RInterpTo(
-			CurrentRotation,
-			TargetCameraTurnRotation,
-			GetWorld()->GetDeltaSeconds(),
-			10.f
-		);
-	SetActorRotation(NewCameraTurnRotation);
+void APlayerPawnDefault::CameraTurnMouse(const FInputActionValue& Value) {
+	if (isScrollPressed) {
+		FRotator rot = GetActorRotation();
+		rot.Yaw += Value.Get<float>() * 4.f;
+		SetActorRotation(rot);
+	}
 }
 
 
-void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value)
-{
+void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 	GetWorld()->GetTimerManager().ClearTimer(CameraTurnMouseTimerHandle);
 	GetWorld()->GetTimerManager().ClearTimer(CameraTurnKeyboardTimerHandle);
 	
 	const float ZoomDirection = Value.Get<float>();	
 	
-	TargetCameraZoomRotation = RootComponent->GetComponentRotation();
+	TargetCameraBoomLength = std::clamp(
+		TargetCameraBoomLength * (ZoomDirection > 0 ? 1.2f : 0.8f),
+		MinCameraBoomLength,
+		MaxCameraBoomLength
+	);
 
-	if(ZoomDirection > 0)
-	{
-		TargetCameraBoomLength *= 1.2f;
-		if (TargetCameraBoomLength > MaxCameraBoomLength)
-		{
-			TargetCameraBoomLength = MaxCameraBoomLength;
-		}
-	}
-	else
-	{
-		TargetCameraBoomLength *= 0.8f;
-		if (TargetCameraBoomLength < MinCameraBoomLength)
-		{
-			TargetCameraBoomLength = MinCameraBoomLength;
-		}
-	}
-	
-	const float PitchFactor =
-		4*(TargetCameraBoomLength - MinCameraBoomLength)/(MaxCameraBoomLength-MinCameraBoomLength);
-	
-	TargetCameraZoomRotation.Pitch = PitchFactor * MinCameraZoomRotationPitch;
-	
-	if (TargetCameraZoomRotation.Pitch <= MinCameraZoomRotationPitch)
-	{
-		TargetCameraZoomRotation.Pitch = MinCameraZoomRotationPitch;
-	}
-	else if (TargetCameraZoomRotation.Pitch >= MaxCameraZoomRotationPitch)
-	{
-		TargetCameraZoomRotation.Pitch = MaxCameraZoomRotationPitch;
-	}
-	
-	if (!(CameraZoomTimerHandle.IsValid()))
-	{
+	if (!(CameraZoomTimerHandle.IsValid())) {
 		GetWorld()->GetTimerManager().SetTimer(
 			CameraZoomTimerHandle,
 			this,
@@ -293,28 +214,29 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value)
 			true
 		);
 	}
+
+	
+	FRotator TargetCameraZoomRotation = RootComponent->GetComponentRotation();
+	float PitchFactor = (TargetCameraBoomLength - MinCameraBoomLength)
+					  / (MaxCameraBoomLength - MinCameraBoomLength);
+	PitchFactor = 1 - std::clamp(PitchFactor * 4, 0.f, 1.f);
+	
+	TargetCameraZoomRotation.Pitch = MinCameraZoomRotationPitch +
+		PitchFactor * (MaxCameraZoomRotationPitch - MinCameraZoomRotationPitch);
+
+	SetActorRotation(TargetCameraZoomRotation);
+	
 }
 
-void APlayerPawnDefault::CameraZoomTick()
-{
+void APlayerPawnDefault::CameraZoomTick() {
 	CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(
 		CameraBoom->TargetArmLength,
 		TargetCameraBoomLength,
 		GetWorld()->GetDeltaSeconds(),
-		10.f
+		5.f
 		);
 	
-	auto Rotator = UKismetMathLibrary::RInterpTo(
-	RootComponent->GetComponentRotation(),
-	TargetCameraZoomRotation,
-	GetWorld()->GetDeltaSeconds(),
-	10.f
-	);
-
-	RootComponent->SetWorldRotation(Rotator);
-	
-	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f)
-	{
+	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f) {
 		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
 	}
 }

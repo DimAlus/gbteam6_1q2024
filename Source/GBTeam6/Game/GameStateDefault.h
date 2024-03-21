@@ -31,7 +31,7 @@ private:
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
 	
-
+	TMap<EResource, int> StackSizes;
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
@@ -51,11 +51,14 @@ public:
 
 private:
 	void LoadConfig();
+	void LoadSizeStacks();
 public:
 	// Initialize All Services
 	void InitializeServices();
 	// DEstroy All Services
 	void ClearServices();
+
+	int GetStackSize(EResource resource);
 
 
 	virtual void BeginPlay() override;

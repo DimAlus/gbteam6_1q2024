@@ -63,12 +63,12 @@ protected:
 	UPROPERTY()
 	float TargetCameraBoomLength;
 
+	bool isScrollPressed = false;
+
 	UPROPERTY()
 	float MinCameraZoomRotationPitch;
 	UPROPERTY()
 	float MaxCameraZoomRotationPitch;
-	UPROPERTY()
-	FRotator TargetCameraZoomRotation;
 
 	/** Timers handles */
 	UPROPERTY()
@@ -107,26 +107,18 @@ protected:
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
-	/** Enable camera turn by timer handle */
-	void EnableCameraTurn(FTimerHandle& TimerHandle);
-
 	/** Called for enable camera turn mouse input */
 	void EnableCameraTurnMouse(const FInputActionValue& Value);
-	
-	/** Called for enable camera turn keyboard input */
-	void EnableCameraTurnKeyboard(const FInputActionValue& Value);
 
 	/** Called for disable camera turn input */
 	void DisableCameraTurnMouse(const FInputActionValue& Value);
 	
-	/** Called for disable camera turn input */
-	void DisableCameraTurnKeyboard(const FInputActionValue& Value);
 	
 	/** Called for camera turn input */
 	void CameraTurn(const FInputActionValue& Value);
+	/** Called for camera turn input */
+	void CameraTurnMouse(const FInputActionValue& Value);
 
-	/** Keyboard camera turn tick function */
-	void CameraTurnTick();
 
 	/** Called for camera zoom input */
 	void CameraZoom(const FInputActionValue& Value);

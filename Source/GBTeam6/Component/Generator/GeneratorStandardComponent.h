@@ -6,6 +6,7 @@
 
 
 class UInventoryBaseComponent;
+class AGameStateDefault;
 
 /**
  * 
@@ -37,6 +38,7 @@ private:
 
 private:
 	UInventoryBaseComponent* GetInventory();
+	AGameStateDefault* GetGameState();
 	bool IsGeneratorEnabled(int index);
 	bool FindWork();
 	void ApplyWork();

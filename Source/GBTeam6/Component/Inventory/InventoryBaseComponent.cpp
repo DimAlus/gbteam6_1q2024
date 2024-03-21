@@ -32,3 +32,7 @@ bool UInventoryBaseComponent::Pop(const TArray<FPrice>& resources) {
 TArray<FPrice> UInventoryBaseComponent::GetStacks() {
 	return TArray<FPrice>();
 }
+
+int UInventoryBaseComponent::GetResourceCount(EResource resource) {
+	return 0;
+}

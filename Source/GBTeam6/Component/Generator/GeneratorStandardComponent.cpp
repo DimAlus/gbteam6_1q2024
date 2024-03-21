@@ -45,12 +45,13 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 	TMap<EResource, int> needs;
+	UInventoryBaseComponent* inventory = GetInventory();
 	for (int i = 0; i < Generics.Num(); i++) {
 		FGenerator& gen = Generics[i];
 		if (gen.Selected) {
 			for (const FPrice& price : gen.Barter.Price) {
 				if (!needs.Contains(price.Resource)) {
-					needs.Add(price.Resource, price.Count * steps);
+					needs.Add(price.Resource, price.Count * steps - inventory->GetResourceCount(price.Resource));
 				}
 				else {
 					needs[price.Resource] += price.Count * steps;
@@ -58,14 +59,24 @@ TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 			}
 		}
 	}
-
-	TArray<FPrice> Tasks{};
-	for (auto need : needs)
-	{
-		FPrice CurrentTask = {need.Key, need.Value};
-		Tasks.Add(CurrentTask);
+	TArray<FPrice> result;
+	for (auto need : needs) {
+		if (need.Value > 0) {
+			FPrice price;
+			AGameStateDefault* gameState = GetGameState();
+			int stackSize = GetGameState()->GetStackSize(need.Key);
+			int stacks = (need.Value - 1) / stackSize + 1;
+			price.Resource = need.Key;
+			price.Count = stackSize;
+			for (int i = 0; i < stacks - 1; i++) {
+				result.Add(FPrice(price));
+			}
+			price.Count = need.Value - std::max(0, (stacks - 1) * price.Count);
+			if (price.Count > 0)
+				result.Add(price);
+		}
 	}
-	return Tasks;
+	return result;
 }
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
@@ -87,6 +98,15 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 		return nullptr;
 	}
 	return inventory;
+}
+
+AGameStateDefault* UGeneratorStandardComponent::GetGameState() {
+	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+	if (!IsValid(gameState)) {
+		UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		return nullptr;
+	}
+	return gameState;
 }
 
 bool UGeneratorStandardComponent::IsGeneratorEnabled(int index) {
