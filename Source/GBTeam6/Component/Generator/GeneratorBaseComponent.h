@@ -36,6 +36,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeGenerationSelection(int index, bool isSelected);
+
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeGenerationLimit(int index, int newLimit);
 
@@ -72,4 +73,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTaskStackChanging OnTaskStackChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTaskStackChanging OnGeneratorsChanging;
 };

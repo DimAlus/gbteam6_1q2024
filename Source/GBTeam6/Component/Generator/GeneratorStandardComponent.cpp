@@ -3,6 +3,7 @@
 #include "../../Interface/GameObjectCore.h"
 #include "../../Interface/GameObjectInterface.h"
 #include "../Inventory/InventoryBaseComponent.h"
+#include "../../Component/Mapping/MappingBaseComponent.h"
 
 
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
@@ -11,6 +12,13 @@ UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseCompo
 void UGeneratorStandardComponent::BeginPlay() {
 	Super::BeginPlay();
 	CreateTimer();
+	if (auto gameObject = Cast<IGameObjectInterface>(GetOwner())) {
+		if (auto mapping = Cast<UMappingBaseComponent>(
+			gameObject->Execute_GetCore(GetOwner())->GetComponent(EGameComponentType::Mapping)
+		)) {
+			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
+		}
+	}
 }
 
 void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
@@ -18,8 +26,27 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
 		FGenerator gen;
 		gen.Barter = initializer.BarterTypes[i];
+		gen.Selected = false;
+		if (gen.Barter.Result.Num() == 0) {
+			FPrice prc{};
+			prc.Resource = EResource::None;
+			gen.Barter.Result.Add(prc);
+		}
+		
 		Generics.Add(gen);
 	}
+	BuildingGenerics.Reset();
+	BuildingGenerics.Add(FGenerator());
+	BuildingGenerics[0].Selected = initializer.BuildSelectedDefault;
+	BuildingGenerics[0].Limit = 1;
+	BuildingGenerics[0].Barter.Price = initializer.BuildPrice;
+	BuildingGenerics[0].Barter.Time = initializer.BuildTime;
+	FPrice res{};
+	res.Resource = EResource::Self;
+	BuildingGenerics[0].Barter.Result = { res };
+	CurrentGenerics = &BuildingGenerics;
+	IsBuilded = false;
+
 
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
@@ -36,19 +63,31 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	saveData.Generics = Generics;
 	saveData.IsWorked = GetWorld()->GetTimerManager().IsTimerPaused(generatorTimer);
+	saveData.WorkIndex = WorkIndex;
+	saveData.WorkTime = CurrentDelay;
+	saveData.IsBuilded = IsBuilded;
+	saveData.TaskStack = TaskStack;
 }
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 	Generics = saveData.Generics;
+	WorkIndex = saveData.WorkIndex;
+	CurrentDelay = saveData.WorkTime;
+	IsBuilded = saveData.IsBuilded;
+	CurrentGenerics = IsBuilded ? &Generics : &BuildingGenerics;
+	TaskStack = saveData.TaskStack;
 	SetWorkEnabled(saveData.IsWorked);
 }
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 	TMap<EResource, int> needs;
+	if (!IsBuilded) {
+		steps = 1;
+	}
 	UInventoryBaseComponent* inventory = GetInventory();
-	for (int i = 0; i < Generics.Num(); i++) {
-		FGenerator& gen = Generics[i];
+	for (int i = 0; i < GetCurrentGenerics().Num(); i++) {
+		FGenerator& gen = GetCurrentGenerics()[i];
 		if (gen.Selected) {
 			for (const FPrice& price : gen.Barter.Price) {
 				if (!needs.Contains(price.Resource)) {
@@ -78,6 +117,11 @@ TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 		}
 	}
 	return result;
+}
+
+
+TArray<FGenerator>& UGeneratorStandardComponent::GetCurrentGenerics() {
+	return *CurrentGenerics;
 }
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
@@ -112,22 +156,22 @@ AGameStateDefault* UGeneratorStandardComponent::GetGameState() {
 
 bool UGeneratorStandardComponent::CanGenerate(int index) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		return inventory->CanPop(Generics[index].Barter.Price)
-			&& inventory->CanPush(Generics[index].Barter.Result);
+		return inventory->CanPop(GetCurrentGenerics()[index].Barter.Price)
+			&& inventory->CanPush(GetCurrentGenerics()[index].Barter.Result);
 	}
 	return false;
 }
 
 
 bool UGeneratorStandardComponent::IsGeneratorEnabled(int index) {
-	return Generics[index].Selected && CanGenerate(index);
+	return GetCurrentGenerics()[index].Selected && CanGenerate(index);
 }
 
 void UGeneratorStandardComponent::StartWork(int index) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		WorkIndex = index;
-		CurrentDelay = Generics[index].Barter.Time;
-		inventory->Pop(Generics[index].Barter.Price);
+		CurrentDelay = GetCurrentGenerics()[index].Barter.Time;
+		inventory->Pop(GetCurrentGenerics()[index].Barter.Price);
 	}
 }
 
@@ -139,8 +183,8 @@ bool UGeneratorStandardComponent::FindWork() {
 			RemoveFromStack(0);
 			return IsWorked = true;
 		}
-		for (int i = 0; i < Generics.Num(); i++) {
-			int index = (i + WorkIndex) % Generics.Num();
+		for (int i = 0; i < GetCurrentGenerics().Num(); i++) {
+			int index = (i + WorkIndex) % GetCurrentGenerics().Num();
 			if (IsGeneratorEnabled(index)) {
 				StartWork(index);
 				return IsWorked = true;
@@ -152,7 +196,7 @@ bool UGeneratorStandardComponent::FindWork() {
 
 void UGeneratorStandardComponent::ApplyWork() {
 	IsWorked = false;
-	Generate(Generics[WorkIndex]);
+	Generate(GetCurrentGenerics()[WorkIndex]);
 	WorkIndex++;
 }
 
@@ -205,6 +249,11 @@ void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
 				GetOwner()->GetWorld()->SpawnActor<AActor>(res.ActorClass, loc, rot);
 			}
 		}
+		else if (res.Resource == EResource::Self) {
+			IsBuilded = true;
+			CurrentGenerics = &Generics;
+			OnGeneratorsChanging.Broadcast();
+		}
 	}
 }
 
@@ -218,30 +267,30 @@ void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
 }
 
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
-	if (index >= Generics.Num()) {
+	if (index >= GetCurrentGenerics().Num()) {
 		UE_LOG(LgComponent, Error, TEXT("<%s>: Failed ChangeGenerationSelection! Index %d out of range!"), *GetNameSafe(this), index);
 		return;
 	}
-	Generics[index].Selected = isSelected;
+	GetCurrentGenerics()[index].Selected = isSelected;
 }
 
 void UGeneratorStandardComponent::ChangeGenerationLimit(int index, int newLimit) {
-	if (index >= Generics.Num()) {
+	if (index >= GetCurrentGenerics().Num()) {
 		UE_LOG(LgComponent, Error, TEXT("<%s>: Failed ChangeGenerationLimit! Index %d out of range!"), *GetNameSafe(this), index);
 		return;
 	}
-	Generics[index].Limit = newLimit;
+	GetCurrentGenerics()[index].Limit = newLimit;
 }
 
 FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
 	if (!IsWorked) {
 		return FGenerator();
 	}
-	return Generics[WorkIndex];
+	return GetCurrentGenerics()[WorkIndex];
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
-	return Generics;
+	return GetCurrentGenerics();
 }
 
 float UGeneratorStandardComponent::GetTime() {
@@ -249,7 +298,7 @@ float UGeneratorStandardComponent::GetTime() {
 }
 
 float UGeneratorStandardComponent::GetTimePercents() {
-	return CurrentDelay / Generics[WorkIndex].Barter.Time;
+	return CurrentDelay / GetCurrentGenerics()[WorkIndex].Barter.Time;
 }
 
 bool UGeneratorStandardComponent::IsWorking() {
@@ -259,7 +308,7 @@ bool UGeneratorStandardComponent::IsWorking() {
 TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
 	TArray<FGenerator> result;
 	for (int i : TaskStack) {
-		result.Add(Generics[i]);
+		result.Add(GetCurrentGenerics()[i]);
 	}
 	return result;
 }
@@ -280,7 +329,7 @@ void UGeneratorStandardComponent::RemoveFromStack(int index) {
 
 void UGeneratorStandardComponent::CancelTask() {
 	if (IsWorked) {
-		CancelWork(Generics[WorkIndex]);
+		CancelWork(GetCurrentGenerics()[WorkIndex]);
 		IsWorked = false;
 		WorkIndex++;
 	}

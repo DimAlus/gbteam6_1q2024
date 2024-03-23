@@ -12,6 +12,7 @@ class UInventoryBaseComponent;
 class USocialBaseComponent;
 struct FMapInfo;
 struct FBarter;
+struct FPrice;
 
 /**
  * 
@@ -62,6 +63,15 @@ struct FGeneratorComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FBarter> BarterTypes{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPrice> BuildPrice{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool BuildSelectedDefault{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float BuildTime{};
 };
 
 
