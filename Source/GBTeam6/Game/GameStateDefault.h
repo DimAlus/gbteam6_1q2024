@@ -27,6 +27,8 @@ private:
 	USaveService* SaveService;
 	UPROPERTY()
 	UTaskManagerService* TaskManagerService;
+	UPROPERTY()
+	USocialService* SocialService;
 
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
@@ -75,6 +77,10 @@ public:
 	/** Returns TaskManager Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
+
+	/** Returns Social Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
 
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);

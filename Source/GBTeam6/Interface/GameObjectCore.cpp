@@ -2,6 +2,7 @@
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
+#include "../Component/Social/SocialBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
@@ -50,7 +51,7 @@ TSubclassOf<UActorComponent> GetNvlClass(TSubclassOf<UActorComponent> cls, TSubc
 
 
 void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& InitData) {
-	//Create health component
+	//Create Health component
 	UHealthBaseComponent* NewHealthComponent = NewObject<UHealthBaseComponent>(
 		owner, 
 		GetNvlClass(InitData.HealthComponentInitData.ComponentClass, UHealthBaseComponent::StaticClass())
@@ -66,13 +67,21 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Inventory, NewInventoryComponent);
 
-	//Create health component
+	//Create Generator component
 	UGeneratorBaseComponent* NewGeneratorComponent = NewObject<UGeneratorBaseComponent>(
 		owner,
 		GetNvlClass(InitData.GeneratorComponentInitData.ComponentClass, UGeneratorBaseComponent::StaticClass())
 	);
 	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Generator, NewGeneratorComponent);
+
+	//Create Generator component
+	USocialBaseComponent* NewSocialComponent = NewObject<USocialBaseComponent>(
+		owner,
+		GetNvlClass(InitData.SocialComponentInitData.ComponentClass, USocialBaseComponent::StaticClass())
+	);
+	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Social, NewSocialComponent);
 
 }
 

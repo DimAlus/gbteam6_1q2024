@@ -80,8 +80,3 @@ void ASimpleObject::OnDeathBehaviour() {
 UGameObjectCore* ASimpleObject::GetCore_Implementation() {
 	return GameObjectCore;
 }
-
-ETeam ASimpleObject::GetTeam_Implementation()
-{
-	return Team;
-}

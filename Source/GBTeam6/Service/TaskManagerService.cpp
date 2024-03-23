@@ -14,7 +14,7 @@ void UTaskManagerService::ShowGameTasksDebug()
 		UE_LOG(LogTemp, Error, TEXT("Task reserved by %s | From: %s To: %s Amount: %i |"),  *GetNameSafe(GameTask.TaskPerformer), *GetNameSafe(GameTask.From), *GetNameSafe(GameTask.To), GameTask.ResAmount);
 	}
 }
-
+//TMap<ESocialTag, TArray<AActor*>> ObjectsByTags{};
 TArray<FGameTask>& UTaskManagerService::GetGameTasksDebug()
 {
 	return GameTasks;

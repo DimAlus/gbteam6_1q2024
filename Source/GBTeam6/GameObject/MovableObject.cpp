@@ -52,8 +52,3 @@ UGameObjectCore* AMovableObject::GetCore_Implementation()
 	return GameObjectCore;
 }
 
-ETeam AMovableObject::GetTeam_Implementation()
-{
-	return Team;
-}
-

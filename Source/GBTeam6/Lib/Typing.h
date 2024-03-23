@@ -212,7 +212,5 @@ struct FGameTask {
 	AActor* From {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* To {};
-
-
 	
 };

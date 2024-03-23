@@ -32,11 +32,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Object Name")
 	FName ObjectName = TEXT("Default");
 
-	//Attitude team
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team attitude")
-	ETeam Team = ETeam::None;
-
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -54,7 +49,5 @@ protected:
 
 public:
 	virtual UGameObjectCore* GetCore_Implementation() override;
-
-	virtual ETeam GetTeam_Implementation() override;
 };
 

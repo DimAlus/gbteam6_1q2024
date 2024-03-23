@@ -34,13 +34,8 @@ protected:
 	//Object name to get InitData from table
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Object Name")
 	FName ObjectName = TEXT("Default");
-
-	//Attitude team
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Team attitude")
-	ETeam Team = ETeam::None;
 	
 public:
 	virtual UGameObjectCore* GetCore_Implementation() override;
-
-	virtual ETeam GetTeam_Implementation() override;
+	
 };
