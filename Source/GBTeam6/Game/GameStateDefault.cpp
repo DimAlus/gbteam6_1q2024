@@ -70,6 +70,10 @@ int AGameStateDefault::GetStackSize(EResource resource) {
 	return 1;
 }
 
+int AGameStateDefault::GetResourceCount(EResource resource) {
+	return 0;
+}
+
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();

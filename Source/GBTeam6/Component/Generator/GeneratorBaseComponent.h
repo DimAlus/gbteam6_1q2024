@@ -7,6 +7,7 @@
 
 #include "GeneratorBaseComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -42,6 +43,9 @@ public:
 	virtual FGenerator GetCurrentGenerator();
 
 	UFUNCTION(BlueprintCallable)
+	virtual TArray<FGenerator> GetGenerators();
+
+	UFUNCTION(BlueprintCallable)
 	virtual float GetTime();
 
 	UFUNCTION(BlueprintCallable)
@@ -49,4 +53,23 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsWorking();
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<FGenerator> GetTaskStack();
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool IsStackTask();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void AddToTaskStack(int index);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void RemoveFromStack(int index);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void CancelTask();
+
+
+	UPROPERTY(BlueprintAssignable)
+	FOnTaskStackChanging OnTaskStackChanging;
 };

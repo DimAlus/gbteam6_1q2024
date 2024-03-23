@@ -59,6 +59,8 @@ enum class EConfig : uint8 {
 
 UENUM(BlueprintType)
 enum class EResource : uint8 {
+	None		UMETA(DisplayName = "None"),
+
 	Actor		UMETA(DisplayName = "Actor"),
 
 	Mushroom	UMETA(DisplayName = "Mushroom"),

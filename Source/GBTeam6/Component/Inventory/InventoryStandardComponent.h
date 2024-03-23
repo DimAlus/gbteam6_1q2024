@@ -45,4 +45,5 @@ public:
 	virtual bool Pop(const TArray<FPrice>& resources) override;
 	virtual TArray<FPrice> GetStacks() override;
 	virtual int GetResourceCount(EResource resource) override;
+	virtual int GetMaxStacksCount() override;
 };

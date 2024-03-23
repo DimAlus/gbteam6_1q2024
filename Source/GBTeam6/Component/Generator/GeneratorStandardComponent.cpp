@@ -4,6 +4,7 @@
 #include "../../Interface/GameObjectInterface.h"
 #include "../Inventory/InventoryBaseComponent.h"
 
+
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
 }
 
@@ -109,26 +110,39 @@ AGameStateDefault* UGeneratorStandardComponent::GetGameState() {
 	return gameState;
 }
 
-bool UGeneratorStandardComponent::IsGeneratorEnabled(int index) {
-	if (!Generics[index].Selected) {
-		return false;
-	}
+bool UGeneratorStandardComponent::CanGenerate(int index) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		return inventory->CanPop(Generics[index].Barter.Price)
 			&& inventory->CanPush(Generics[index].Barter.Result);
 	}
 	return false;
-	
+}
+
+
+bool UGeneratorStandardComponent::IsGeneratorEnabled(int index) {
+	return Generics[index].Selected && CanGenerate(index);
+}
+
+void UGeneratorStandardComponent::StartWork(int index) {
+	if (UInventoryBaseComponent* inventory = GetInventory()) {
+		WorkIndex = index;
+		CurrentDelay = Generics[index].Barter.Time;
+		inventory->Pop(Generics[index].Barter.Price);
+	}
 }
 
 bool UGeneratorStandardComponent::FindWork() {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
+		if (TaskStack.Num() > 0
+			&& CanGenerate(TaskStack[0])) {
+			StartWork(TaskStack[0]);
+			RemoveFromStack(0);
+			return IsWorked = true;
+		}
 		for (int i = 0; i < Generics.Num(); i++) {
 			int index = (i + WorkIndex) % Generics.Num();
 			if (IsGeneratorEnabled(index)) {
-				WorkIndex = index;
-				CurrentDelay = Generics[index].Barter.Time;
-				inventory->Pop(Generics[index].Barter.Price);
+				StartWork(index);
 				return IsWorked = true;
 			}
 		}
@@ -161,12 +175,7 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 
 void UGeneratorStandardComponent::WorkLoop() {
 	if (IsWorked) {
-		if (!Generics[WorkIndex].Selected) {
-			CancelWork(Generics[WorkIndex]);
-			IsWorked = false;
-			WorkIndex++;
-		}
-		else if ((CurrentDelay -= TimerDelay) < 0) {
+		if ((CurrentDelay -= TimerDelay) < 0) {
 			ApplyWork();
 		}
 	}
@@ -231,6 +240,10 @@ FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
 	return Generics[WorkIndex];
 }
 
+TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
+	return Generics;
+}
+
 float UGeneratorStandardComponent::GetTime() {
 	return CurrentDelay;
 }
@@ -241,5 +254,35 @@ float UGeneratorStandardComponent::GetTimePercents() {
 
 bool UGeneratorStandardComponent::IsWorking() {
 	return IsWorked;
+}
+
+TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
+	TArray<FGenerator> result;
+	for (int i : TaskStack) {
+		result.Add(Generics[i]);
+	}
+	return result;
+}
+
+bool UGeneratorStandardComponent::IsStackTask() {
+	return false;
+}
+
+void UGeneratorStandardComponent::AddToTaskStack(int index) {
+	TaskStack.Add(index);
+	OnTaskStackChanging.Broadcast();
+}
+
+void UGeneratorStandardComponent::RemoveFromStack(int index) {
+	TaskStack.RemoveAt(index);
+	OnTaskStackChanging.Broadcast();
+}
+
+void UGeneratorStandardComponent::CancelTask() {
+	if (IsWorked) {
+		CancelWork(Generics[WorkIndex]);
+		IsWorked = false;
+		WorkIndex++;
+	}
 }
 
