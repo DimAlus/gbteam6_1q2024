@@ -28,6 +28,8 @@ public:
 	UGameObjectCore();
 
 	void SetOwner(AActor* ownerObject);
+
+	UFUNCTION(BlueprintCallable)
 	AActor* GetOwner();
 
 	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)

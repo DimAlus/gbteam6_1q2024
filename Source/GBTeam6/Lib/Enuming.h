@@ -63,6 +63,8 @@ enum class EResource : uint8 {
 
 	Actor		UMETA(DisplayName = "Actor"),
 
+	Spirit		UMETA(DisplayName = "Spirit"),
+	Wood		UMETA(DisplayName = "Wood"),
 	Mushroom	UMETA(DisplayName = "Mushroom"),
 	Berry		UMETA(DisplayName = "Berry"),
 	Potion		UMETA(DisplayName = "Potion"),
@@ -85,5 +87,16 @@ enum class ESocialTag : uint8 {
 	Forester		UMETA(DisplayName = "Forester"),
 	ForesterHouse	UMETA(DisplayName = "ForesterHouse")
 };
+
+UENUM(BlueprintType)
+enum class EAIState : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Passive			UMETA(DisplayName = "Passive"),
+	Work			UMETA(DisplayName = "Work"),
+	Combat			UMETA(DisplayName = "Combat"),
+	Lazy			UMETA(DisplayName = "Lazy"),
+	Sleep			UMETA(DisplayName = "Sleep")
+};
+
 
 
