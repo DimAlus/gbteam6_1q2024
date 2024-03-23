@@ -7,6 +7,8 @@
 
 #include "InventoryBaseComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChange);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UInventoryBaseComponent : public UActorComponent
@@ -40,4 +42,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual int GetResourceCount(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	virtual int GetMaxStacksCount();
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnInventoryChange OnInventoryChange;
 };

@@ -36,3 +36,7 @@ TArray<FPrice> UInventoryBaseComponent::GetStacks() {
 int UInventoryBaseComponent::GetResourceCount(EResource resource) {
 	return 0;
 }
+
+int UInventoryBaseComponent::GetMaxStacksCount() {
+	return 0;
+}

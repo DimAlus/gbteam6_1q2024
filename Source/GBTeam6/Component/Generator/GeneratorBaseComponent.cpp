@@ -26,6 +26,10 @@ FGenerator UGeneratorBaseComponent::GetCurrentGenerator() {
 	return FGenerator();
 }
 
+TArray<FGenerator> UGeneratorBaseComponent::GetGenerators() {
+	return TArray<FGenerator>();
+}
+
 float UGeneratorBaseComponent::GetTime() {
 	return 0.0f;
 }
@@ -36,4 +40,21 @@ float UGeneratorBaseComponent::GetTimePercents() {
 
 bool UGeneratorBaseComponent::IsWorking() {
 	return false;
+}
+
+TArray<FGenerator> UGeneratorBaseComponent::GetTaskStack() {
+	return TArray<FGenerator>();
+}
+
+bool UGeneratorBaseComponent::IsStackTask() {
+	return false;
+}
+
+void UGeneratorBaseComponent::AddToTaskStack(int index) {
+}
+
+void UGeneratorBaseComponent::RemoveFromStack(int index) {
+}
+
+void UGeneratorBaseComponent::CancelTask() {
 }

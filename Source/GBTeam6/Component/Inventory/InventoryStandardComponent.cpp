@@ -57,6 +57,7 @@ bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool result = Push(resources);
 	RollBack(true);
+	OnInventoryChange.Broadcast();
 	return result;
 }
 
@@ -64,6 +65,7 @@ bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool result = Pop(resources);
 	RollBack(true);
+	OnInventoryChange.Broadcast();
 	return result;
 }
 
@@ -89,6 +91,7 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 	}
 
 	RollBack(!success);
+	OnInventoryChange.Broadcast();
 	return success;
 }
 
@@ -112,6 +115,7 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 		}
 	}
 	RollBack(false);
+	OnInventoryChange.Broadcast();
 	return true;
 }
 
@@ -138,4 +142,8 @@ int UInventoryStandardComponent::GetResourceCount(EResource resource) {
 		return Resources[resource];
 	}
 	return 0;
+}
+
+int UInventoryStandardComponent::GetMaxStacksCount() {
+	return MaxStacksCount;
 }

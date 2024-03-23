@@ -36,11 +36,14 @@ private:
 	float CurrentDelay;
 	bool IsWorked = false;
 
+	TArray<int> TaskStack;
 private:
 	TArray<FPrice> GetNeeds(int steps);
 	UInventoryBaseComponent* GetInventory();
 	AGameStateDefault* GetGameState();
+	bool CanGenerate(int index);
 	bool IsGeneratorEnabled(int index);
+	void StartWork(int index);
 	bool FindWork();
 	void ApplyWork();
 	void CancelWork(const FGenerator& generator);
@@ -55,7 +58,14 @@ public:
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;
 
 	virtual FGenerator GetCurrentGenerator() override;
+	virtual TArray<FGenerator> GetGenerators() override;
 	virtual float GetTime() override;
 	virtual float GetTimePercents() override;
 	virtual bool IsWorking() override;
+
+	virtual TArray<FGenerator> GetTaskStack() override;
+	virtual bool IsStackTask() override;
+	virtual void AddToTaskStack(int index) override;
+	virtual void RemoveFromStack(int index) override;
+	virtual void CancelTask() override;
 };
