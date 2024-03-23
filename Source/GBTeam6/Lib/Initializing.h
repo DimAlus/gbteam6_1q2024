@@ -177,7 +177,9 @@ struct FSocialComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ESocialTag> SocialTags{};
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag HomeObjectTag = ESocialTag::None;
 };
 
 USTRUCT(BlueprintType)
@@ -189,7 +191,6 @@ struct FSocialComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialComponentInitializer ComponentInitializer{};
-	
 };
 
 

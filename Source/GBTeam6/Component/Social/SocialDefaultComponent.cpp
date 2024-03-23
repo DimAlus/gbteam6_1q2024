@@ -7,6 +7,7 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 {
 	SocialTeam = Initializer.SocialTeam;
 	SocialTags = Initializer.SocialTags;
+	HomeObjectTag = Initializer.HomeObjectTag;
 
 	RegisterObjectInService();
 }
@@ -15,12 +16,14 @@ void USocialDefaultComponent::SaveComponent(FSocialSaveData& saveData)
 {
 	saveData.SocialTeam = SocialTeam;
 	saveData.SocialTags = SocialTags;
+	saveData.HomeObjectTag = HomeObjectTag;
 }
 
 void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData)
 {
 	SocialTeam = saveData.SocialTeam;
 	SocialTags = saveData.SocialTags;
+	HomeObjectTag = saveData.HomeObjectTag;
 
 	RegisterObjectInService();
 }
@@ -48,4 +51,9 @@ bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam)
 const TArray<ESocialTag>& USocialDefaultComponent::GetSocialTags()
 {
 	return SocialTags;
+}
+
+ESocialTag USocialDefaultComponent::GetHomeObjectTag()
+{
+	return HomeObjectTag;
 }

@@ -16,6 +16,8 @@ protected:
 
 	TArray<ESocialTag> SocialTags{};
 
+	ESocialTag HomeObjectTag = ESocialTag::None;
+
 	const TArray<ESocialTag> EmptySocialTags{};
 
 public:	
@@ -36,5 +38,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TArray<ESocialTag>& GetSocialTags() {return EmptySocialTags;}
+	
+	UFUNCTION(BlueprintCallable)
+	virtual ESocialTag GetHomeObjectTag() {return ESocialTag::None;}
 	
 };

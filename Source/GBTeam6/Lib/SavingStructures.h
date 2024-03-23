@@ -74,9 +74,12 @@ struct FSocialSaveData {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ESocialTeam SocialTeam = ESocialTeam::None;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ESocialTag> SocialTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag HomeObjectTag = ESocialTag::None;
 };
 
 

@@ -23,5 +23,7 @@ public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) override;
 	
 	virtual const TArray<ESocialTag>& GetSocialTags() override;
+
+	virtual ESocialTag GetHomeObjectTag() override;
 	
 };
