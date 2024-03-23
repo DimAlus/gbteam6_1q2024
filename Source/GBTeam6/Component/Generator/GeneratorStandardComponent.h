@@ -26,7 +26,6 @@ public:
 	virtual void LoadComponent(const FGeneratorSaveData& saveData) override;
 
 private:
-	UPROPERTY()
 	TArray<FGenerator> Generics;
 
 	FTimerHandle generatorTimer;
@@ -37,7 +36,14 @@ private:
 	bool IsWorked = false;
 
 	TArray<int> TaskStack;
+
+	bool IsBuilded = false;
+	TArray<FGenerator> BuildingGenerics;
+
 private:
+	TArray<FGenerator>* CurrentGenerics;
+	TArray<FGenerator>& GetCurrentGenerics();
+
 	UInventoryBaseComponent* GetInventory();
 	AGameStateDefault* GetGameState();
 	bool CanGenerate(int index);

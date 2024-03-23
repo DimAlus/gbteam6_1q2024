@@ -54,6 +54,18 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsWorked{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int WorkIndex{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float WorkTime{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsBuilded{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<int> TaskStack{};
 };
 
 

@@ -51,6 +51,8 @@ enum class EConfig : uint8 {
 	EffectValue			UMETA(DisplayName = "F  Effect Value"),
 	VoiceValue			UMETA(DisplayName = "F  Voice Value"),
 
+	/** Interface Size */
+
 	/** Gameplay */
 	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
 	DayPeriod			UMETA(DisplayName = "FV Day Period"),
@@ -60,6 +62,7 @@ enum class EConfig : uint8 {
 UENUM(BlueprintType)
 enum class EResource : uint8 {
 	None		UMETA(DisplayName = "None"),
+	Self		UMETA(DisplayName = "Self"),
 
 	Actor		UMETA(DisplayName = "Actor"),
 
