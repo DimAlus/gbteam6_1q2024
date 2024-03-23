@@ -4,14 +4,25 @@
 #include "../Component/Mapping/MappingBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 #include "../Service/SaveService.h"
+#include "Components/CapsuleComponent.h"
 
 AMovableObject::AMovableObject() {
 	PrimaryActorTick.bCanEverTick = true;
-	
-	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
-	MovementComponent->SetUpdatedComponent(RootComponent);
-
 	MappingComponent = CreateDefaultSubobject<UMappingBaseComponent>(TEXT("MappingComponent"));
+
+	bUseControllerRotationYaw = false;
+	bUseControllerRotationPitch = false;
+	bUseControllerRotationRoll = false;
+	
+	UCharacterMovementComponent* const MovementComponent = GetCharacterMovement();
+	if (MovementComponent)
+	{
+		MovementComponent->bUseRVOAvoidance = true;
+		MovementComponent->bOrientRotationToMovement = true;
+		MovementComponent->bUseControllerDesiredRotation = false;
+	}
+
+	GetCapsuleComponent()->SetCollisionProfileName(TEXT("GameObject"));
 
 }
 
@@ -24,7 +35,7 @@ void AMovableObject::BeginPlay() {
 
 	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Movement,
-		MovementComponent
+		GetMovementComponent()
 	);
 
 	this->GameObjectCore->BindComponentNoRegister(
@@ -36,23 +47,8 @@ void AMovableObject::BeginPlay() {
 	this->GameObjectCore->SetIsCreated();
 }
 
-void AMovableObject::Tick(float DeltaSeconds)
+UGameObjectCore* AMovableObject::GetCore_Implementation()
 {
-	const FVector Velocity = GetVelocity();
-	if(Velocity.Length() > 0.01f)
-	{
-		FRotator Rot = UKismetMathLibrary::RInterpTo(
-		   GetActorRotation(),
-		   Velocity.GetSafeNormal().Rotation(),
-		   GetWorld()->GetDeltaSeconds(),
-		   5.f
-		   );
-		SetActorRotation(Rot);
-	}
-}
-
-
-UGameObjectCore* AMovableObject::GetCore_Implementation() {
 	return GameObjectCore;
 }
 

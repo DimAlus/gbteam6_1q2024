@@ -38,7 +38,6 @@ private:
 
 	TArray<int> TaskStack;
 private:
-	TArray<FPrice> GetNeeds(int steps);
 	UInventoryBaseComponent* GetInventory();
 	AGameStateDefault* GetGameState();
 	bool CanGenerate(int index);
@@ -53,6 +52,9 @@ private:
 
 	void SpawnActors(const TArray<FPrice>& resources);
 public:
+
+	virtual TArray<FPrice> GetNeeds(int steps) override;
+	
 	virtual void SetWorkEnabled(bool isEnabled) override;
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;

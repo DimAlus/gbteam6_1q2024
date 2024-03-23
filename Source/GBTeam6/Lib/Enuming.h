@@ -36,7 +36,8 @@ enum class EGameComponentType : uint8 {
 	Mapping		UMETA(DisplayName = "Mapping"),
 	Generator	UMETA(DisplayName = "Generator"),
 	Inventory	UMETA(DisplayName = "Inventory"),
-	UI			UMETA(DisplayName = "User Interface")
+	UI			UMETA(DisplayName = "User Interface"),
+	Social		UMETA(DisplayName = "Social")
 };
 
 UENUM(BlueprintType)
@@ -67,3 +68,22 @@ enum class EResource : uint8 {
 	Potion		UMETA(DisplayName = "Potion"),
 	Infusion	UMETA(DisplayName = "Infusion")
 };
+
+UENUM(BlueprintType)
+enum class ESocialTeam : uint8 {
+	None		UMETA(DisplayName = "None"),
+	Neutral		UMETA(DisplayName = "Neutral"),
+	Friendly	UMETA(DisplayName = "Friendly"),
+	Hostile		UMETA(DisplayName = "Hostile")
+};
+
+UENUM(BlueprintType)
+enum class ESocialTag : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Storage			UMETA(DisplayName = "Storage"),
+	Worker			UMETA(DisplayName = "Worker"),
+	Forester		UMETA(DisplayName = "Forester"),
+	ForesterHouse	UMETA(DisplayName = "ForesterHouse")
+};
+
+

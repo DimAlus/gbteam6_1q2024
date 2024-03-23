@@ -32,12 +32,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Object Name")
 	FName ObjectName = TEXT("Default");
 
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 protected:
+
+	UFUNCTION()
+	void OnBuildedBehaviour(bool IsBuilded);
+	
+	UFUNCTION()
+	void OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes);
+	
 	UFUNCTION()
 	void OnDeathBehaviour();
 

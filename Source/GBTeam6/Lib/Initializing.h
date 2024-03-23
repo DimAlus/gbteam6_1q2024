@@ -2,12 +2,14 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "./Enuming.h"
 #include "Initializing.generated.h"
 
 class UHealthBaseComponent;
 class UMappingBaseComponent;
 class UGeneratorBaseComponent;
 class UInventoryBaseComponent;
+class USocialBaseComponent;
 struct FMapInfo;
 struct FBarter;
 
@@ -163,6 +165,37 @@ struct FInventoryComponentInitData {
 
 
 /***********************************************************************************/
+/// <summary>
+/// Social Initializing
+/// </summary>
+USTRUCT(BlueprintType)
+struct FSocialComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTeam SocialTeam = ESocialTeam::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ESocialTag> SocialTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag HomeObjectTag = ESocialTag::None;
+};
+
+USTRUCT(BlueprintType)
+struct FSocialComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USocialBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSocialComponentInitializer ComponentInitializer{};
+};
+
+
+/***********************************************************************************/
+
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
@@ -175,4 +208,7 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventoryComponentInitData InventoryComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSocialComponentInitData SocialComponentInitData{};
 };

@@ -8,6 +8,7 @@
 #include "GeneratorBaseComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UGeneratorBaseComponent : public UActorComponent {
@@ -22,7 +23,14 @@ public:
 	virtual void SaveComponent(FGeneratorSaveData& saveData);
 	virtual void LoadComponent(const FGeneratorSaveData& saveData);
 
+	UPROPERTY(BlueprintAssignable)
+	FOnResourceGenerated OnResourceGenerated;
+
 public:
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<FPrice> GetNeeds(int steps);
+	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWorkEnabled(bool isEnabled);
 

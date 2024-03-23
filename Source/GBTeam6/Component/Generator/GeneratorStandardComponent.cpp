@@ -166,6 +166,9 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		if (inventory->Push(generator.Barter.Result)) {
 			SpawnActors(generator.Barter.Result);
+
+			OnResourceGenerated.Broadcast(generator.Barter.Result);
+			
 		}
 	}
 }

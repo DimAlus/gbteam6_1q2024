@@ -13,6 +13,11 @@ void UGeneratorBaseComponent::SaveComponent(FGeneratorSaveData& saveData) {
 void UGeneratorBaseComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 }
 
+TArray<FPrice> UGeneratorBaseComponent::GetNeeds(int steps)
+{
+	return {};
+}
+
 void UGeneratorBaseComponent::SetWorkEnabled(bool isEnabled) {
 }
 

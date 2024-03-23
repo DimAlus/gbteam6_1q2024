@@ -5,6 +5,8 @@
 #include "../Lib/Lib.h"
 #include "../Service/MappingService.h"
 #include "../Service/SaveService.h"
+#include "../Service/TaskManagerService.h"
+#include "../Service/SocialService.h"
 
 
 void AGameStateDefault::LoadConfig() {
@@ -48,6 +50,8 @@ void AGameStateDefault::InitializeServices() {
 	this->MappingService->Initialize(this);
 
 	this->SaveService = NewObject<USaveService>();
+	this->TaskManagerService = NewObject<UTaskManagerService>();
+	this->SocialService = NewObject<USocialService>();
 }
 
 void AGameStateDefault::ClearServices()
