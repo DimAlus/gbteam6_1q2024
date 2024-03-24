@@ -3,6 +3,7 @@
 #include "PaperTileMapComponent.h"
 #include "PaperTileMap.h"
 #include "../Lib/Lib.h"
+#include "../Lib/Save/SaveConfig.h"
 #include "../Service/MappingService.h"
 #include "../Service/SaveService.h"
 #include "../Service/TaskManagerService.h"
@@ -10,8 +11,6 @@
 
 
 void AGameStateDefault::LoadConfig() {
-	TSet<EConfig> ignore = { EConfig::TileSize };
-
 	Configs = {
 		{ EConfig::TileSize, {} }
 	};
@@ -22,7 +21,7 @@ void AGameStateDefault::LoadConfig() {
 		TArray<FTRConfig*> data;
 		DT_Config->GetAllRows(context, data);
 		for (FTRConfig* row : data) {
-			if (!ignore.Contains(row->Config)) {
+			if (!USaveConfig::ConfigIgnore().Contains(row->Config)) {
 				if (Configs.Contains(row->Config))
 					Configs[row->Config] = row->Value;
 				else
@@ -93,4 +92,21 @@ bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {
 		return true;
 	}
 	return false;
+}
+
+bool AGameStateDefault::SetConfig(EConfig configType, FConfig config) {
+	if (USaveConfig::ConfigIgnore().Contains(configType)) {
+		return false;
+	}
+	if (Configs.Contains(configType)) {
+		Configs[configType] = config;
+	}
+	else {
+		Configs.Add(configType, config);
+	}
+	return true;
+}
+
+const TMap<EConfig, FConfig>& AGameStateDefault::GetAllConfigs() {
+	return Configs;
 }

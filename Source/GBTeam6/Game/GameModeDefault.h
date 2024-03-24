@@ -10,4 +10,8 @@
 UCLASS()
 class GBTEAM6_API AGameModeDefault : public AGameModeBase {
 	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString SaveSlotName;
 };

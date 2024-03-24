@@ -88,4 +88,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);
 
+	UFUNCTION(BlueprintCallable)
+	bool SetConfig(EConfig configType, FConfig config);
+
+	const TMap<EConfig, FConfig>& GetAllConfigs();
+
 };

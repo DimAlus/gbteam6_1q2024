@@ -116,4 +116,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventorySaveData InventoryData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSocialSaveData SocialData{};
 };

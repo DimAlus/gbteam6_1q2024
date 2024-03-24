@@ -16,6 +16,13 @@ AActor* UGameObjectCore::GetOwner() {
 	return owner;
 }
 
+void UGameObjectCore::LoadActor(const FActorSaveData& saveData) {
+	AActor* aowner = GetOwner();
+
+	aowner->SetActorLocation(saveData.ActorLocation);
+	aowner->SetActorRotation(saveData.ActorRotation);
+}
+
 void UGameObjectCore::SetIsCreated() {
 	isCreated = true;
 }

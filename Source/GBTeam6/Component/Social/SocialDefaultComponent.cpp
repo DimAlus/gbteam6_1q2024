@@ -8,8 +8,10 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 	SocialTeam = Initializer.SocialTeam;
 	SocialTags = Initializer.SocialTags;
 	HomeObjectTag = Initializer.HomeObjectTag;
-
-	RegisterObjectInService();
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
+		this->RegisterObjectInService();
+	}));
+	
 }
 
 void USocialDefaultComponent::SaveComponent(FSocialSaveData& saveData)
@@ -30,8 +32,7 @@ void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData)
 
 void USocialDefaultComponent::RegisterObjectInService()
 {
-	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState()))
-	{
+	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
 		GameState->GetSocialService()->AddObjectByTags(GetOwner(), SocialTags);
 		UE_LOG(LogTemp, Warning, TEXT("%s REGISTERED IN SOCIAL SERVICE %s"), *GetNameSafe(GetOwner()), *GetNameSafe(GameState));
 	}
