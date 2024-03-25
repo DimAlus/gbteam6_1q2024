@@ -37,9 +37,15 @@ public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) {return false;}
 
 	UFUNCTION(BlueprintCallable)
+	virtual ESocialTeam GetSocialTeam() {return ESocialTeam::None;}
+
+	UFUNCTION(BlueprintCallable)
 	virtual const TArray<ESocialTag>& GetSocialTags() {return EmptySocialTags;}
 	
 	UFUNCTION(BlueprintCallable)
 	virtual ESocialTag GetHomeObjectTag() {return ESocialTag::None;}
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetHomeObjectTag(ESocialTag NewHomeObjectTag) {}
 	
 };

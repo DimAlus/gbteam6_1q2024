@@ -48,6 +48,11 @@ bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam)
 	return false;
 }
 
+ESocialTeam USocialDefaultComponent::GetSocialTeam()
+{
+	return SocialTeam;
+}
+
 const TArray<ESocialTag>& USocialDefaultComponent::GetSocialTags()
 {
 	return SocialTags;
@@ -56,4 +61,9 @@ const TArray<ESocialTag>& USocialDefaultComponent::GetSocialTags()
 ESocialTag USocialDefaultComponent::GetHomeObjectTag()
 {
 	return HomeObjectTag;
+}
+
+void USocialDefaultComponent::SetHomeObjectTag(ESocialTag NewHomeObjectTag)
+{
+	HomeObjectTag = NewHomeObjectTag;
 }
