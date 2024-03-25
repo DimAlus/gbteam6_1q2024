@@ -114,6 +114,7 @@ enum class EComandType : uint8 {
 
 UENUM(BlueprintType)
 enum class EUIGameObjectPanelType : uint8 {
+	None			UMETA(DisplayName = "None"),
 	Inventory		UMETA(DisplayName = "Inventory"),
 	Generator		UMETA(DisplayName = "Generator"),
 	Commands		UMETA(DisplayName = "Commands")

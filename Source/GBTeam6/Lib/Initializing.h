@@ -100,10 +100,10 @@ struct FUIGameObjectPanelData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EUIGameObjectPanelType PanelType;
+	EUIGameObjectPanelType PanelType = EUIGameObjectPanelType::None;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FString PanelName;
+	FString PanelName{};
 };
 
 
@@ -210,7 +210,7 @@ struct FInventoryComponentInitializer {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountStacks;
+	int CountStacks = 0;
 };
 
 

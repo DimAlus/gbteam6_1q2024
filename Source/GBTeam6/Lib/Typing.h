@@ -129,10 +129,10 @@ struct FTRResourceStack : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	EResource Resource;
+	EResource Resource = EResource::None;
 
 	UPROPERTY(EditAnywhere)
-	int Size;
+	int Size = 0;
 };
 
 
