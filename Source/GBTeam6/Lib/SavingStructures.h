@@ -28,6 +28,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FUISaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FHealthSaveData {
 	GENERATED_BODY()
 public:
@@ -104,6 +111,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FActorSaveData ActorSaveData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FUISaveData UIData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FHealthSaveData HealthData{};

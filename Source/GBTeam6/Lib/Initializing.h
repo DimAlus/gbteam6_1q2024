@@ -10,6 +10,7 @@ class UMappingBaseComponent;
 class UGeneratorBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
+class UUIBaseComponent;
 struct FMapInfo;
 struct FBarter;
 struct FPrice;
@@ -84,6 +85,58 @@ struct FGeneratorComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitializer ComponentInitializer{};
+
+};
+
+
+
+/***********************************************************************************/
+/// <summary>
+/// UI Initializing
+/// </summary>
+
+USTRUCT(BlueprintType)
+struct FUIGameObjectPanelData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EUIGameObjectPanelType PanelType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString PanelName;
+};
+
+
+USTRUCT(BlueprintType)
+struct FUIComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString ObjectName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool UIable{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture* Icon{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<EComandType> EnabledCommands{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FUIGameObjectPanelData> EnabledPanels{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FUIComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUIBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FUIComponentInitializer ComponentInitializer{};
 
 };
 
@@ -211,6 +264,9 @@ struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FUIComponentInitData UIComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FHealthComponentInitData HealthComponentInitData{};

@@ -102,4 +102,21 @@ enum class EAIState : uint8 {
 };
 
 
+UENUM(BlueprintType)
+enum class EComandType : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Goto			UMETA(DisplayName = "GoTo"),
+	Attack			UMETA(DisplayName = "Attack"),
+	CombatMode		UMETA(DisplayName = "Combat Mode"),
+	CallMinions		UMETA(DisplayName = "Call Minions")
+};
+
+
+UENUM(BlueprintType)
+enum class EUIGameObjectPanelType : uint8 {
+	Inventory		UMETA(DisplayName = "Inventory"),
+	Generator		UMETA(DisplayName = "Generator"),
+	Commands		UMETA(DisplayName = "Commands")
+};
+
 

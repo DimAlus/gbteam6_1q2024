@@ -23,9 +23,9 @@ void USocialDefaultComponent::SaveComponent(FSocialSaveData& saveData)
 
 void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData)
 {
-	SocialTeam = saveData.SocialTeam;
-	SocialTags = saveData.SocialTags;
-	HomeObjectTag = saveData.HomeObjectTag;
+	// SocialTeam = saveData.SocialTeam;
+	// SocialTags = saveData.SocialTags;
+	// HomeObjectTag = saveData.HomeObjectTag;
 
 	RegisterObjectInService();
 }

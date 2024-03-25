@@ -114,7 +114,7 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
 	
 	FVector TraceStart = LookPointPosition-500*MouseWorldDirection;
-	FVector TraceEnd = LookPointPosition+500*MouseWorldDirection;
+	FVector TraceEnd = LookPointPosition+5000*MouseWorldDirection;
 	FCollisionQueryParams QueryParams;
 	
 	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel);
