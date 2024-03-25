@@ -10,6 +10,10 @@
 class AGameStateDefault;
 class IGameObjectInterface;
 class UGameObjectCore;
+class USaveDefault;
+class USaveTileMap;
+class USaveGameObjects;
+class USaveConfig;
 
 /** Service to Save or Load data
  * 
@@ -21,24 +25,30 @@ class GBTEAM6_API USaveService : public UObject {
 private:
 	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);
 
-	UPROPERTY()
-	TMap<int, FGameObjectSaveData> LoadingDataMap;
+	USaveDefault* CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
+	USaveDefault* LoadSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
+	void SaveSave(USaveDefault* saver);
 
-	int loadingMapIndex = 0;
+	void SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver);
+	void LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver);
 
+	void SaveObjects(AGameStateDefault* gameState, USaveGameObjects* saver);
+	void LoadObjects(AGameStateDefault* gameState, USaveGameObjects* saver);
+
+	void SaveConfig(AGameStateDefault* gameState, USaveConfig* saver);
+	void LoadConfig(AGameStateDefault* gameState, USaveConfig* saver);
 public:
-	void SaveTileMap();
+
 	UFUNCTION(BlueprintCallable)
-	void SaveTileMapByGameState(AGameStateDefault* gameState);
+	void SaveConfigPublic(AGameStateDefault* gameState);
 	UFUNCTION(BlueprintCallable)
-	void LoadTileMapByGameState(AGameStateDefault* gameState);
+	void LoadConfigPublic(AGameStateDefault* gameState);
 
 
 	UFUNCTION(BlueprintCallable)
-	void SaveObjectsByGameState(AGameStateDefault* gameState);
+	void SaveGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
 	UFUNCTION(BlueprintCallable)
-	void LoadObjectsByGameState(AGameStateDefault* gameState);
-
+	void LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
 
 private:
 

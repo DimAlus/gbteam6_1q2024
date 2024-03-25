@@ -2,92 +2,57 @@
 #include "Kismet/GameplayStatics.h"
 #include "../Game/GameStateDefault.h"
 #include "./MappingService.h"
-#include "../Lib/SaveTileMap.h"
-#include "../Lib/SaveGameObjects.h"
+
+#include "../Lib/Save/SaveDefault.h"
+#include "../Lib/Save/SaveTileMap.h"
+#include "../Lib/Save/SaveGameObjects.h"
+#include "../Lib/Save/SaveConfig.h"
+
 #include "../GameObject/SimpleObject.h"
 #include "../GameObject/MovableObject.h"
+
 #include "../Interface/GameObjectInterface.h"
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Component/Mapping/MappingBaseComponent.h"
+#include "../Component/Inventory/InventoryBaseComponent.h"
+#include "../Component/Generator/GeneratorBaseComponent.h"
+#include "../Component/Social/SocialBaseComponent.h"
+
 #include "../Interface/GameObjectCore.h"
 
 
-void USaveService::SaveTileMap() {
-	if (auto gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
-		SaveTileMapByGameState(gameState);
-	}
-	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to find an AGameStateDefault at World!"), *GetNameSafe(this));
-	}
-}
 
-void USaveService::SaveTileMapByGameState(AGameStateDefault* gameState) {
-	UE_LOG(LgService, Log, TEXT("<%s>: Start save TileMap"), *GetNameSafe(this));
-	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
+USaveDefault* USaveService::CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
+	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::CreateSaveGameObject(saveClass));
+	if (!IsValid(save)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: '%s' not Valid!"), *GetNameSafe(this), *GetNameSafe(saveClass));
+		return nullptr;
 	}
-	UMappingService* mappingService = gameState->GetMappingService();
-	if (!IsValid(mappingService)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
-		return;
-	}
-	USaveTileMap* saveTileMapInstance = Cast<USaveTileMap>(UGameplayStatics::CreateSaveGameObject(USaveTileMap::StaticClass()));
-	if (!IsValid(saveTileMapInstance)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: USaveTileMap not Valid!"), *GetNameSafe(this));
-		return;
-	}
-
 	FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
 
-	saveTileMapInstance->SetPlayer(TEXT("PlayerOne"));
-	saveTileMapInstance->SetSlotName(mapName);
-	saveTileMapInstance->SetUserIndex(0);
-
-	saveTileMapInstance->Width = mappingService->GetWidth();
-	saveTileMapInstance->Height = mappingService->GetHeight();
-
-	int size = saveTileMapInstance->Width * saveTileMapInstance->Height;
-	saveTileMapInstance->TileTypes.SetNumUninitialized(size);
-	FTileInfo* tiles = mappingService->GetTileInfoArrayUnsafe();
-	for (int i = 0; i < size; i++)
-		saveTileMapInstance->TileTypes[i] = tiles[i].type;
-
-	if (UGameplayStatics::SaveGameToSlot(saveTileMapInstance, 
-										 saveTileMapInstance->SaveSlotName, 
-										 saveTileMapInstance->UserIndex)) {
-		UE_LOG(LgService, Log, TEXT("<%s>: Save TileMap success at '%s'"), 
-										*GetNameSafe(this), 
-										*saveTileMapInstance->SaveSlotName);
-	}
-
+	save->SetParams(playerName, 0, slotName, mapName, isDevMap);
+	return save;
 }
 
-void USaveService::LoadTileMapByGameState(AGameStateDefault* gameState) {
-	UE_LOG(LgService, Log, TEXT("<%s>: Start load TileMap"), *GetNameSafe(this));
-	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
+USaveDefault* USaveService::LoadSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
+	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::LoadGameFromSlot(slotName, 0));
+	if (!IsValid(save)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: '%s' at slot '%s' not Valid!"),
+			*GetNameSafe(this), *GetNameSafe(saveClass), *slotName);
+		return nullptr;
 	}
-	UMappingService* mappingService = gameState->GetMappingService();
-	if (!IsValid(mappingService)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
-		return;
-	}
-	USaveTileMap* saveTileMapInstance = Cast<USaveTileMap>(UGameplayStatics::LoadGameFromSlot(
-																USaveTileMap::GetSlotName(GetLevelName(gameState->GetWorld()->GetCurrentLevel())),
-																0));
-	if (!IsValid(saveTileMapInstance)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: USaveTileMap not Valid!"), *GetNameSafe(this));
-		return;
-	}
+	return save;
+}
 
-	mappingService->LoadMap(
-		saveTileMapInstance->TileTypes, 
-		saveTileMapInstance->Width, 
-		saveTileMapInstance->Height
-	);
-
+void USaveService::SaveSave(USaveDefault* saver) {
+	if (UGameplayStatics::SaveGameToSlot(saver,
+		saver->SaveSlotName,
+		saver->UserIndex)) {
+		UE_LOG(LgService, Log, TEXT("<%s>: Save '%s' success at '%s'"),
+			*GetNameSafe(this),
+			*GetNameSafe(saver),
+			*saver->SaveSlotName);
+	}
 }
 
 
@@ -114,56 +79,56 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 }
 
 
-void USaveService::SaveObjectsByGameState(AGameStateDefault* gameState) {
+
+void USaveService::SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start save TileMap"), *GetNameSafe(this));
+	UMappingService* mappingService = gameState->GetMappingService();
+	if (!IsValid(mappingService)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+		return;
+	}
+
+	saver->Width = mappingService->GetWidth();
+	saver->Height = mappingService->GetHeight();
+
+	int size = saver->Width * saver->Height;
+	saver->TileTypes.SetNumUninitialized(size);
+	FTileInfo* tiles = mappingService->GetTileInfoArrayUnsafe();
+	for (int i = 0; i < size; i++)
+		saver->TileTypes[i] = tiles[i].type;
+}
+
+void USaveService::LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start load TileMap"), *GetNameSafe(this));
+	UMappingService* mappingService = gameState->GetMappingService();
+	if (!IsValid(mappingService)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+		return;
+	}
+
+	mappingService->LoadMap(
+		saver->TileTypes,
+		saver->Width,
+		saver->Height
+	);
+}
+
+void USaveService::SaveObjects(AGameStateDefault* gameState, USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save GameObjects"), *GetNameSafe(this));
-	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
-	}
-	USaveGameObjects* saveGameObjectsInstance = Cast<USaveGameObjects>(UGameplayStatics::CreateSaveGameObject(USaveGameObjects::StaticClass()));
-	if (!IsValid(saveGameObjectsInstance)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: USaveGameObjects not Valid!"), *GetNameSafe(this));
-		return;
-	}
-
-	FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
-
-	saveGameObjectsInstance->SetParams(FString("test"), 0, mapName, true);
 
 	TArray<AActor*> objects;
 	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), ASimpleObject::StaticClass(), objects);
-	AddObjectsToSave(objects, saveGameObjectsInstance->Objects);
+	AddObjectsToSave(objects, saver->Objects);
 	objects.Empty();
 	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), AMovableObject::StaticClass(), objects);
-	AddObjectsToSave(objects, saveGameObjectsInstance->Objects);
-
-	if (UGameplayStatics::SaveGameToSlot(saveGameObjectsInstance,
-		saveGameObjectsInstance->SaveSlotName,
-		saveGameObjectsInstance->UserIndex)) {
-		UE_LOG(LgService, Log, TEXT("<%s>: Save GameObjects success at '%s'"),
-			*GetNameSafe(this),
-			*saveGameObjectsInstance->SaveSlotName);
-	}
+	AddObjectsToSave(objects, saver->Objects);
 }
 
 
-void USaveService::LoadObjectsByGameState(AGameStateDefault* gameState) {
+void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start load GameObjects"), *GetNameSafe(this));
-	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
-	}
-	USaveGameObjects* saveGameObjectsInstance = Cast<USaveGameObjects>(UGameplayStatics::LoadGameFromSlot(
-		USaveGameObjects::GetSlotNameLevel(GetLevelName(gameState->GetWorld()->GetCurrentLevel())),
-		0));
-	if (!IsValid(saveGameObjectsInstance)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: USaveGameObjects not Valid!"), *GetNameSafe(this));
-		return;
-	}
 	
-	
-	for (FGameObjectSaveData& saveData : saveGameObjectsInstance->Objects) {
-		// GetWorld()->GetMapName()
+	for (FGameObjectSaveData& saveData : saver->Objects) {
 		AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
 		IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
 		UGameObjectCore* core = obj->Execute_GetCore(act);
@@ -180,20 +145,147 @@ void USaveService::LoadObjectsByGameState(AGameStateDefault* gameState) {
 			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created!"), *GetNameSafe(this));
 		}
 	}
-	if (LoadingDataMap.Num() == 0) {
-		UE_LOG(LgService, Log, TEXT("<%s>: Loading of all actors ended!"), *GetNameSafe(this));
+}
+
+void USaveService::SaveConfig(AGameStateDefault* gameState, USaveConfig* saver) {
+	const TMap<EConfig, FConfig>& configs = gameState->GetAllConfigs();
+	for (auto conf : configs) {
+		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
+			saver->Configs.Add(conf);
+		}
+	}
+}
+
+void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) {
+	for (auto conf : saver->Configs) {
+		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
+			gameState->SetConfig(conf.Key, conf.Value);
+		}
+	}
+}
+
+void USaveService::SaveConfigPublic(AGameStateDefault* gameState) {
+	USaveConfig* saveConfig = Cast<USaveConfig>(CreateSave(
+		gameState,
+		USaveConfig::StaticClass(),
+		TEXT("player"),
+		TEXT(""),
+		false
+	));
+	if (IsValid(saveConfig)) {
+		SaveConfig(gameState, saveConfig);
+		SaveSave(saveConfig);
+	}
+}
+
+void USaveService::LoadConfigPublic(AGameStateDefault* gameState) {
+	USaveConfig* saveConfig = Cast<USaveConfig>(LoadSave(
+		gameState,
+		USaveConfig::StaticClass(),
+		TEXT("player"),
+		USaveConfig::GetSlotName(TEXT("player"), TEXT(""), TEXT(""), false),
+		false
+	));
+	if (IsValid(saveConfig)) {
+		LoadConfig(gameState, saveConfig);
+	}
+}
+
+void USaveService::SaveGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start SaveGame to slot '%s'"), *GetNameSafe(this), *SlotName);
+	if (!IsValid(gameState)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		return;
+	}
+	FString playerName = TEXT("player");
+
+	/// Save TileMap
+	if (isDevMap) {
+		USaveTileMap* saveTileMap = Cast<USaveTileMap>(CreateSave(
+			gameState, 
+			USaveTileMap::StaticClass(),
+			playerName,
+			SlotName,
+			isDevMap
+		));
+		if (IsValid(saveTileMap)) {
+			SaveTileMap(gameState, saveTileMap);
+			SaveSave(saveTileMap);
+		}
+	}
+
+	/// Save GameObjects
+	USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(CreateSave(
+		gameState,
+		USaveGameObjects::StaticClass(),
+		playerName,
+		SlotName,
+		isDevMap
+	));
+	if (IsValid(saveGameObjects)) {
+		SaveObjects(gameState, saveGameObjects);
+		SaveSave(saveGameObjects);
+	}
+
+	/// Save Config
+	if (!isDevMap) {
+		SaveConfigPublic(gameState);
+	}
+}
+
+void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
+	UE_LOG(LgService, Log, TEXT("<%s>: Start LoadGame from slot '%s'"), *GetNameSafe(this), *SlotName);
+	if (!isDevMap) {
+		FString playerName = TEXT("player");
+		FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
+
+		/// Load TileMap
+		USaveTileMap* saveTileMap = Cast<USaveTileMap>(LoadSave(
+			gameState,
+			USaveTileMap::StaticClass(),
+			playerName,
+			USaveTileMap::GetSlotName(playerName, SlotName, mapName, isDevMap),
+			isDevMap
+		));
+		if (IsValid(saveTileMap)) {
+			LoadTileMap(gameState, saveTileMap);
+		}
+
+		UE_LOG(LgService, Log, TEXT("<%s>: slot '%s'"), *GetNameSafe(this), *USaveGameObjects::GetSlotName(playerName, SlotName, mapName, isDevMap));
+
+		/// Load GameObjects
+		USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(LoadSave(
+			gameState,
+			USaveGameObjects::StaticClass(),
+			playerName,
+			USaveGameObjects::GetSlotName(playerName, SlotName, mapName, isDevMap),
+			isDevMap
+		));
+		if (IsValid(saveGameObjects)) {
+			LoadObjects(gameState, saveGameObjects);
+		}
+
+		/// Load GameObjects
+		LoadConfigPublic(gameState);
 	}
 }
 
 void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData) {
-
-	core->GetOwner()->SetActorLocation(objectSaveData.ActorSaveData.ActorLocation);
-	core->GetOwner()->SetActorRotation(objectSaveData.ActorSaveData.ActorRotation);
+	core->LoadActor(objectSaveData.ActorSaveData);
 
 	if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 		health->LoadComponent(objectSaveData.HealthData);
 	}
 	if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 		mapping->LoadComponent(objectSaveData.MappingData);
+	}
+	if (auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory))) {
+		inventory->LoadComponent(objectSaveData.InventoryData);
+	}
+	if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
+		generator->LoadComponent(objectSaveData.GeneratorData);
+	}
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		social->LoadComponent(objectSaveData.SocialData);
 	}
 }

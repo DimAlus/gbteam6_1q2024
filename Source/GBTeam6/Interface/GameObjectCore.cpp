@@ -3,6 +3,7 @@
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
+#include "../Component/UI/UIBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
@@ -14,6 +15,13 @@ void UGameObjectCore::SetOwner(AActor* ownerObject) {
 
 AActor* UGameObjectCore::GetOwner() {
 	return owner;
+}
+
+void UGameObjectCore::LoadActor(const FActorSaveData& saveData) {
+	AActor* aowner = GetOwner();
+
+	aowner->SetActorLocation(saveData.ActorLocation);
+	aowner->SetActorRotation(saveData.ActorRotation);
 }
 
 void UGameObjectCore::SetIsCreated() {
@@ -75,13 +83,21 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Generator, NewGeneratorComponent);
 
-	//Create Generator component
+	//Create Social component
 	USocialBaseComponent* NewSocialComponent = NewObject<USocialBaseComponent>(
 		owner,
 		GetNvlClass(InitData.SocialComponentInitData.ComponentClass, USocialBaseComponent::StaticClass())
 	);
 	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Social, NewSocialComponent);
+
+	//Create UI component
+	UUIBaseComponent* NewUIComponent = NewObject<UUIBaseComponent>(
+		owner,
+		GetNvlClass(InitData.UIComponentInitData.ComponentClass, UUIBaseComponent::StaticClass())
+	);
+	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::UI, NewUIComponent);
 
 }
 

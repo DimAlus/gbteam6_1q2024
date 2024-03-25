@@ -32,6 +32,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AActor* GetOwner();
 
+	void LoadActor(const FActorSaveData& saveData);
+
 	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
 	FORCEINLINE bool GetIsCreated() const { return isCreated; };
 	
@@ -57,5 +59,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Component)
 	bool HasComponent(EGameComponentType ComponentType);
-
 };
