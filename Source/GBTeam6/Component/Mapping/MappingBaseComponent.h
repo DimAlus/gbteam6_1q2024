@@ -3,10 +3,11 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "../../Lib/Typing.h"
-#include "../../Lib/SavingStructures.h"
+#include "../../Lib/Lib.h"
 
 #include "MappingBaseComponent.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildedEventSignature, bool, IsBuilded);
 
 class AMapPreview;
 
@@ -51,4 +52,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsBuilded(bool isBuilded);
 
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnBuildedEventSignature OnBuilded;
 };

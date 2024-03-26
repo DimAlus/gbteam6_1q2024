@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "./HealthBaseComponent.h"
+#include "../../Lib/Lib.h"
 #include "HealthDefaultComponent.generated.h"
 
 

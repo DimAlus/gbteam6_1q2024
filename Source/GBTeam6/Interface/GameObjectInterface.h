@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Components/ActorComponent.h"
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
+#include "./GameObjectCore.h"
 #include "GameObjectInterface.generated.h"
 
 // This class does not need to be modified.
@@ -24,15 +25,6 @@ class GBTEAM6_API IGameObjectInterface
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	void BindComponent(EGameComponentType ComponentType, UActorComponent* NewComponent);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	void UnbindComponent(EGameComponentType ComponentType);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
-	UActorComponent* GetComponent(EGameComponentType ComponentType);
+	UGameObjectCore* GetCore();
 	
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
-	void SetSaveLoadIndex(int index);
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
-	bool GetIsCreated();
 };

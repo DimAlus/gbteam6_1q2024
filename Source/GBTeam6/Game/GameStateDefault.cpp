@@ -2,31 +2,45 @@
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
 #include "PaperTileMap.h"
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
+#include "../Lib/Save/SaveConfig.h"
 #include "../Service/MappingService.h"
 #include "../Service/SaveService.h"
+#include "../Service/TaskManagerService.h"
+#include "../Service/SocialService.h"
 
-void AGameStateDefault::InitMapping(ULevel* level){
-	/*for (TObjectPtr<AActor> actr : level->Actors) {
-		if (IsValid(actr.Get())
-			&& actr.Get()->GetActorLabel() == TileMapName) {
-			UE_LOG(LgService, Log, TEXT("<%s>: Finded TileMapActor by Name '%s' at Level '%s'"),
-																			*GetNameSafe(this),
-																			*TileMapName,
-																			*GetNameSafe(level));
-			if (auto tm = Cast<APaperTileMapActor>(actr.Get())) {
-				if (auto ptm = tm->GetRenderComponent()->TileMap.Get()) {
-					this->MappingService->GenerateMap(ptm, TileLayerName);
-					tm->Destroy();
-					return;
-				}
+
+void AGameStateDefault::LoadConfig() {
+	Configs = {
+		{ EConfig::TileSize, {} }
+	};
+	Configs[EConfig::TileSize].VectorValue = { 100.f, 100.f, 1.f };
+
+	if (DT_Config) {
+		FString context;
+		TArray<FTRConfig*> data;
+		DT_Config->GetAllRows(context, data);
+		for (FTRConfig* row : data) {
+			if (!USaveConfig::ConfigIgnore().Contains(row->Config)) {
+				if (Configs.Contains(row->Config))
+					Configs[row->Config] = row->Value;
+				else
+					Configs.Add(row->Config, row->Value);
 			}
 		}
 	}
-	UE_LOG(LgService, Warning, TEXT("<%s>: Failed to find TileMap by Name '%s' with layer '%s'"), 
-																	*GetNameSafe(this), 
-																	*TileMapName,
-																	*TileLayerName);*/
+	else {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to get DT_Config!"), *GetNameSafe(this));
+	}
+}
+
+void AGameStateDefault::LoadSizeStacks() {
+	FString context;
+	TArray<FTRResourceStack*> data;
+	DT_ResourceStack->GetAllRows(context, data);
+	for (FTRResourceStack* row : data) {
+		StackSizes.Add(row->Resource, row->Size);
+	}
 }
 
 void AGameStateDefault::InitializeServices() {
@@ -35,6 +49,8 @@ void AGameStateDefault::InitializeServices() {
 	this->MappingService->Initialize(this);
 
 	this->SaveService = NewObject<USaveService>();
+	this->TaskManagerService = NewObject<UTaskManagerService>();
+	this->SocialService = NewObject<USocialService>();
 }
 
 void AGameStateDefault::ClearServices()
@@ -46,12 +62,51 @@ void AGameStateDefault::ClearServices()
 	this->MappingService = nullptr;
 }
 
+int AGameStateDefault::GetStackSize(EResource resource) {
+	if (StackSizes.Contains(resource)) {
+		return StackSizes[resource];
+	}
+	return 1;
+}
+
+int AGameStateDefault::GetResourceCount(EResource resource) {
+	return 0;
+}
+
+
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
+	LoadConfig();
+	LoadSizeStacks();
 	InitializeServices();
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	ClearServices();
 	Super::EndPlay(EndPlayReason);
+}
+
+bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {
+	if (Configs.Contains(configType)) {
+		config = Configs[configType];
+		return true;
+	}
+	return false;
+}
+
+bool AGameStateDefault::SetConfig(EConfig configType, FConfig config) {
+	if (USaveConfig::ConfigIgnore().Contains(configType)) {
+		return false;
+	}
+	if (Configs.Contains(configType)) {
+		Configs[configType] = config;
+	}
+	else {
+		Configs.Add(configType, config);
+	}
+	return true;
+}
+
+const TMap<EConfig, FConfig>& AGameStateDefault::GetAllConfigs() {
+	return Configs;
 }

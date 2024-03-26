@@ -3,13 +3,14 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 
 #include "GameStateDefault.generated.h"
 
 
 class UMappingService;
 class USaveService;
+class UTaskManagerService;
 
 /**
  * 
@@ -24,10 +25,15 @@ private:
 	UMappingService* MappingService;
 	UPROPERTY()
 	USaveService* SaveService;
+	UPROPERTY()
+	UTaskManagerService* TaskManagerService;
+	UPROPERTY()
+	USocialService* SocialService;
 
-private:
-	void InitMapping(ULevel* level);
-
+	UPROPERTY()
+	TMap<EConfig, FConfig> Configs;
+	
+	TMap<EResource, int> StackSizes;
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
@@ -36,19 +42,29 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_TileTypeTree;
 
-	// Name of TileMapActor at scene
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
-	FString TileMapName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_Config;
 
-	// Name of Layer at TileMap, included info about tile types
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Service | Mapping")
-	FString TileLayerName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_ObjectsData;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_ResourceStack;
+
+private:
+	void LoadConfig();
+	void LoadSizeStacks();
 public:
 	// Initialize All Services
 	void InitializeServices();
 	// DEstroy All Services
 	void ClearServices();
+
+	int GetStackSize(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	int GetResourceCount(EResource resource);
+
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -56,8 +72,25 @@ public:
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
+
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
+
+	/** Returns TaskManager Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
+
+	/** Returns Social Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
+
+	UFUNCTION(BlueprintCallable)
+	bool GetConfig(EConfig configType, FConfig& config);
+
+	UFUNCTION(BlueprintCallable)
+	bool SetConfig(EConfig configType, FConfig config);
+
+	const TMap<EConfig, FConfig>& GetAllConfigs();
 
 };

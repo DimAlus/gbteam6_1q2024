@@ -5,7 +5,7 @@
 #include "PaperTileMap.h"
 #include "PaperTileLayer.h"
 
-#include "../Lib/Typing.h"
+#include "../Lib/Lib.h"
 
 #include "MappingService.generated.h"
 

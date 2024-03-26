@@ -4,8 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "../../Lib/Typing.h"
-#include "../../Lib/SavingStructures.h"
+#include "../../Lib/Lib.h"
 #include "HealthBaseComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
