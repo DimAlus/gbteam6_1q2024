@@ -122,7 +122,7 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 
 bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 	SavePoint();
-	bool succcess = _pop(resources);
+	bool success = _pop(resources);
 	UE_LOG_COMPONENT(Log, "Pop resources (%d): %d!", resources.Num(), success);
 	if (success) {
 		OnInventoryChange.Broadcast();

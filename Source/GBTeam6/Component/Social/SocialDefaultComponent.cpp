@@ -3,6 +3,11 @@
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Service/SocialService.h"
 
+void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
+	Super::DestroyComponent(bPromoteChildren);
+	this->UnRegisterObjectInService();
+}
+
 void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	SocialTeam = Initializer.SocialTeam;
@@ -30,11 +35,18 @@ void USocialDefaultComponent::RegisterObjectInService() {
 	}
 }
 
+void USocialDefaultComponent::UnRegisterObjectInService() {
+	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
+		GameState->GetSocialService()->RemoveObject(GetOwner());
+		UE_LOG_COMPONENT(Log, "UNregistered in social service <%s>!", *GetNameSafe(GameState));
+	}
+}
+
 bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam) {
 	static TSet<ESocialTeam> falseTeams = {
 		ESocialTeam::None,
 		ESocialTeam::Neutral
-	}
+	};
 	if (falseTeams.Contains(SocialTeam))
 		return false;
 	return SocialTeam != CallerSocialTeam;

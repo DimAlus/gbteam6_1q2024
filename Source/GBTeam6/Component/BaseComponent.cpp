@@ -1,6 +1,7 @@
 #include "./BaseComponent.h"
-#include "../Game/GameStateDefault.h";
-#include "../Interface/GameObjectCore.h";
+#include "../Game/GameStateDefault.h"
+#include "../Interface/GameObjectCore.h"
+#include "../Interface/GameObjectInterface.h"
 
 AGameStateDefault* UBaseComponent::GetGameState() { 
 	if (AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {

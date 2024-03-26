@@ -262,8 +262,6 @@ struct FSocialComponentInitData {
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Name{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FUIComponentInitData UIComponentInitData{};

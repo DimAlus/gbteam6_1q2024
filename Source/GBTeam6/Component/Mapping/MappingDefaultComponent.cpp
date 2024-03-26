@@ -4,7 +4,7 @@
 
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
-	UE_LOG_COMPONENT(Log, "Destroy Component!", resources.Num(), success);
+	UE_LOG_COMPONENT(Log, "Destroy Component!");
 	SetIsBuilded(false);
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		iter->Value.Preview->DestroyComponent();

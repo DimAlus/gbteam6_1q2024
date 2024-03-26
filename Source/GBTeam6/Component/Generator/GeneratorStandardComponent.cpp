@@ -6,8 +6,6 @@
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
 
-using EMessageTag;
-
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
 }
 
@@ -116,16 +114,16 @@ TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 }
 
 
-TArray<FPrice> UGeneratorBaseComponent::GetOvers(int steps) {
+TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
 	TMap<EResource, int> needs = _getNeeds(steps);
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
-	for (auto res : resources.Keys()) {
-		if (needs.Contains(res) && needs[res] > 0){
-			result.Add(res, resources[res] - needs[res]);
+	for (auto res : resources) {
+		if (needs.Contains(res.Key) && needs[res.Key] > 0){
+			result.Add(res.Key, res.Value - needs[res.Key]);
 		}
 		else {
-			result.Add(res, resources[res]);
+			result.Add(res.Key, res.Value);
 		}
 	}
 	return GetGameState()->GetResourcesByStacks(result);
@@ -211,14 +209,14 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 
 			OnResourceGenerated.Broadcast(generator.Barter.Result);
 			GetGameState()->GetMessageService()->Send(
-				{ GOE, GOAGenerator, MSuccess }, 
-				Cast<UGameCore>(GetOwner())
+				{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MSuccess },
+				Cast<UGameObjectCore>(GetOwner())
 			);
 		}
 		else {
 			GetGameState()->GetMessageService()->Send(
-				{ GOE, GOAGenerator, MFailed }, 
-				Cast<UGameCore>(GetOwner())
+				{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MFailed },
+				Cast<UGameObjectCore>(GetOwner())
 			);
 		}
 	}

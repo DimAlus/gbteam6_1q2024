@@ -17,6 +17,14 @@ AActor* UGameObjectCore::GetOwner() {
 	return owner;
 }
 
+void UGameObjectCore::SaveActor(FActorSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Actor Loading!");
+	AActor* aowner = GetOwner();
+
+	saveData.ActorLocation = aowner->GetActorLocation();
+	saveData.ActorRotation = aowner->GetActorRotation();
+}
+
 void UGameObjectCore::LoadActor(const FActorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Actor Loading!");
 	AActor* aowner = GetOwner();
@@ -104,7 +112,7 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 }
 
 void UGameObjectCore::BindComponentNoRegister(EGameComponentType ComponentType, UActorComponent* NewComponent) {
-	UE_LOG_COMPONENT(Log, "Bind noregister `%s` component '%s'!", *GetNameSafe(ComponentType), *GetNameSafe(NewComponent));
+	UE_LOG_COMPONENT(Log, "Bind noregister `%s` component '%s'!", *UEnum::GetValueAsString(ComponentType), *GetNameSafe(NewComponent));
 	if (ExistingComponents.Find(ComponentType)) {
 		UnbindComponent(ComponentType);
 	}
@@ -112,7 +120,7 @@ void UGameObjectCore::BindComponentNoRegister(EGameComponentType ComponentType, 
 }
 
 void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComponent* NewComponent) {
-	UE_LOG_COMPONENT(Log, "Bind `%s` component '%s'!", *GetNameSafe(ComponentType), *GetNameSafe(NewComponent));
+	UE_LOG_COMPONENT(Log, "Bind `%s` component '%s'!", *UEnum::GetValueAsString(ComponentType), *GetNameSafe(NewComponent));
 	if (ExistingComponents.Find(ComponentType)) {
 		UnbindComponent(ComponentType);
 	}
@@ -121,7 +129,7 @@ void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComp
 }
 
 void UGameObjectCore::UnbindComponent(EGameComponentType ComponentType) {
-	UE_LOG_COMPONENT(Log, "Unbind `%s` component!", *GetNameSafe(ComponentType));
+	UE_LOG_COMPONENT(Log, "Unbind `%s` component!", *UEnum::GetValueAsString(ComponentType));
 	if (UActorComponent* TargetComponent = *ExistingComponents.Find(ComponentType)) {
 		ExistingComponents.Remove(ComponentType);
 		TargetComponent->DestroyComponent();

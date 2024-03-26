@@ -14,4 +14,6 @@ class GBTEAM6_API UGameInstanceDefault : public UGameInstance
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString GameSaveSlot;
+
+	virtual void OnSeamlessTravelDuringReplay() override;
 };
