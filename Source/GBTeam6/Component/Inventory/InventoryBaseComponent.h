@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
 
 #include "InventoryBaseComponent.generated.h"
@@ -11,8 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChange);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API UInventoryBaseComponent : public UActorComponent
-{
+class GBTEAM6_API UInventoryBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	
@@ -45,6 +45,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual int GetMaxStacksCount();
+
+	UFUNCTION(BlueprintCallable)
+	virtual const TMap<EResource, int>& GetAllResources();
 
 public:
 	UPROPERTY(BlueprintAssignable)

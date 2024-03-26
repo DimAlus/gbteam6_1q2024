@@ -12,6 +12,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
+#define UE_LOG_COMPONENT(LogType, Message, ...) UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) ") + TEXT(Message), \
+												*GetNameSafe(this), *GetNameSafe(GetOwner()), ...);
 
 
 

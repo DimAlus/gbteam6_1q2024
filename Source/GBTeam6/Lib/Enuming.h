@@ -151,8 +151,8 @@ enum class EMessageTag : uint8 {
 	GOAInventory	UMETA(DisplayName = "GOA Inventory Changing"),
 	GOAGenerator	UMETA(DisplayName = "GOA Generator"),
 
-	Success			UMETA(DisplayName = "Success"),
-	Failed			UMETA(DisplayName = "Failed")
+	MSuccess		UMETA(DisplayName = "Success"),
+	MFailed			UMETA(DisplayName = "Failed")
 };
 
 

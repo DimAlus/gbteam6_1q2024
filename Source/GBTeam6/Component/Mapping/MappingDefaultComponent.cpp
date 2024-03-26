@@ -4,7 +4,7 @@
 
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
-	UE_LOG(LgComponent, Error, TEXT("Destroy Mapping Component"));
+	UE_LOG_COMPONENT(Log, "Destroy Component!", resources.Num(), success);
 	SetIsBuilded(false);
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		iter->Value.Preview->DestroyComponent();
@@ -14,6 +14,7 @@ void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 
 
 void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& initializer) {
+	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	if (wasInitialized)
 		return;
 	wasInitialized = true;
@@ -63,7 +64,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 						this->SetMeshIsVisible(preview, this->Initializer.IsPreview);
 					}
 					else {
-						UE_LOG(LgComponent, Error, TEXT("<%s>: created AMapPreview not Valid!"), *GetNameSafe(this));
+						UE_LOG_COMPONENT(Error, "Created AMapPreview not Valid!");
 					}
 				}
 			}
@@ -72,10 +73,12 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.MappingLocation = currentLocation;
 }
 
 void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Loading!");
 	currentLocation = saveData.MappingLocation;
 	this->GetOwner()->SetActorLocation(
 		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
@@ -85,12 +88,7 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 	);
 	UpdateCanBuild();
 	if (!SetIsBuilded(true)) {
-		UE_LOG(LgComponent, Error, TEXT("<%s>: Failed to load GameObject '%s' at <%d; %d>! Map already Busy!"), 
-			*GetNameSafe(this),
-			*GetNameSafe(this->GetOwner()),
-			currentLocation.X,
-			currentLocation.Y
-		);
+		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
 		GetOwner()->Destroy();
 	}
 }
@@ -116,12 +114,12 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 void UMappingDefaultComponent::UpdateCanBuild() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
-		UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
 		return;
 	}
 	UMappingService* mappingService = gameState->GetMappingService();
 	if (!IsValid(mappingService)) {
-		UE_LOG(LgComponent, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+		UE_LOG_COMPONENT(Error, "Created UMappingService not Valid!");
 		return;
 	}
 	bCanBuild = true;
@@ -172,12 +170,12 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 
 		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 		if (!IsValid(gameState)) {
-			UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+			UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
 			return false;
 		}
 		UMappingService* mappingService = gameState->GetMappingService();
 		if (!IsValid(mappingService)) {
-			UE_LOG(LgComponent, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
+			UE_LOG_COMPONENT(Error, "UMappingService not Valid!");
 			return false;
 		}
 

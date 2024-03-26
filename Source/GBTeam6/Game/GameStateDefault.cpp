@@ -8,6 +8,7 @@
 #include "../Service/SaveService.h"
 #include "../Service/TaskManagerService.h"
 #include "../Service/SocialService.h"
+#include "../Service/MessageService.h"
 
 
 void AGameStateDefault::LoadConfig() {
@@ -45,6 +46,8 @@ void AGameStateDefault::LoadSizeStacks() {
 
 void AGameStateDefault::InitializeServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
+	this->MessageService = NewObject<UMessageService>();
+	
 	this->MappingService = NewObject<UMappingService>();
 	this->MappingService->Initialize(this);
 
@@ -73,6 +76,25 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 	return 0;
 }
 
+TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> resources) {
+	TArray<FPrice> result;
+	for (auto res : resources) {
+		if (res.Value > 0) {
+			FPrice price;
+			int stackSize = GetStackSize(res.Key);
+			int stacks = (res.Value - 1) / stackSize + 1;
+			price.Resource = res.Key;
+			price.Count = stackSize;
+			for (int i = 0; i < stacks - 1; i++) {
+				result.Add(FPrice(price));
+			}
+			price.Count = res.Value - std::max(0, (stacks - 1) * price.Count);
+			if (price.Count > 0)
+				result.Add(price);
+		}
+	}
+	return result;
+}
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();

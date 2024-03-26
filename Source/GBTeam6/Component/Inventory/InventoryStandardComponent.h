@@ -14,8 +14,6 @@ class GBTEAM6_API UInventoryStandardComponent : public UInventoryBaseComponent
 {
 	GENERATED_BODY()
 public:
-	virtual void BeginPlay() override;
-
 
 	virtual void Initialize(const FInventoryComponentInitializer& initializer) override;
 
@@ -37,6 +35,8 @@ private:
 	AGameStateDefault* GetGameState();
 	void SavePoint();
 	void RollBack(bool isBack);
+	bool _push(const TArray<FPrice>& resources);
+	bool _pop(const TArray<FPrice>& resources);
 	int StackCount(EResource res, int count);
 public:
 	virtual bool CanPush(const TArray<FPrice>& resources) override;
@@ -46,4 +46,5 @@ public:
 	virtual TArray<FPrice> GetStacks() override;
 	virtual int GetResourceCount(EResource resource) override;
 	virtual int GetMaxStacksCount() override;
+	virtual const TMap<EResource, int>& GetAllResources() override;
 };

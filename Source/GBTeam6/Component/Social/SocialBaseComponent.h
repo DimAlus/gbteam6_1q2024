@@ -2,13 +2,15 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
+
 #include "SocialBaseComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API USocialBaseComponent : public UActorComponent
-{
+class GBTEAM6_API USocialBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 protected:
