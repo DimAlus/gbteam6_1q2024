@@ -3,14 +3,14 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
 
 #include "UIBaseComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API UUIBaseComponent : public UActorComponent
-{
+class GBTEAM6_API UUIBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	

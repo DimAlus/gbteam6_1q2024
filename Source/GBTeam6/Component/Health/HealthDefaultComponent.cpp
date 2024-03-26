@@ -1,57 +1,44 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "./HealthDefaultComponent.h"
 
-// Sets default values for this component's properties
-UHealthDefaultComponent::UHealthDefaultComponent()
-{
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
+UHealthDefaultComponent::UHealthDefaultComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
-
-	//Current health initialization
-	CurrentHealth = MaxHealth;
-	
 	bDead = false;
 }
 
-void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Initializer)
-{
+void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Initializer) {
+	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxHealth = Initializer.MaxHealth;
 	CurrentHealth = MaxHealth;
 }
 
 void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.Health = CurrentHealth;
 }
 
 void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Loading!");
 	CurrentHealth = saveData.Health;
 }
 
-// Called when the game starts
-void UHealthDefaultComponent::BeginPlay()
-{
+void UHealthDefaultComponent::BeginPlay() {
 	Super::BeginPlay();
 	
 	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
 }
 
 void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
-	class AController* InstigatedBy, AActor* DamageCauser)
-{
-	if (!bDead)
-	{
+										 class AController* InstigatedBy, AActor* DamageCauser) {
+	if (!bDead) {
 		CurrentHealth-=Damage;
+		UE_LOG_COMPONENT(Log, "Pawn damaged! Damage = %f; Current health = %f!", Damage, CurrentHealth);
 		OnDamage.Broadcast(Damage);
 		
-		if(CurrentHealth<=0.f)
-		{
+		if(CurrentHealth <= 0.f) {
 			CurrentHealth = 0.f;
 			bDead = true;
+			UE_LOG_COMPONENT(Log, "Death");
 			OnDeath.Broadcast();
 		}
-		UE_LOG(LgComponent, Warning, TEXT("<%s>: Pawn damaged! Damage = %f; Current health = %f"), *GetNameSafe(this), Damage, CurrentHealth);
 	}
 }

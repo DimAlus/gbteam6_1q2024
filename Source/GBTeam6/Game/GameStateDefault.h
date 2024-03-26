@@ -11,6 +11,7 @@
 class UMappingService;
 class USaveService;
 class UTaskManagerService;
+class UMessageService;
 
 /**
  * 
@@ -29,6 +30,8 @@ private:
 	UTaskManagerService* TaskManagerService;
 	UPROPERTY()
 	USocialService* SocialService;
+	UPROPERTY()
+	UMessageService* MessageService;
 
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
@@ -65,6 +68,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
+
 
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
@@ -84,6 +90,10 @@ public:
 	/** Returns Social Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
+
+	/** Returns Social Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
 
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);

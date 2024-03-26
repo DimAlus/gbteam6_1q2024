@@ -1,18 +1,18 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
+
 #include "HealthBaseComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API UHealthBaseComponent : public UActorComponent
-{
+class GBTEAM6_API UHealthBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	

@@ -45,7 +45,6 @@ private:
 	TArray<FGenerator>& GetCurrentGenerics();
 
 	UInventoryBaseComponent* GetInventory();
-	AGameStateDefault* GetGameState();
 	bool CanGenerate(int index);
 	bool IsGeneratorEnabled(int index);
 	void StartWork(int index);
@@ -57,9 +56,12 @@ private:
 	void CreateTimer();
 
 	void SpawnActors(const TArray<FPrice>& resources);
+
+	TMap<EResource, int> _getNeeds(int steps);
 public:
 
 	virtual TArray<FPrice> GetNeeds(int steps) override;
+	virtual TArray<FPrice> GetOvers(int steps) override;
 	
 	virtual void SetWorkEnabled(bool isEnabled) override;
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
@@ -72,7 +74,6 @@ public:
 	virtual bool IsWorking() override;
 
 	virtual TArray<FGenerator> GetTaskStack() override;
-	virtual bool IsStackTask() override;
 	virtual void AddToTaskStack(int index) override;
 	virtual void RemoveFromStack(int index) override;
 	virtual void CancelTask() override;

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "Enuming.generated.h"
 
 /**
@@ -17,6 +18,7 @@ class GBTEAM6_API UEnuming : public UBlueprintFunctionLibrary
 
 UENUM(BlueprintType)
 enum class ETileState : uint8 {
+	
 	Free		UMETA(DisplayName = "Free"),
 	Busy		UMETA(DisplayName = "Busy")
 };
@@ -118,6 +120,39 @@ enum class EUIGameObjectPanelType : uint8 {
 	Inventory		UMETA(DisplayName = "Inventory"),
 	Generator		UMETA(DisplayName = "Generator"),
 	Commands		UMETA(DisplayName = "Commands")
+};
+
+
+UENUM(BlueprintType)
+enum class EMessageTag : uint8 {
+	None			UMETA(DisplayName = "None"),
+	/** UI */
+	UI				UMETA(DisplayName = "UI"),
+	UIGame			UMETA(DisplayName = "UI In Menu"),
+	UIMenu			UMETA(DisplayName = "UI In Game"),
+	UIEButton		UMETA(DisplayName = "UIE Button"),
+	UIEIcon			UMETA(DisplayName = "UIE Icon"),
+	UIESelector		UMETA(DisplayName = "UIE Selector"),
+	UIESlider		UMETA(DisplayName = "UIE Slider"),
+
+	UIAScroll		UMETA(DisplayName = "UIA Scroll"),
+	UIAClick		UMETA(DisplayName = "UIA Click"),
+	UIAHover		UMETA(DisplayName = "UIA Hover"),
+	UIAUnHover		UMETA(DisplayName = "UIA Unhover"),
+	
+	/** Game Objects*/
+	GOE				UMETA(DisplayName = "GOE Game Object Element"),
+	
+	GOASpawn		UMETA(DisplayName = "GOA Spawn"),
+	GOAHit			UMETA(DisplayName = "GOA Hit"),
+	GOADamage		UMETA(DisplayName = "GOA Get Damage"),
+	GOADeath		UMETA(DisplayName = "GOA Death"),
+
+	GOAInventory	UMETA(DisplayName = "GOA Inventory Changing"),
+	GOAGenerator	UMETA(DisplayName = "GOA Generator"),
+
+	MSuccess		UMETA(DisplayName = "Success"),
+	MFailed			UMETA(DisplayName = "Failed")
 };
 
 

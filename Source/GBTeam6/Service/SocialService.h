@@ -11,9 +11,9 @@ class GBTEAM6_API USocialService : public UObject
 	GENERATED_BODY()
 	
 private:
-	TMap<ESocialTag, TArray<AActor*>> ObjectsByTags{};
+	TMap<ESocialTag, TSet<AActor*>> ObjectsByTags{};
 	
-	const TArray<AActor*> EmptyObjectsArray{};
+	const TSet<AActor*> EmptyObjectsArray{};
 
 public:
 
@@ -21,6 +21,9 @@ public:
 	void AddObjectByTags(AActor* NewObject, const TArray<ESocialTag>& SocialTags);
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<AActor*>& GetObjectsByTag(ESocialTag SocialTag);
+	void RemoveObject(AActor* OldObject);
+
+	UFUNCTION(BlueprintCallable)
+	const TSet<AActor*>& GetObjectsByTag(ESocialTag SocialTag);
 	
 };
