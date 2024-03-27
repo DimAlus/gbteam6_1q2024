@@ -14,6 +14,7 @@ class USaveDefault;
 class USaveTileMap;
 class USaveGameObjects;
 class USaveConfig;
+class USaveProgress;
 
 /** Service to Save or Load data
  * 
@@ -23,7 +24,6 @@ class GBTEAM6_API USaveService : public UObject {
 	GENERATED_BODY()
 
 private:
-	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);
 
 	USaveDefault* CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
 	USaveDefault* LoadSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
@@ -37,6 +37,9 @@ private:
 
 	void SaveConfig(AGameStateDefault* gameState, USaveConfig* saver);
 	void LoadConfig(AGameStateDefault* gameState, USaveConfig* saver);
+
+	void SaveProgress(AGameStateDefault* gameState, USaveProgress* saver);
+	void LoadProgress(AGameStateDefault* gameState, USaveProgress* saver);
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -51,6 +54,7 @@ public:
 	void LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
 
 private:
+	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);
 
 	void InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData);
 

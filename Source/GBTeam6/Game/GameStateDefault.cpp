@@ -131,6 +131,26 @@ TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> reso
 	return result;
 }
 
+void AGameStateDefault::DayChangingLoop(){
+	CurrentDayTime += DayChangingDelay;
+	FConfig conf;
+	GetConfig(EConfig::DayTime, conf);
+	float dayLength = conf.FloatValue;
+	GetConfig(EConfig::DayPeriod, conf);
+	FVector dayPeriod = conf.VectorValue;
+
+	if (CurrentDayTime > dayLength) {
+		CurrentDayTime -= dayLength;
+	}
+	float perc = CurrentDayTime / dayLength;
+	OnDayTimeChanging.Broadcast(perc);
+	bool isDay = perc > dayPeriod.X && perc < dayPeriod.Y;
+	if (isDay != CurrentIsDay) {
+		CurrentIsDay = isDay;
+		OnDayStateChanging(isDay);
+	}
+}
+
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
 	PlayerResources = {
@@ -139,6 +159,18 @@ void AGameStateDefault::BeginPlay() {
 	LoadConfig();
 	LoadSizeStacks();
 	InitializeServices();
+
+	FConfig conf;
+	GetConfig(EConfig::StartGameTime, conf);
+	CurrentDayTime = conf.FloatValue;
+	GetWorld()->GetTimerManager().SetTimer(
+		DayChangingTimer,
+		this,
+		&AGameStateDefault::DayChangingLoop,
+		DayChangingDelay,
+		true,
+		DayChangingDelay
+	);
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
