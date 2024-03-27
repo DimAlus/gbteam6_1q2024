@@ -135,6 +135,9 @@ enum class EMessageTag : uint8 {
 	UIESelector		UMETA(DisplayName = "UIE Selector"),
 	UIESlider		UMETA(DisplayName = "UIE Slider"),
 
+	UIESliderEffectVolume		UMETA(DisplayName = "UIE Slider Effect Volume"),
+	UIESliderVoiceVolume		UMETA(DisplayName = "UIE Slider Voice Volume"),
+
 	UIAScroll		UMETA(DisplayName = "UIA Scroll"),
 	UIAClick		UMETA(DisplayName = "UIA Click"),
 	UIAHover		UMETA(DisplayName = "UIA Hover"),

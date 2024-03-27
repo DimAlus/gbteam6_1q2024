@@ -12,6 +12,7 @@ class UMappingService;
 class USaveService;
 class UTaskManagerService;
 class UMessageService;
+class USoundService;
 
 /**
  * 
@@ -32,6 +33,8 @@ private:
 	USocialService* SocialService;
 	UPROPERTY()
 	UMessageService* MessageService;
+	UPROPERTY()
+	USoundService* SoundService;
 
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
@@ -53,6 +56,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_ResourceStack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_SystemSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_MusicSound;
 
 private:
 	void LoadConfig();
@@ -91,9 +100,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
 
-	/** Returns Social Service **/
+	/** Returns Message Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
+
+	/** Returns Sound Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
 
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);

@@ -215,3 +215,66 @@ struct FGameTask {
 	AActor* To {};
 	
 };
+
+USTRUCT(BlueprintType)
+struct FObjectSound {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Hit{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Spawn{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Death{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Damage{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Footsteps{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Selected{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Commanded{};
+	
+};
+
+USTRUCT(BlueprintType)
+struct FSystemSound : public FTableRowBase {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> PressButton{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> GameStart{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> TestSoundEffect{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> TestSoundVoice{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> Guidance{};
+	
+};
+
+USTRUCT(BlueprintType)
+struct FMusicSound : public FTableRowBase {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> MusicMainMenu{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> MusicPeaceful{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<USoundCue*> MusicBattle{};
+	
+};
