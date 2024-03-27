@@ -4,8 +4,8 @@
 #include "GBTeam6/Service/SocialService.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
-	Super::DestroyComponent(bPromoteChildren);
 	this->UnRegisterObjectInService();
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Initializer) {

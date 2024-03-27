@@ -1,7 +1,6 @@
 #include "./SoundService.h"
 
 #include "GameFramework/GameStateBase.h"
-#include "Sound/SoundCue.h"
 #include "Kismet/GameplayStatics.h"
 
 void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable)
@@ -60,24 +59,21 @@ TSet<EMessageTag> USoundService::GetSubscriberMessageTags()
 
 void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UGameObjectCore* sender)
 {
-	if (!SystemSound.PressButton.IsEmpty() && tags.Contains(EMessageTag::UIEButton))
+	if (SystemSound.PressButton && tags.Contains(EMessageTag::UIEButton))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(),
-			Cast<USoundBase>(SystemSound.PressButton.Top()));
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.PressButton);
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
-	if (!SystemSound.TestSoundEffect.IsEmpty() && tags.Contains(EMessageTag::UIESliderEffectVolume))
+	if (SystemSound.TestSoundEffect && tags.Contains(EMessageTag::UIESliderEffectVolume))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(),
-			Cast<USoundBase>(SystemSound.TestSoundEffect.Top()));
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundEffect);
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
 
-	if (!SystemSound.TestSoundVoice.IsEmpty() && tags.Contains(EMessageTag::UIESliderVoiceVolume))
+	if (SystemSound.TestSoundVoice && tags.Contains(EMessageTag::UIESliderVoiceVolume))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(),
-			Cast<USoundBase>(SystemSound.TestSoundVoice.Top()));
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundVoice);
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
 	

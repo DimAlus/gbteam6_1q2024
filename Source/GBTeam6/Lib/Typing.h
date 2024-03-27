@@ -221,25 +221,25 @@ struct FObjectSound {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Hit{};
+	USoundBase* Hit{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Spawn{};
+	USoundBase* Spawn{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Death{};
+	USoundBase* Death{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Damage{};
+	USoundBase* Damage{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Footsteps{};
+	USoundBase* Footsteps{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Selected{};
+	USoundBase* Selected{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Commanded{};
+	USoundBase* Commanded{};
 	
 };
 
@@ -248,19 +248,19 @@ struct FSystemSound : public FTableRowBase {
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> PressButton{};
+	USoundBase* PressButton{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> GameStart{};
+	USoundBase* GameStart{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> TestSoundEffect{};
+	USoundBase* TestSoundEffect{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> TestSoundVoice{};
+	USoundBase* TestSoundVoice{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> Guidance{};
+	USoundBase* Guidance{};
 	
 };
 
@@ -269,12 +269,12 @@ struct FMusicSound : public FTableRowBase {
 	GENERATED_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> MusicMainMenu{};
+	USoundBase* MusicMainMenu{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> MusicPeaceful{};
+	USoundBase* MusicPeaceful{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<USoundCue*> MusicBattle{};
+	USoundBase* MusicBattle{};
 	
 };
