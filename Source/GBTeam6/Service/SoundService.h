@@ -13,9 +13,12 @@ class GBTEAM6_API USoundService : public UObject, public IMessageObserver
 	GENERATED_BODY()
 
 public:
-	void Initialize(const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable);
+	void Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable);
 
 protected:
+
+	UPROPERTY()
+	const AGameStateBase* GameState = nullptr;
 
 	UPROPERTY()
 	FSystemSound SystemSound{};
@@ -24,7 +27,7 @@ protected:
 	FMusicSound MusicSound{};
 
 	UPROPERTY()
-	TSet<EMessageTag> SubscriberMessageTags;
+	TSet<EMessageTag> SubscriberMessageTags{};
 
 public:
 	

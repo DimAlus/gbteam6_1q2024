@@ -57,7 +57,7 @@ void AGameStateDefault::InitializeServices() {
 	this->SocialService = NewObject<USocialService>();
 
 	this->SoundService = NewObject<USoundService>();
-	this->SoundService->Initialize(DT_SystemSound, DT_MusicSound);
+	this->SoundService->Initialize(this, DT_SystemSound, DT_MusicSound);
 	this->MessageService->AddObserver(Cast<UObject>(SoundService),
 		SoundService->GetSubscriberMessageTags());
 }
