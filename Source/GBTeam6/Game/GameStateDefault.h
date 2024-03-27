@@ -11,6 +11,8 @@
 class UMappingService;
 class USaveService;
 class UTaskManagerService;
+class UMessageService;
+class USoundService;
 
 /**
  * 
@@ -29,6 +31,10 @@ private:
 	UTaskManagerService* TaskManagerService;
 	UPROPERTY()
 	USocialService* SocialService;
+	UPROPERTY()
+	UMessageService* MessageService;
+	UPROPERTY()
+	USoundService* SoundService;
 
 	UPROPERTY()
 	TMap<EConfig, FConfig> Configs;
@@ -51,6 +57,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_ResourceStack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_SystemSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_MusicSound;
+
 private:
 	void LoadConfig();
 	void LoadSizeStacks();
@@ -64,6 +76,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
 
 
 	virtual void BeginPlay() override;
@@ -84,6 +99,14 @@ public:
 	/** Returns Social Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
+
+	/** Returns Message Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
+
+	/** Returns Sound Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
 
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);

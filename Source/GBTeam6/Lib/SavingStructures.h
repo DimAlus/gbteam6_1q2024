@@ -28,6 +28,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FUISaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FHealthSaveData {
 	GENERATED_BODY()
 public:
@@ -84,14 +91,6 @@ USTRUCT(BlueprintType)
 struct FSocialSaveData {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ESocialTeam SocialTeam = ESocialTeam::None;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<ESocialTag> SocialTags{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	ESocialTag HomeObjectTag = ESocialTag::None;
 };
 
 
@@ -104,6 +103,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FActorSaveData ActorSaveData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FUISaveData UIData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FHealthSaveData HealthData{};

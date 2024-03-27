@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
 
 #include "MappingBaseComponent.generated.h"
@@ -12,8 +13,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildedEventSignature, bool, IsBu
 class AMapPreview;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API UMappingBaseComponent : public UActorComponent
-{
+class GBTEAM6_API UMappingBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	

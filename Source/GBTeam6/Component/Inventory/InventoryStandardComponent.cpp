@@ -1,29 +1,30 @@
 #include "./InventoryStandardComponent.h"
 #include "../../Game/GameStateDefault.h"
+#include "InventoryStandardComponent.h"
 
-void UInventoryStandardComponent::BeginPlay() {
-	Super::BeginPlay();
-}
 
 AGameStateDefault* UInventoryStandardComponent::GetGameState() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
-		UE_LOG(LgComponent, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
+		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
 		return nullptr;
 	}
 	return gameState;
 }
 
 void UInventoryStandardComponent::Initialize(const FInventoryComponentInitializer& initializer) {
+	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxStacksCount = initializer.CountStacks;
 }
 
 void UInventoryStandardComponent::SaveComponent(FInventorySaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.CountStacks = CurrentStacksCount;
 	saveData.Resources = Resources;
 }
 
 void UInventoryStandardComponent::LoadComponent(const FInventorySaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Loading!");
 	Resources = saveData.Resources;
 	CurrentStacksCount = saveData.CountStacks;
 }
@@ -48,29 +49,7 @@ void UInventoryStandardComponent::RollBack(bool isBack) {
 	}
 	Saves.RemoveAt(Saves.Num() - 1);
 }
-
-int UInventoryStandardComponent::StackCount(EResource res, int count) {
-	return count == 0 ? 0 : (count - 1) / GetGameState()->GetStackSize(res) + 1;
-}
-
-bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
-	SavePoint();
-	bool result = Push(resources);
-	RollBack(true);
-	OnInventoryChange.Broadcast();
-	return result;
-}
-
-bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
-	SavePoint();
-	bool result = Pop(resources);
-	RollBack(true);
-	OnInventoryChange.Broadcast();
-	return result;
-}
-
-bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
-	SavePoint();
+bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 	bool success = true;
 	for (const FPrice& res : resources) {
 		if (res.Resource == EResource::Actor) {
@@ -89,14 +68,10 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 		CurrentStacksCount += stacksAfter - stacksNow;
 		Resources[res.Resource] += res.Count;
 	}
-
-	RollBack(!success);
-	OnInventoryChange.Broadcast();
 	return success;
 }
 
-bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
-	SavePoint();
+bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 	for (const FPrice& res : resources) {
 		if (res.Resource == EResource::Actor) {
 			continue;
@@ -110,13 +85,50 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 			Resources[res.Resource] -= res.Count;
 		}
 		else {
-			RollBack(true);
 			return false;
 		}
 	}
-	RollBack(false);
-	OnInventoryChange.Broadcast();
 	return true;
+}
+
+int UInventoryStandardComponent::StackCount(EResource res, int count) {
+	return count == 0 ? 0 : (count - 1) / GetGameState()->GetStackSize(res) + 1;
+}
+
+bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
+	SavePoint();
+	bool result = _push(resources);
+	RollBack(true);
+	return result;
+}
+
+bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
+	SavePoint();
+	bool result = _pop(resources);
+	RollBack(true);
+	return result;
+}
+
+bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
+	SavePoint();
+	bool success = _push(resources);
+	UE_LOG_COMPONENT(Log, "Push resources (%d): %d!", resources.Num(), success);
+	if (success) {
+		OnInventoryChange.Broadcast();
+	}
+	RollBack(!success);
+	return success;
+}
+
+bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
+	SavePoint();
+	bool success = _pop(resources);
+	UE_LOG_COMPONENT(Log, "Pop resources (%d): %d!", resources.Num(), success);
+	if (success) {
+		OnInventoryChange.Broadcast();
+	}
+	RollBack(!success);
+	return success;
 }
 
 TArray<FPrice> UInventoryStandardComponent::GetStacks() {
@@ -146,4 +158,8 @@ int UInventoryStandardComponent::GetResourceCount(EResource resource) {
 
 int UInventoryStandardComponent::GetMaxStacksCount() {
 	return MaxStacksCount;
+}
+
+const TMap<EResource, int>& UInventoryStandardComponent::GetAllResources() {
+	return Resources;
 }

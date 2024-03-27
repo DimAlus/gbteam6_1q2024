@@ -6,13 +6,14 @@
 #include "InputAction.h"
 #include "./Enuming.h"
 #include "Typing.generated.h"
-
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
-
+#define UE_LOG_COMPONENT(LogType, Message, ...) \
+	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT("Message"), ##__VA_ARGS__))
+//TEXT("<%s>: (%s) Message")
 
 
 FString GetLevelName(ULevel* level);
@@ -129,10 +130,10 @@ struct FTRResourceStack : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere)
-	EResource Resource;
+	EResource Resource = EResource::None;
 
 	UPROPERTY(EditAnywhere)
-	int Size;
+	int Size = 0;
 };
 
 
@@ -212,5 +213,68 @@ struct FGameTask {
 	AActor* From {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* To {};
+	
+};
+
+USTRUCT(BlueprintType)
+struct FObjectSound {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Hit{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Spawn{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Death{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Damage{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Footsteps{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Selected{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Commanded{};
+	
+};
+
+USTRUCT(BlueprintType)
+struct FSystemSound : public FTableRowBase {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* PressButton{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* GameStart{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* TestSoundEffect{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* TestSoundVoice{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Guidance{};
+	
+};
+
+USTRUCT(BlueprintType)
+struct FMusicSound : public FTableRowBase {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* MusicMainMenu{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* MusicPeaceful{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* MusicBattle{};
 	
 };

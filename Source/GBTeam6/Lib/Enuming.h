@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+
 #include "Enuming.generated.h"
 
 /**
@@ -17,6 +18,7 @@ class GBTEAM6_API UEnuming : public UBlueprintFunctionLibrary
 
 UENUM(BlueprintType)
 enum class ETileState : uint8 {
+	
 	Free		UMETA(DisplayName = "Free"),
 	Busy		UMETA(DisplayName = "Busy")
 };
@@ -37,7 +39,8 @@ enum class EGameComponentType : uint8 {
 	Generator	UMETA(DisplayName = "Generator"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
-	Social		UMETA(DisplayName = "Social")
+	Social		UMETA(DisplayName = "Social"),
+	Sound		UMETA(DisplayName = "Sound")
 };
 
 UENUM(BlueprintType)
@@ -71,7 +74,9 @@ enum class EResource : uint8 {
 	Mushroom	UMETA(DisplayName = "Mushroom"),
 	Berry		UMETA(DisplayName = "Berry"),
 	Potion		UMETA(DisplayName = "Potion"),
-	Infusion	UMETA(DisplayName = "Infusion")
+	Infusion	UMETA(DisplayName = "Infusion"),
+	Decoction	UMETA(DisplayName = "Decoction"),
+	Herb		UMETA(DisplayName = "Herb")
 };
 
 UENUM(BlueprintType)
@@ -84,11 +89,36 @@ enum class ESocialTeam : uint8 {
 
 UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
-	None			UMETA(DisplayName = "None"),
-	Storage			UMETA(DisplayName = "Storage"),
-	Worker			UMETA(DisplayName = "Worker"),
-	Forester		UMETA(DisplayName = "Forester"),
-	ForesterHouse	UMETA(DisplayName = "ForesterHouse")
+	None				UMETA(DisplayName = "None"),
+	Storage				UMETA(DisplayName = "Storage"),
+	Worker				UMETA(DisplayName = "Worker"),
+	
+	Forester			UMETA(DisplayName = "Forester"),
+	Forestling			UMETA(DisplayName = "Forestling"),
+	ShoreMaiden			UMETA(DisplayName = "ShoreMaiden"),
+	WoodMaiden			UMETA(DisplayName = "WoodMaiden"),
+	MeadowMan			UMETA(DisplayName = "MeadowMan"),
+	Swimmer				UMETA(DisplayName = "Swimmer"),
+	Wisp				UMETA(DisplayName = "Wisp"),
+	Human				UMETA(DisplayName = "Human"),
+	HumanWarrior		UMETA(DisplayName = "HumanWarrior"),
+	HumanWarriorLeader	UMETA(DisplayName = "HumanWarriorLeader"),
+	
+	ForesterHouse		UMETA(DisplayName = "ForesterHouse"),
+	ForestlingHouse		UMETA(DisplayName = "ForestlingHouse"),
+	ShoreMaidenHouse	UMETA(DisplayName = "ShoreMaidenHouse"),
+	WoodMaidenHouse		UMETA(DisplayName = "WoodMaidenHouse"),
+	MeadowManHouse		UMETA(DisplayName = "MeadowManHouse"),
+	SwimmerHouse		UMETA(DisplayName = "SwimmerHouse"),
+	ReedThickets		UMETA(DisplayName = "ReedThickets"),
+	Cellar				UMETA(DisplayName = "Cellar"),
+	StumpAltar			UMETA(DisplayName = "StumpAltar"),
+	
+	BerryGrove			UMETA(DisplayName = "BerryGrove"),
+	WoodGrove			UMETA(DisplayName = "WoodGrove"),
+	HolyGrove			UMETA(DisplayName = "HolyGrove"),
+	MushroomGrove		UMETA(DisplayName = "MushroomGrove"),
+	HerbGrove			UMETA(DisplayName = "HerbGrove")
 };
 
 UENUM(BlueprintType)
@@ -101,5 +131,59 @@ enum class EAIState : uint8 {
 	Sleep			UMETA(DisplayName = "Sleep")
 };
 
+
+UENUM(BlueprintType)
+enum class EComandType : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Goto			UMETA(DisplayName = "GoTo"),
+	Attack			UMETA(DisplayName = "Attack"),
+	CombatMode		UMETA(DisplayName = "Combat Mode"),
+	CallMinions		UMETA(DisplayName = "Call Minions")
+};
+
+
+UENUM(BlueprintType)
+enum class EUIGameObjectPanelType : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Inventory		UMETA(DisplayName = "Inventory"),
+	Generator		UMETA(DisplayName = "Generator"),
+	Commands		UMETA(DisplayName = "Commands")
+};
+
+
+UENUM(BlueprintType)
+enum class EMessageTag : uint8 {
+	None			UMETA(DisplayName = "None"),
+	/** UI */
+	UI				UMETA(DisplayName = "UI"),
+	UIGame			UMETA(DisplayName = "UI In Menu"),
+	UIMenu			UMETA(DisplayName = "UI In Game"),
+	UIEButton		UMETA(DisplayName = "UIE Button"),
+	UIEIcon			UMETA(DisplayName = "UIE Icon"),
+	UIESelector		UMETA(DisplayName = "UIE Selector"),
+	UIESlider		UMETA(DisplayName = "UIE Slider"),
+
+	UIESliderEffectVolume		UMETA(DisplayName = "UIE Slider Effect Volume"),
+	UIESliderVoiceVolume		UMETA(DisplayName = "UIE Slider Voice Volume"),
+
+	UIAScroll		UMETA(DisplayName = "UIA Scroll"),
+	UIAClick		UMETA(DisplayName = "UIA Click"),
+	UIAHover		UMETA(DisplayName = "UIA Hover"),
+	UIAUnHover		UMETA(DisplayName = "UIA Unhover"),
+	
+	/** Game Objects*/
+	GOE				UMETA(DisplayName = "GOE Game Object Element"),
+	
+	GOASpawn		UMETA(DisplayName = "GOA Spawn"),
+	GOAHit			UMETA(DisplayName = "GOA Hit"),
+	GOADamage		UMETA(DisplayName = "GOA Get Damage"),
+	GOADeath		UMETA(DisplayName = "GOA Death"),
+
+	GOAInventory	UMETA(DisplayName = "GOA Inventory Changing"),
+	GOAGenerator	UMETA(DisplayName = "GOA Generator"),
+
+	MSuccess		UMETA(DisplayName = "Success"),
+	MFailed			UMETA(DisplayName = "Failed")
+};
 
 

@@ -10,6 +10,8 @@ class UMappingBaseComponent;
 class UGeneratorBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
+class UUIBaseComponent;
+class USoundBaseComponent;
 struct FMapInfo;
 struct FBarter;
 struct FPrice;
@@ -88,6 +90,58 @@ struct FGeneratorComponentInitData {
 };
 
 
+
+/***********************************************************************************/
+/// <summary>
+/// UI Initializing
+/// </summary>
+
+USTRUCT(BlueprintType)
+struct FUIGameObjectPanelData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	EUIGameObjectPanelType PanelType = EUIGameObjectPanelType::None;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString PanelName{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FUIComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString ObjectName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool UIable{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture* Icon{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<EComandType> EnabledCommands{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FUIGameObjectPanelData> EnabledPanels{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FUIComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UUIBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FUIComponentInitializer ComponentInitializer{};
+
+};
+
+
 /***********************************************************************************/
 /// <summary>
 /// Mapping Initializing
@@ -157,7 +211,7 @@ struct FInventoryComponentInitializer {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountStacks;
+	int CountStacks = 0;
 };
 
 
@@ -205,12 +259,38 @@ struct FSocialComponentInitData {
 
 
 /***********************************************************************************/
+/// <summary>
+/// Social Initializing
+/// </summary>
+USTRUCT(BlueprintType)
+struct FSoundComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FObjectSound ObjectSound{};
+
+};
+
+USTRUCT(BlueprintType)
+struct FSoundComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USoundBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSoundComponentInitializer ComponentInitializer{};
+};
+
+
+/***********************************************************************************/
 
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Name{};
+	FUIComponentInitData UIComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FHealthComponentInitData HealthComponentInitData{};
@@ -223,4 +303,7 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialComponentInitData SocialComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSoundComponentInitData SoundComponentInitData{};
 };

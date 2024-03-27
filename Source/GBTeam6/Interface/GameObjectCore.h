@@ -32,6 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AActor* GetOwner();
 
+	void SaveActor(FActorSaveData& saveData);
 	void LoadActor(const FActorSaveData& saveData);
 
 	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)

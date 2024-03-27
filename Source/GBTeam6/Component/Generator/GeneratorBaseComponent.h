@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
+#include "../BaseComponent.h"
 #include "../../Lib/Lib.h"
 
 #include "GeneratorBaseComponent.generated.h"
@@ -11,7 +12,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class GBTEAM6_API UGeneratorBaseComponent : public UActorComponent {
+class GBTEAM6_API UGeneratorBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	
@@ -30,6 +31,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<FPrice> GetNeeds(int steps);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<FPrice> GetOvers(int steps);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWorkEnabled(bool isEnabled);
@@ -57,9 +61,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<FGenerator> GetTaskStack();
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool IsStackTask();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddToTaskStack(int index);

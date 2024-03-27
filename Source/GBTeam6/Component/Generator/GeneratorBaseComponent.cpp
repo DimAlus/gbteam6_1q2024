@@ -13,8 +13,11 @@ void UGeneratorBaseComponent::SaveComponent(FGeneratorSaveData& saveData) {
 void UGeneratorBaseComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 }
 
-TArray<FPrice> UGeneratorBaseComponent::GetNeeds(int steps)
-{
+TArray<FPrice> UGeneratorBaseComponent::GetNeeds(int steps) {
+	return {};
+}
+
+TArray<FPrice> UGeneratorBaseComponent::GetOvers(int steps) {
 	return {};
 }
 
@@ -49,10 +52,6 @@ bool UGeneratorBaseComponent::IsWorking() {
 
 TArray<FGenerator> UGeneratorBaseComponent::GetTaskStack() {
 	return TArray<FGenerator>();
-}
-
-bool UGeneratorBaseComponent::IsStackTask() {
-	return false;
 }
 
 void UGeneratorBaseComponent::AddToTaskStack(int index) {

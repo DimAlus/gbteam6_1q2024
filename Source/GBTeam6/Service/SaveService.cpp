@@ -56,30 +56,6 @@ void USaveService::SaveSave(USaveDefault* saver) {
 }
 
 
-void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData) {
-	for (AActor* act : actors) {
-		if (IsValid(act)) {
-			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
-			FGameObjectSaveData SaveData;
-			
-			SaveData.ObjectClass = act->GetClass();
-			SaveData.ActorSaveData.ActorLocation = act->GetActorLocation();
-			SaveData.ActorSaveData.ActorRotation = act->GetActorRotation();
-
-			if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
-				health->SaveComponent(SaveData.HealthData);
-			}
-			if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
-				mapping->SaveComponent(SaveData.MappingData);
-			}
-			saveData.Add(SaveData);
-		}
-	}
-}
-
-
-
 void USaveService::SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save TileMap"), *GetNameSafe(this));
 	UMappingService* mappingService = gameState->GetMappingService();
@@ -270,6 +246,43 @@ void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool
 	}
 }
 
+
+
+void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData) {
+	for (AActor* act : actors) {
+		if (IsValid(act)) {
+			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+			UGameObjectCore* core = obj->Execute_GetCore(act);
+			FGameObjectSaveData SaveData;
+
+			SaveData.ObjectClass = act->GetClass();
+
+			core->SaveActor(SaveData.ActorSaveData);
+
+			if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
+				health->SaveComponent(SaveData.HealthData);
+			}
+			if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
+				mapping->SaveComponent(SaveData.MappingData);
+			}
+			if (auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory))) {
+				inventory->SaveComponent(SaveData.InventoryData);
+			}
+			if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
+				generator->SaveComponent(SaveData.GeneratorData);
+			}
+			if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+				social->SaveComponent(SaveData.SocialData);
+			}
+			if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
+				ui->SaveComponent(SaveData.SocialData);
+			}
+			saveData.Add(SaveData);
+		}
+	}
+}
+
+
 void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData) {
 	core->LoadActor(objectSaveData.ActorSaveData);
 
@@ -287,5 +300,8 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	}
 	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 		social->LoadComponent(objectSaveData.SocialData);
+	}
+	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
+		ui->LoadComponent(objectSaveData.SocialData);
 	}
 }
