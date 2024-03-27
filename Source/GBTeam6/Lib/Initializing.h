@@ -11,6 +11,7 @@ class UGeneratorBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
 class UUIBaseComponent;
+class USoundBaseComponent;
 struct FMapInfo;
 struct FBarter;
 struct FPrice;
@@ -258,12 +259,35 @@ struct FSocialComponentInitData {
 
 
 /***********************************************************************************/
+/// <summary>
+/// Social Initializing
+/// </summary>
+USTRUCT(BlueprintType)
+struct FSoundComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FObjectSound ObjectSound{};
+
+};
+
+USTRUCT(BlueprintType)
+struct FSoundComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USoundBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSoundComponentInitializer ComponentInitializer{};
+};
+
+
+/***********************************************************************************/
 
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Name{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FUIComponentInitData UIComponentInitData{};
@@ -279,4 +303,7 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialComponentInitData SocialComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSoundComponentInitData SoundComponentInitData{};
 };

@@ -10,7 +10,9 @@ class GBTEAM6_API USocialDefaultComponent : public USocialBaseComponent
 {
 	GENERATED_BODY()
 
-public:
+public:	
+	virtual void DestroyComponent(bool bPromoteChildren = false) override;
+
 	virtual void Initialize(const FSocialComponentInitializer& Initializer) override;
 
 	virtual void SaveComponent(FSocialSaveData& saveData) override;
@@ -18,6 +20,7 @@ public:
 
 protected:
 	virtual void RegisterObjectInService() override;
+	void UnRegisterObjectInService();
 
 public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) override;

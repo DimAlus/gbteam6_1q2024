@@ -21,7 +21,7 @@ private:
 	AActor* Storage;
 
 	UPROPERTY()
-	TArray<AActor*> Clients;
+	TSet<AActor*> Clients;
 
 	UPROPERTY()
 	TArray<FGameTask> GameTasks;

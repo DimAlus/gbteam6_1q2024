@@ -1,4 +1,5 @@
 #include "./InventoryBaseComponent.h"
+#include "InventoryBaseComponent.h"
 
 UInventoryBaseComponent::UInventoryBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -37,6 +38,11 @@ int UInventoryBaseComponent::GetResourceCount(EResource resource) {
 	return 0;
 }
 
-int UInventoryBaseComponent::GetMaxStacksCount() {
-	return 0;
+int UInventoryBaseComponent::GetMaxStacksCount() { 
+	return 0; 
+}
+
+const TMap<EResource, int>& UInventoryBaseComponent::GetAllResources() { 
+	static TMap<EResource, int> result = {};
+	return result; 
 }

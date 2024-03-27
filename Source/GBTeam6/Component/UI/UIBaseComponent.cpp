@@ -5,6 +5,7 @@ UUIBaseComponent::UUIBaseComponent() {
 }
 
 void UUIBaseComponent::Initialize(const FUIComponentInitializer& initializer) {
+	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	this->UIable = initializer.UIable;
 	this->ObjectName = initializer.ObjectName;
 	this->Icon = initializer.Icon;
@@ -13,7 +14,9 @@ void UUIBaseComponent::Initialize(const FUIComponentInitializer& initializer) {
 }
 
 void UUIBaseComponent::SaveComponent(FUISaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Saving!");
 }
 
 void UUIBaseComponent::LoadComponent(const FUISaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Loading!");
 }
