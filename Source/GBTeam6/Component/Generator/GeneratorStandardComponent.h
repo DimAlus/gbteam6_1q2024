@@ -46,6 +46,7 @@ private:
 
 	TArray<FPassiveGenerator> PassiveGenerators;
 
+	bool IsDestructed = false;
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
@@ -84,4 +85,8 @@ public:
 	virtual void AddToTaskStack(int index) override;
 	virtual void RemoveFromStack(int index) override;
 	virtual void CancelTask() override;
+
+
+	virtual void SetIsDesеstruction(bool isDestroy) override;
+	virtual bool GetIsDesеstruction() override;
 };

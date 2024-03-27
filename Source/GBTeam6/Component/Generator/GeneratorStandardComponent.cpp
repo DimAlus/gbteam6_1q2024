@@ -5,6 +5,7 @@
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
+#include "GeneratorStandardComponent.h"
 
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
 }
@@ -77,6 +78,7 @@ void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	saveData.IsBuilded = IsBuilded;
 	saveData.TaskStack = TaskStack;
 	saveData.PassiveGeneration = PassiveGenerators;
+	saveDate.IsDestructed = IsDestructed;
 }
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
@@ -89,6 +91,7 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 	TaskStack = saveData.TaskStack;
 	SetWorkEnabled(saveData.IsWorked);
 	PassiveGenerators = saveData.PassiveGeneration;
+	IsDestructed = saveDate.IsDestructed;
 	if (PassiveGenerators.Num() > 0) {
 		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
 	}
@@ -122,11 +125,17 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
+	if (GetIsDesеstruction()) {
+		return {};
+	}
 	return GetGameState()->GetResourcesByStacks(_getNeeds(steps));
 }
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
+	if (GetIsDesеstruction()) {
+		return GetGameState()->GetResourcesByStacks(GetInventory()->GetAllResources());
+	}
 	TMap<EResource, int> needs = _getNeeds(steps);
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
@@ -235,6 +244,12 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
+	if (GetIsDesеstruction()) {
+		if (GetInventory()->GetAllResources().Num() == 0){
+			GetOwner()->Destroy();
+		}
+		return;
+	}
 	if (IsWorked) {
 		if ((CurrentDelay -= TimerDelay) < 0) {
 			ApplyWork();
@@ -246,6 +261,9 @@ void UGeneratorStandardComponent::WorkLoop() {
 }
 
 void UGeneratorStandardComponent::PassiveWorkLoop() {
+	if (GetIsDesеstruction()){
+		return;
+	}
 	UInventoryBaseComponent* inventory = GetInventory();
 	if (IsBuilded && inventory) {
 		TArray<FPrice> prs;
@@ -345,13 +363,14 @@ void UGeneratorStandardComponent::ChangeGenerationLimit(int index, int newLimit)
 }
 
 FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
-	if (!IsWorked) {
+	if (!IsWorked || GetIsDesеstruction()) {
 		return FGenerator();
 	}
 	return GetCurrentGenerics()[WorkIndex];
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
+	if (GetIsDesеstruction()) return {};
 	return GetCurrentGenerics();
 }
 
@@ -364,11 +383,15 @@ float UGeneratorStandardComponent::GetTimePercents() {
 }
 
 bool UGeneratorStandardComponent::IsWorking() {
+	if (GetIsDesеstruction()) return false;
 	return IsWorked;
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
 	TArray<FGenerator> result;
+	if (GetIsDesеstruction()) {
+		return result;
+	}
 	for (int i : TaskStack) {
 		result.Add(GetCurrentGenerics()[i]);
 	}
@@ -395,3 +418,10 @@ void UGeneratorStandardComponent::CancelTask() {
 	}
 }
 
+void UGeneratorStandardComponent::SetIsDesеstruction(bool isDestroy) {
+	IsDestructed = isDestroy;	
+}
+
+bool UGeneratorStandardComponent::GetIsDesеstruction() { 
+	return IsDestructed; 
+}

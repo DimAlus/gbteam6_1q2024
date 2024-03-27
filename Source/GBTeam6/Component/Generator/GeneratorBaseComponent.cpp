@@ -1,4 +1,5 @@
 #include "./GeneratorBaseComponent.h"
+#include "GeneratorBaseComponent.h"
 
 UGeneratorBaseComponent::UGeneratorBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -61,4 +62,11 @@ void UGeneratorBaseComponent::RemoveFromStack(int index) {
 }
 
 void UGeneratorBaseComponent::CancelTask() {
+}
+
+void UGeneratorBaseComponent::SetIsDesеstruction(bool isDestroy) {
+}
+
+bool UGeneratorBaseComponent::GetIsDesеstruction() { 
+	return false; 
 }

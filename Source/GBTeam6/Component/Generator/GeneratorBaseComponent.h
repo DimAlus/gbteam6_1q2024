@@ -72,6 +72,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void CancelTask();
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetIsDesеstruction(bool isDestroy);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetIsDesеstruction();
+
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTaskStackChanging OnTaskStackChanging;
