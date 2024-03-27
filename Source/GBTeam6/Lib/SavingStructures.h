@@ -73,6 +73,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int> TaskStack{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FPassiveGenerator PassiveGeneration{};
 };
 
 

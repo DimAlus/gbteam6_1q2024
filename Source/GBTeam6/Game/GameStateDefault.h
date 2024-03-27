@@ -37,6 +37,8 @@ private:
 	TMap<EConfig, FConfig> Configs;
 	
 	TMap<EResource, int> StackSizes;
+
+	TMap<EResource, int> PlayerResources;
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
@@ -67,6 +69,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	bool PushPlayerResource(EResource resource, int count);
+
+	UFUNCTION(BlueprintCallable)
+	bool PopPlayerResource(EResource resource, int count);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);

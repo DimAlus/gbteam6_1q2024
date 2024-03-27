@@ -31,12 +31,18 @@ protected:
 	};
 	TArray<FSaveStruct> Saves;
 
+	static TSet<EResource> IgnoreResources{
+		EResource::None,
+		EResource::Actor,
+		EResource::Spirit
+	};
 private:
-	AGameStateDefault* GetGameState();
 	void SavePoint();
 	void RollBack(bool isBack);
 	bool _push(const TArray<FPrice>& resources);
 	bool _pop(const TArray<FPrice>& resources);
+	bool _player_push(const TArray<FPrice>& resources);
+	bool _player_pop(const TArray<FPrice>& resources);
 	int StackCount(EResource res, int count);
 public:
 	virtual bool CanPush(const TArray<FPrice>& resources) override;

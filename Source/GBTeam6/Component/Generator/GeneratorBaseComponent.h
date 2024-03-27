@@ -10,6 +10,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParam(FOnPassiveGenerator, EResource, Resource, float, Time);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UGeneratorBaseComponent : public UBaseComponent {
@@ -77,4 +78,10 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTaskStackChanging OnGeneratorsChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPassiveGenerator OnPassiveGeneratorFailed;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPassiveGenerator OnPassiveGeneratorSuccess;
 };

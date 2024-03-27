@@ -48,6 +48,13 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	CurrentGenerics = &BuildingGenerics;
 	IsBuilded = false;
 
+	PassiveGenerators = initializer.PassiveGeneration;
+	for (int i = 0; i < PassiveGenerators.Num(); i++) {
+		PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
+	}
+	if (PassiveGenerators.Num() > 0) {
+		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
+	}
 
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
@@ -69,6 +76,7 @@ void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	saveData.WorkTime = CurrentDelay;
 	saveData.IsBuilded = IsBuilded;
 	saveData.TaskStack = TaskStack;
+	saveData.PassiveGeneration = PassiveGenerators;
 }
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
@@ -80,6 +88,10 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 	CurrentGenerics = IsBuilded ? &Generics : &BuildingGenerics;
 	TaskStack = saveData.TaskStack;
 	SetWorkEnabled(saveData.IsWorked);
+	PassiveGenerators = saveData.PassiveGeneration;
+	if (PassiveGenerators.Num() > 0) {
+		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
+	}
 }
 
 
@@ -233,6 +245,35 @@ void UGeneratorStandardComponent::WorkLoop() {
 	}
 }
 
+void UGeneratorStandardComponent::PassiveWorkLoop() {
+	UInventoryBaseComponent* inventory = GetInventory();
+	if (IsBuilded && inventory) {
+		TArray<FPrice> prs;
+		prs.Add({});
+		for (int i = 0; i < PassiveGenerators.Num(); i++) {
+			if ((PassiveGenerators[i].CurrentTime -= TimerPassiveDelay) < 0){
+				prs[0] = PassiveGenerators[i].Resource;
+				prs[0].Count = abs(prs[0].Count);
+				if (PassiveGenerators[i].Resource.Count > 0 
+					? inventory->Push(prs)
+					: inventory->Pop(prs)) {
+					PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
+					OnPassiveGeneratorSuccess.Broadcast(
+						PassiveGenerators[i].Resource.Resource, 
+						PassiveGenerators[i].CurrentTime
+					);
+				}
+				else {
+					OnPassiveGeneratorFailed.Broadcast(
+						PassiveGenerators[i].Resource.Resource, 
+						PassiveGenerators[i].CurrentTime
+					);
+				}
+			}
+		}
+	}
+}
+
 void UGeneratorStandardComponent::CreateTimer() {
 	GetWorld()->GetTimerManager().SetTimer(
 		generatorTimer,
@@ -243,6 +284,17 @@ void UGeneratorStandardComponent::CreateTimer() {
 		TimerDelay
 	);
 	GetWorld()->GetTimerManager().PauseTimer(generatorTimer);
+
+
+	GetWorld()->GetTimerManager().SetTimer(
+		passiveGeneratorTimer,
+		this,
+		&UGeneratorStandardComponent::PassiveWorkLoop,
+		TimerPassiveDelay,
+		true,
+		TimerPassiveDelay
+	);
+	GetWorld()->GetTimerManager().PauseTimer(passiveGeneratorTimer);
 }
 
 void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {

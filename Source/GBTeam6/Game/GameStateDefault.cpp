@@ -10,6 +10,8 @@
 #include "../Service/SocialService.h"
 #include "../Service/MessageService.h"
 
+#include "../Component/Inventory/InventoryBaseComponent.h"
+
 
 void AGameStateDefault::LoadConfig() {
 	Configs = {
@@ -73,7 +75,40 @@ int AGameStateDefault::GetStackSize(EResource resource) {
 }
 
 int AGameStateDefault::GetResourceCount(EResource resource) {
-	return 0;
+	if (PlayerResources.Contains(resource)) {
+		return PlayerResources[resource];
+	}
+	int cnt = 0;
+	const TSet<AActor*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
+	for (auto actr : actors) {
+		if (IGameObjectInterface* obj = Cast<IGameObjectInterface>(actr)) {
+			if (UGameObjectCore* core = obj->Execute_GetCore(actr)) {
+				cnt += Cast<UInventoryBaseComponent>(
+					core->GetComponent(EGameComponentType::Inventory)
+				)->GetResourceCount(resource);
+			}
+		}
+		
+	}
+	return cnt;
+}
+
+bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
+	if (PlayerResources.Contains(resource)) {
+		PlayerResources[resource] += count;
+	}
+	return true;
+}
+
+bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
+	if (PlayerResources.Contains(resource)) {
+		if (PlayerResources[resource] > count) {
+			PlayerResources[resource] -= count;
+			return true;
+		}
+		return false;
+	}
+	return true;
 }
 
 TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> resources) {
@@ -98,6 +133,9 @@ TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> reso
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
+	PlayerResources = {
+		{ EResource::Spirit, 0 }
+	};
 	LoadConfig();
 	LoadSizeStacks();
 	InitializeServices();

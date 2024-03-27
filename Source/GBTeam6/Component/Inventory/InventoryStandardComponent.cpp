@@ -3,15 +3,6 @@
 #include "InventoryStandardComponent.h"
 
 
-AGameStateDefault* UInventoryStandardComponent::GetGameState() {
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-	if (!IsValid(gameState)) {
-		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-		return nullptr;
-	}
-	return gameState;
-}
-
 void UInventoryStandardComponent::Initialize(const FInventoryComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxStacksCount = initializer.CountStacks;
@@ -52,7 +43,7 @@ void UInventoryStandardComponent::RollBack(bool isBack) {
 bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 	bool success = true;
 	for (const FPrice& res : resources) {
-		if (res.Resource == EResource::Actor) {
+		if (IgnoreResources.Contains(EResource::Actor)) {
 			continue;
 		}
 		if (!Resources.Contains(res.Resource)) {
@@ -73,7 +64,7 @@ bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 
 bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 	for (const FPrice& res : resources) {
-		if (res.Resource == EResource::Actor) {
+		if (IgnoreResources.Contains(res.Resource)) {
 			continue;
 		}
 		if (Resources.Contains(res.Resource)
@@ -91,20 +82,66 @@ bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 	return true;
 }
 
+bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) {
+	int i = 0;
+	bool success = true;
+	AGameStateDefault* gameState = GetGameState();
+	for (i = 0; i < resources.Num(); i++) {
+		if (!gameState->PushPlayerResource(resources[i].Resource, resources[i].Count)) {
+			success = false;
+			i--;
+			break;
+		}
+	}
+	if (!success) {
+		for (; i >= 0; i--) {
+			gameState->PopPlayerResource(resources[i].Resource, resources[i].Count)
+		}
+	}
+	return success;
+}
+
+bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) {
+	int i = 0;
+	bool success = true;
+	AGameStateDefault* gameState = GetGameState();
+	for (i = 0; i < resources.Num(); i++) {
+		if (!gameState->PopPlayerResource(resources[i].Resource, resources[i].Count)) {
+			success = false;
+			i--;
+			break;
+		}
+	}
+	if (!success) {
+		for (; i >= 0; i--) {
+			gameState->PushPlayerResource(resources[i].Resource, resources[i].Count)
+		}
+	}
+	return success;
+}
+
 int UInventoryStandardComponent::StackCount(EResource res, int count) {
 	return count == 0 ? 0 : (count - 1) / GetGameState()->GetStackSize(res) + 1;
 }
 
 bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
 	SavePoint();
-	bool result = _push(resources);
+	bool result = _player_push(resources);
+	if (result) {
+		_player_pop(resources);
+		result = _push(resources);
+	}
 	RollBack(true);
 	return result;
 }
 
 bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
 	SavePoint();
-	bool result = _pop(resources);
+	bool result = _player_pop(resources);
+	if (result) {
+		_player_push(resources);
+		result = _pop(resources);
+	}
 	RollBack(true);
 	return result;
 }
@@ -112,6 +149,9 @@ bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
 bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool success = _push(resources);
+	if (success) {
+		success = _player_push(resources);
+	}
 	UE_LOG_COMPONENT(Log, "Push resources (%d): %d!", resources.Num(), success);
 	if (success) {
 		OnInventoryChange.Broadcast();
@@ -123,6 +163,9 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool success = _pop(resources);
+	if (success) {
+		success = _player_ppp(resources);
+	}
 	UE_LOG_COMPONENT(Log, "Pop resources (%d): %d!", resources.Num(), success);
 	if (success) {
 		OnInventoryChange.Broadcast();

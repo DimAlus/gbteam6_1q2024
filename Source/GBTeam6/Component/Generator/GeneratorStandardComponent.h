@@ -40,6 +40,12 @@ private:
 	bool IsBuilded = false;
 	TArray<FGenerator> BuildingGenerics;
 
+
+	FTimerHandle passiveGeneratorTimer;
+	float TimerPassiveDelay = 0.5f;
+
+	TArray<FPassiveGenerator> PassiveGenerators;
+
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
@@ -53,6 +59,7 @@ private:
 	void CancelWork(const FGenerator& generator);
 	void Generate(const FGenerator& generator);
 	void WorkLoop();
+	void PassiveWorkLoop();
 	void CreateTimer();
 
 	void SpawnActors(const TArray<FPrice>& resources);
