@@ -20,6 +20,8 @@ public:
 	// Sets default values for this actor's properties
 	ASimpleObject();
 
+	virtual void Destroyed() override;
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMappingDefaultComponent* MappingComponent;

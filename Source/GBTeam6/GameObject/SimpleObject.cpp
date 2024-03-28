@@ -10,7 +10,14 @@ ASimpleObject::ASimpleObject() {
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
 	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
+	//OnDestroyed.AddDynamic(this, &ASimpleObject::DestroyGameObject);
+}
 
+void ASimpleObject::Destroyed() {
+	if (GameObjectCore) {
+		GameObjectCore->DestroyOwner();
+	}
+	Super::Destroyed();
 }
 
 void ASimpleObject::BeginPlay() {
