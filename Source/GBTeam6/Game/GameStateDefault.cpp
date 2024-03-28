@@ -10,10 +10,12 @@
 #include "../Service/SocialService.h"
 #include "../Service/MessageService.h"
 #include "../Service/SoundService.h"
+#include "../Service/GameEventsService.h"
 
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "../Interface/GameObjectCore.h"
+#include "GameStateDefault.h"
 
 
 void AGameStateDefault::LoadConfig() {
@@ -64,6 +66,9 @@ void AGameStateDefault::InitializeServices() {
 	this->SoundService->Initialize(this, DT_SystemSound, DT_MusicSound);
 	this->MessageService->AddObserver(Cast<UObject>(SoundService),
 		SoundService->GetSubscriberMessageTags());
+
+	this->GameEventsService = NewObject<UGameEventsService>();
+	this->GameEventsService->SetGameState(this);
 }
 
 void AGameStateDefault::ClearServices()
@@ -207,6 +212,25 @@ bool AGameStateDefault::SetConfig(EConfig configType, FConfig config) {
 	return true;
 }
 
-const TMap<EConfig, FConfig>& AGameStateDefault::GetAllConfigs() {
-	return Configs;
+bool AGameStateDefault::CheckNeed(const FNeed& need) { 
+	switch (need.NeedType)
+	{
+	case ENeedType::Resource:
+		int cnt = GetResourceCount(need.Resource);
+		int cnt2 = std::clamp(cnt, need.ResourceConstrains.X, need.ResourceConstrains.Y);
+		return cnt == cnt2;
+
+	case ENeedType::SocialTag:
+		int cnt = GetSocialService()->GetObjectsByTag(need.SocialTag);
+		int cnt2 = std::clamp(cnt, need.SocialTagConstrains.X, need.SocialTagConstrains.Y);
+		return cnt == cnt2;
+
+	case ENeedType::Quest:
+		return GetGameEventsService()->IsEventComplited(need.QuestName);
+		
+	default:
+		return true;
+	}
 }
+
+const TMap<EConfig, FConfig>& AGameStateDefault::GetAllConfigs() { return Configs; }

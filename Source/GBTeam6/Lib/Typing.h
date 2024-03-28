@@ -15,6 +15,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT("Message"), ##__VA_ARGS__))
 //TEXT("<%s>: (%s) Message")
 
+class UGameObjectCore;
 
 FString GetLevelName(ULevel* level);
 
@@ -292,3 +293,121 @@ struct FMusicSound : public FTableRowBase {
 	USoundBase* MusicBattle{};
 	
 };
+
+
+USTRUCT(BlueprintType)
+struct FNeed {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ENeedType NeedType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
+	ESocialTag SocialTag { ESocialTag::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
+	FIntVector SocialTagConstrains { 0, 10000, 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
+	EResource Resource { EResource::None };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
+	FIntVector ResourceConstrains { 0, 10000, 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Time)
+	float Time{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
+	FString QuestName{};
+}
+
+USTRUCT(BlueprintType)
+struct FNeedArray {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FNeed> Needs{};
+}
+
+
+USTRUCT(BlueprintType)
+struct FQuestAction {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EQuestActionType ActionType{};
+
+
+}
+
+
+USTRUCT(BlueprintType)
+struct FQuestPage {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UTexture* BackgroundImage{}; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* BackgroundSound{}; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* ForegroundSound{}; 
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString HeaderText{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Text{};
+}
+
+
+USTRUCT(BlueprintType)
+struct FTRGameEvent : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CompleteOnSuccess{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CompleteOnFail{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
+	TArray<FNeed> Requirements{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
+	TArray<FQuestPage> StartPages{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
+	TArray<FQuestAction> StartActions{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FNeedArray> SuccessNeeds{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestPage> SuccessPages{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestAction> SuccessActions{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FNeedArray> FailNeeds{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestPage> FailPages{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestAction> FailActions{};
+};
+
+
+USTRUCT()
+struct FGameEventConext {
+	GENERATED_BODY()
+
+	FString EventName{};
+
+	TArray<UGameObjectCore*> SelectedObjects{};
+	TArray<UGameObjectCore*> SpawnedObjects{};
+	float CurrentTime{};
+}

@@ -188,3 +188,21 @@ enum class EMessageTag : uint8 {
 };
 
 
+UENUM(BlueprintType)
+enum class ENeedType : uint8 {
+	Resource		UMETA(DisplayName = "Resource"),
+	SocialTag		UMETA(DisplayName = "SocialTag"),
+	Time			UMETA(DisplayName = "Time"),
+	Quest			UMETA(DisplayName = "Quest")
+};
+
+
+UENUM(BlueprintType)
+enum class EQuestActionType : uint8 {
+	SpawnActors,
+	ChangeInventory,
+	AddSelectionWidget,
+	Select,
+	Deselect
+};
+
