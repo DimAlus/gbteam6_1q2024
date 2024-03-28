@@ -38,6 +38,9 @@ struct FHealthComponentInitializer {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHealth = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DeadTime = 1.f;
 };
 
 

@@ -9,16 +9,35 @@ void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Init
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxHealth = Initializer.MaxHealth;
 	CurrentHealth = MaxHealth;
+	DeadTime = Initializer.DeadTime;
 }
 
 void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.Health = CurrentHealth;
+	saveData.IsDead = IsDead;
+	saveData.IsTimerToDeath = isTimerToDeath;
 }
 
 void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	CurrentHealth = saveData.Health;
+	IsDead = saveData.IsDead;
+	isTimerToDeath = saveData.IsTimerToDeath;
+	if (saveData.IsTimerToDeath){
+		GetWorld()->GetTimerManager().SetTimer(
+			destructionTimer,
+			this,
+			FTimerDelegate::CreateWeakLambda(this, [this]() {
+				if (IsValid(this) && IsValid(this->GetOwner())) {
+					this->GetOwner()->Destroy();
+				}
+			}),
+			DeadTime,
+			false,
+			DeadTime
+		);
+	}
 }
 
 void UHealthDefaultComponent::BeginPlay() {
@@ -38,7 +57,23 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 			CurrentHealth = 0.f;
 			bDead = true;
 			UE_LOG_COMPONENT(Log, "Death");
+			destroyOnDeath = true;
 			OnDeath.Broadcast();
+			if (destroyOnDeath) {
+				isTimerToDeath = true;
+				GetWorld()->GetTimerManager().SetTimer(
+					destructionTimer,
+					this,
+					FTimerDelegate::CreateWeakLambda(this, [this]() {
+						if (IsValid(this) && IsValid(this->GetOwner())) {
+							this->GetOwner()->Destroy();
+						}
+					}),
+					DeadTime,
+					false,
+					DeadTime
+				);
+			}
 		}
 	}
 }

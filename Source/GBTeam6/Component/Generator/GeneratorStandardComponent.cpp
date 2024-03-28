@@ -57,6 +57,14 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
 	}
 
+
+	if (auto health = Cast<UHealthBaseComponent>(
+			GetCore()->GetComponent(EGameComponentType::Health)
+		)) {
+		health->OnDeath.AddDynamic(this, &UGeneratorStandardComponent::OnOwnerDeath);
+	}
+
+
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
 		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
@@ -153,6 +161,17 @@ TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
 
 TArray<FGenerator>& UGeneratorStandardComponent::GetCurrentGenerics() {
 	return *CurrentGenerics;
+}
+
+void UGeneratorStandardComponent::OnOwnerDeath() {
+	if (GetInventory()->GetAllResources().Num() > 0) {
+		if (auto health = Cast<UHealthBaseComponent>(
+				GetCore()->GetComponent(EGameComponentType::Health)
+			)) {
+			health->NotDestroyNow();
+			this->SetIsDestruction(true);
+		}
+	}
 }
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {

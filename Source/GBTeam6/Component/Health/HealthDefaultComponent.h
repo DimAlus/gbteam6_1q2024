@@ -26,6 +26,12 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
+
+	bool destroyOnDeath;
+	bool isTimerToDeath = false;
+	FTimerHandle destructionTimer;
+
+	float DeadTime;
 	/** Is dead flag */
 	UPROPERTY()
 	bool bDead;
@@ -47,5 +53,7 @@ public:
 	virtual float GetCurrentHealth() override { return CurrentHealth; }
 	virtual float GetPercentageHealth() override {return CurrentHealth/MaxHealth;}
 	virtual bool IsDead() override { return bDead; }
+	// If will called at OnDeath, actor will not destroyed
+	virtual void NotDestroyNow() override { destroyOnDeath = false; }
 	
 };

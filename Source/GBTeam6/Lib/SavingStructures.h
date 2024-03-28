@@ -40,6 +40,13 @@ struct FHealthSaveData {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Health = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDead{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsTimerToDeath{};
+	
 };
 
 
