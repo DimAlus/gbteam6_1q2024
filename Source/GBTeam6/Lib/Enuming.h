@@ -40,7 +40,8 @@ enum class EGameComponentType : uint8 {
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
-	Sound		UMETA(DisplayName = "Sound")
+	Sound		UMETA(DisplayName = "Sound"),
+	Collision	UMETA(DisplayName = "Collision")
 };
 
 UENUM(BlueprintType)

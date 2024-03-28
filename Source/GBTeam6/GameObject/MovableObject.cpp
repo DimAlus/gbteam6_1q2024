@@ -10,6 +10,9 @@ AMovableObject::AMovableObject() {
 	PrimaryActorTick.bCanEverTick = true;
 	MappingComponent = CreateDefaultSubobject<UMappingBaseComponent>(TEXT("MappingComponent"));
 
+	GetCapsuleComponent()->SetCollisionProfileName("GameObject");
+	GetMesh()->SetCollisionProfileName("NoCollision");
+	
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -43,6 +46,11 @@ void AMovableObject::BeginPlay() {
 	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Movement,
 		GetMovementComponent()
+	);
+
+	this->GameObjectCore->BindComponentNoRegister(
+		EGameComponentType::Collision,
+		GetCapsuleComponent()
 	);
 
 	this->GameObjectCore->BindComponentNoRegister(

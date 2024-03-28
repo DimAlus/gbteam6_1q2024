@@ -1,6 +1,8 @@
 #include "./MappingDefaultComponent.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Service/MappingService.h"
+#include "Components/ShapeComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
@@ -70,6 +72,31 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			}
 		}
 	}
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
+	{
+		if(GetCore())
+		{
+			UE_LOG_COMPONENT(Log, "CoreIsValid");
+			if (auto Collision =
+					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
+			{
+				Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+			}
+			else
+			{
+				UE_LOG_COMPONENT(Log, "Collision in not");
+			}
+		
+		}
+		else
+		{
+			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::NoCollision on initialize! No Core!");
+		}
+		
+	}));
+	
+
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
@@ -90,6 +117,18 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 	if (!SetIsBuilded(true)) {
 		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
 		GetOwner()->Destroy();
+	}
+	if(GetCore())
+	{
+		if (auto Collision =
+				Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
+		{
+			Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+		}
+	}
+	else
+	{
+		UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on LoadComponent! No Core!");
 	}
 }
 
@@ -190,6 +229,20 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 		}
 		bIsBuilded = isBuilded;
 		OnBuilded.Broadcast(isBuilded);
+		
+		if(GetCore())
+		{
+			if (auto Collision =
+					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
+			{
+				Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			}
+		}
+		else
+		{
+			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on SetIsBuilded! No Core!");
+		}
+		
 		return true;
 	}
 	return false;

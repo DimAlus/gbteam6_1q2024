@@ -8,6 +8,17 @@
 
 ASimpleObject::ASimpleObject() {
 	PrimaryActorTick.bCanEverTick = false;
+	
+	SceneBase = CreateDefaultSubobject<USceneComponent>(TEXT("BaseSceneComponent"));
+	
+	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
+	Collision->SetupAttachment(SceneBase);
+	Collision->bDynamicObstacle = true;
+	Collision->SetCollisionProfileName("GameObject");
+	
+	ObjectMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObjectMesh"));
+	ObjectMesh->SetupAttachment(SceneBase);
+	ObjectMesh->SetCollisionProfileName("NoCollision");
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
 	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
@@ -32,6 +43,10 @@ void ASimpleObject::BeginPlay() {
 		MappingComponent
 	);
 
+	this->GameObjectCore->BindComponentNoRegister(
+		EGameComponentType::Collision,
+		Collision
+	);
 	this->GameObjectCore->InitDataByName(ObjectName);
 
 
