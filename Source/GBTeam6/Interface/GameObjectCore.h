@@ -32,6 +32,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AActor* GetOwner();
 
+	void DestroyOwner();
+
 	void SaveActor(FActorSaveData& saveData);
 	void LoadActor(const FActorSaveData& saveData);
 

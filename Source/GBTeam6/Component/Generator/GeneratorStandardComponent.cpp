@@ -5,6 +5,7 @@
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
+#include "GeneratorStandardComponent.h"
 
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
 }
@@ -48,6 +49,13 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	CurrentGenerics = &BuildingGenerics;
 	IsBuilded = false;
 
+	PassiveGenerators = initializer.PassiveGeneration;
+	for (int i = 0; i < PassiveGenerators.Num(); i++) {
+		PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
+	}
+	if (PassiveGenerators.Num() > 0) {
+		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
+	}
 
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
@@ -69,6 +77,8 @@ void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	saveData.WorkTime = CurrentDelay;
 	saveData.IsBuilded = IsBuilded;
 	saveData.TaskStack = TaskStack;
+	saveData.PassiveGeneration = PassiveGenerators;
+	saveData.IsDestructed = IsDestructed;
 }
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
@@ -80,6 +90,11 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 	CurrentGenerics = IsBuilded ? &Generics : &BuildingGenerics;
 	TaskStack = saveData.TaskStack;
 	SetWorkEnabled(saveData.IsWorked);
+	PassiveGenerators = saveData.PassiveGeneration;
+	IsDestructed = saveData.IsDestructed;
+	if (PassiveGenerators.Num() > 0) {
+		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
+	}
 }
 
 
@@ -110,11 +125,17 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
+	if (GetIsDestruction()) {
+		return {};
+	}
 	return GetGameState()->GetResourcesByStacks(_getNeeds(steps));
 }
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
+	if (GetIsDestruction()) {
+		return GetGameState()->GetResourcesByStacks(GetInventory()->GetAllResources());
+	}
 	TMap<EResource, int> needs = _getNeeds(steps);
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
@@ -223,6 +244,12 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
+	if (GetIsDestruction()) {
+		if (GetInventory()->GetAllResources().Num() == 0){
+			GetOwner()->Destroy();
+		}
+		return;
+	}
 	if (IsWorked) {
 		if ((CurrentDelay -= TimerDelay) < 0) {
 			ApplyWork();
@@ -230,6 +257,38 @@ void UGeneratorStandardComponent::WorkLoop() {
 	}
 	if (!IsWorked) {
 		FindWork();
+	}
+}
+
+void UGeneratorStandardComponent::PassiveWorkLoop() {
+	if (GetIsDestruction()){
+		return;
+	}
+	UInventoryBaseComponent* inventory = GetInventory();
+	if (IsBuilded && inventory) {
+		TArray<FPrice> prs;
+		prs.Add({});
+		for (int i = 0; i < PassiveGenerators.Num(); i++) {
+			if ((PassiveGenerators[i].CurrentTime -= TimerPassiveDelay) < 0){
+				prs[0] = PassiveGenerators[i].Resource;
+				prs[0].Count = abs(prs[0].Count);
+				if (PassiveGenerators[i].Resource.Count > 0 
+					? inventory->Push(prs)
+					: inventory->Pop(prs)) {
+					PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
+					OnPassiveGeneratorSuccess.Broadcast(
+						PassiveGenerators[i].Resource.Resource, 
+						PassiveGenerators[i].CurrentTime
+					);
+				}
+				else {
+					OnPassiveGeneratorFailed.Broadcast(
+						PassiveGenerators[i].Resource.Resource, 
+						PassiveGenerators[i].CurrentTime
+					);
+				}
+			}
+		}
 	}
 }
 
@@ -243,6 +302,17 @@ void UGeneratorStandardComponent::CreateTimer() {
 		TimerDelay
 	);
 	GetWorld()->GetTimerManager().PauseTimer(generatorTimer);
+
+
+	GetWorld()->GetTimerManager().SetTimer(
+		passiveGeneratorTimer,
+		this,
+		&UGeneratorStandardComponent::PassiveWorkLoop,
+		TimerPassiveDelay,
+		true,
+		TimerPassiveDelay
+	);
+	GetWorld()->GetTimerManager().PauseTimer(passiveGeneratorTimer);
 }
 
 void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
@@ -293,13 +363,14 @@ void UGeneratorStandardComponent::ChangeGenerationLimit(int index, int newLimit)
 }
 
 FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
-	if (!IsWorked) {
+	if (!IsWorked || GetIsDestruction()) {
 		return FGenerator();
 	}
 	return GetCurrentGenerics()[WorkIndex];
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
+	if (GetIsDestruction()) return {};
 	return GetCurrentGenerics();
 }
 
@@ -312,11 +383,15 @@ float UGeneratorStandardComponent::GetTimePercents() {
 }
 
 bool UGeneratorStandardComponent::IsWorking() {
+	if (GetIsDestruction()) return false;
 	return IsWorked;
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
 	TArray<FGenerator> result;
+	if (GetIsDestruction()) {
+		return result;
+	}
 	for (int i : TaskStack) {
 		result.Add(GetCurrentGenerics()[i]);
 	}
@@ -343,3 +418,10 @@ void UGeneratorStandardComponent::CancelTask() {
 	}
 }
 
+void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
+	IsDestructed = isDestroy;	
+}
+
+bool UGeneratorStandardComponent::GetIsDestruction() { 
+	return IsDestructed; 
+}

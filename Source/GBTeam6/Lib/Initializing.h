@@ -67,6 +67,9 @@ struct FGeneratorComponentInitializer {
 	TArray<FBarter> BarterTypes{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FPassiveGenerator> PassiveGeneration{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FPrice> BuildPrice{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

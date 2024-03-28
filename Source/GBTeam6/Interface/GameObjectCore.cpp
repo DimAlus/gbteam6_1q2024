@@ -18,6 +18,12 @@ AActor* UGameObjectCore::GetOwner() {
 	return owner;
 }
 
+void UGameObjectCore::DestroyOwner() {
+	for (auto cmp : ExistingComponents) {
+		cmp.Value->DestroyComponent();
+	}
+}
+
 void UGameObjectCore::SaveActor(FActorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Actor Loading!");
 	AActor* aowner = GetOwner();

@@ -59,6 +59,7 @@ enum class EConfig : uint8 {
 	/** Gameplay */
 	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
 	DayPeriod			UMETA(DisplayName = "FV Day Period"),
+	StartGameTime		UMETA(DisplayName = "F  Day Start Time"),
 	WorkDelay			UMETA(DisplayName = "F  Work Delay")
 };
 

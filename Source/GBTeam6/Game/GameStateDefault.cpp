@@ -11,6 +11,10 @@
 #include "../Service/MessageService.h"
 #include "../Service/SoundService.h"
 
+#include "../Component/Inventory/InventoryBaseComponent.h"
+#include "../Interface/GameObjectInterface.h"
+#include "../Interface/GameObjectCore.h"
+
 
 void AGameStateDefault::LoadConfig() {
 	Configs = {
@@ -79,7 +83,40 @@ int AGameStateDefault::GetStackSize(EResource resource) {
 }
 
 int AGameStateDefault::GetResourceCount(EResource resource) {
-	return 0;
+	if (PlayerResources.Contains(resource)) {
+		return PlayerResources[resource];
+	}
+	int cnt = 0;
+	const TSet<AActor*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
+	for (auto actr : actors) {
+		if (IGameObjectInterface* obj = Cast<IGameObjectInterface>(actr)) {
+			if (UGameObjectCore* core = obj->Execute_GetCore(actr)) {
+				cnt += Cast<UInventoryBaseComponent>(
+					core->GetComponent(EGameComponentType::Inventory)
+				)->GetResourceCount(resource);
+			}
+		}
+		
+	}
+	return cnt;
+}
+
+bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
+	if (PlayerResources.Contains(resource)) {
+		PlayerResources[resource] += count;
+	}
+	return true;
+}
+
+bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
+	if (PlayerResources.Contains(resource)) {
+		if (PlayerResources[resource] > count) {
+			PlayerResources[resource] -= count;
+			return true;
+		}
+		return false;
+	}
+	return true;
 }
 
 TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> resources) {
@@ -102,11 +139,46 @@ TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> reso
 	return result;
 }
 
+void AGameStateDefault::DayChangingLoop(){
+	CurrentDayTime += DayChangingDelay;
+	FConfig conf;
+	GetConfig(EConfig::DayTime, conf);
+	float dayLength = conf.FloatValue;
+	GetConfig(EConfig::DayPeriod, conf);
+	FVector dayPeriod = conf.VectorValue;
+
+	if (CurrentDayTime > dayLength) {
+		CurrentDayTime -= dayLength;
+	}
+	float perc = CurrentDayTime / dayLength;
+	OnDayTimeChanging.Broadcast(perc);
+	bool isDay = perc > dayPeriod.X && perc < dayPeriod.Y;
+	if (isDay != CurrentIsDay) {
+		CurrentIsDay = isDay;
+		OnDayStateChanging.Broadcast(isDay);
+	}
+}
+
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
+	PlayerResources = {
+		{ EResource::Spirit, 0 }
+	};
 	LoadConfig();
 	LoadSizeStacks();
 	InitializeServices();
+
+	FConfig conf;
+	GetConfig(EConfig::StartGameTime, conf);
+	CurrentDayTime = conf.FloatValue;
+	GetWorld()->GetTimerManager().SetTimer(
+		DayChangingTimer,
+		this,
+		&AGameStateDefault::DayChangingLoop,
+		DayChangingDelay,
+		true,
+		DayChangingDelay
+	);
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {

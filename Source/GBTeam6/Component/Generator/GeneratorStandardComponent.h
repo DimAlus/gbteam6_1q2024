@@ -40,6 +40,13 @@ private:
 	bool IsBuilded = false;
 	TArray<FGenerator> BuildingGenerics;
 
+
+	FTimerHandle passiveGeneratorTimer;
+	float TimerPassiveDelay = 0.5f;
+
+	TArray<FPassiveGenerator> PassiveGenerators;
+
+	bool IsDestructed = false;
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
@@ -53,6 +60,7 @@ private:
 	void CancelWork(const FGenerator& generator);
 	void Generate(const FGenerator& generator);
 	void WorkLoop();
+	void PassiveWorkLoop();
 	void CreateTimer();
 
 	void SpawnActors(const TArray<FPrice>& resources);
@@ -77,4 +85,8 @@ public:
 	virtual void AddToTaskStack(int index) override;
 	virtual void RemoveFromStack(int index) override;
 	virtual void CancelTask() override;
+
+
+	virtual void SetIsDestruction(bool isDestroy) override;
+	virtual bool GetIsDestruction() override;
 };

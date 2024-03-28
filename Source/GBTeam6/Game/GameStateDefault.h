@@ -14,6 +14,10 @@ class UTaskManagerService;
 class UMessageService;
 class USoundService;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayStateChanging, bool, IsDay);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayTimeChanging, float, DayPercents);
+
+
 /**
  * 
  */
@@ -21,25 +25,10 @@ UCLASS()
 class GBTEAM6_API AGameStateDefault : public AGameStateBase
 {
 	GENERATED_BODY()
+public:
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
-private:
-	UPROPERTY()
-	UMappingService* MappingService;
-	UPROPERTY()
-	USaveService* SaveService;
-	UPROPERTY()
-	UTaskManagerService* TaskManagerService;
-	UPROPERTY()
-	USocialService* SocialService;
-	UPROPERTY()
-	UMessageService* MessageService;
-	UPROPERTY()
-	USoundService* SoundService;
-
-	UPROPERTY()
-	TMap<EConfig, FConfig> Configs;
-	
-	TMap<EResource, int> StackSizes;
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
@@ -64,25 +53,29 @@ public:
 	UDataTable* DT_MusicSound;
 
 private:
-	void LoadConfig();
-	void LoadSizeStacks();
+
+friend class USaveService;
+
+	UPROPERTY()
+	UMappingService* MappingService;
+	UPROPERTY()
+	USaveService* SaveService;
+	UPROPERTY()
+	UTaskManagerService* TaskManagerService;
+	UPROPERTY()
+	USocialService* SocialService;
+	UPROPERTY()
+	UMessageService* MessageService;
+	UPROPERTY()
+	USoundService* SoundService;
+
+	
 public:
 	// Initialize All Services
 	void InitializeServices();
 	// DEstroy All Services
 	void ClearServices();
 
-	int GetStackSize(EResource resource);
-
-	UFUNCTION(BlueprintCallable)
-	int GetResourceCount(EResource resource);
-
-	UFUNCTION(BlueprintCallable)
-	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
-
-
-	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	/** Returns Mapping Service **/
 	UFUNCTION(BlueprintCallable)
@@ -108,12 +101,72 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
 
+/// Configs
+private:
+	
+	UPROPERTY()
+	TMap<EConfig, FConfig> Configs;
+
+private:
+	void LoadConfig();
+
+	const TMap<EConfig, FConfig>& GetAllConfigs();
+public:
+
 	UFUNCTION(BlueprintCallable)
 	bool GetConfig(EConfig configType, FConfig& config);
 
 	UFUNCTION(BlueprintCallable)
 	bool SetConfig(EConfig configType, FConfig config);
 
-	const TMap<EConfig, FConfig>& GetAllConfigs();
 
+
+
+
+/// Player Resources
+private:
+	TMap<EResource, int> StackSizes;
+
+	TMap<EResource, int> PlayerResources;
+
+	
+public:
+	int GetStackSize(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	int GetResourceCount(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	bool PushPlayerResource(EResource resource, int count);
+
+	UFUNCTION(BlueprintCallable)
+	bool PopPlayerResource(EResource resource, int count);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
+
+
+/// Day Time Changing
+private:
+	float CurrentDayTime;
+	float DayChangingDelay = 0.5f;
+	bool CurrentIsDay = true;
+	FTimerHandle DayChangingTimer;
+	void DayChangingLoop();
+	
+private:
+	void LoadSizeStacks();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsDay() const { return CurrentIsDay; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetCurrentDayTime() const { return CurrentDayTime; }
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnDayStateChanging OnDayStateChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnDayTimeChanging OnDayTimeChanging;
 };

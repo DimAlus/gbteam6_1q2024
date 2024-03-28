@@ -196,6 +196,20 @@ struct FGenerator {
 };
 
 USTRUCT(BlueprintType)
+struct FPassiveGenerator {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FPrice Resource{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Time{};
+
+	UPROPERTY()
+	float CurrentTime{};
+};
+
+USTRUCT(BlueprintType)
 struct FGameTask {
 	GENERATED_BODY()
 

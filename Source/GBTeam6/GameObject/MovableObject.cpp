@@ -26,6 +26,13 @@ AMovableObject::AMovableObject() {
 
 }
 
+void AMovableObject::Destroyed() {
+	if (GameObjectCore) {
+		GameObjectCore->DestroyOwner();
+	}
+	Super::Destroyed();
+}
+
 // Called when the game starts or when spawned
 void AMovableObject::BeginPlay() {
 	Super::BeginPlay();
