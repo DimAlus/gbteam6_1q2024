@@ -15,19 +15,18 @@ void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Init
 void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.Health = CurrentHealth;
-	saveData.IsDead = IsDead;
+	saveData.IsDead = bDead;
 	saveData.IsTimerToDeath = isTimerToDeath;
 }
 
 void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	CurrentHealth = saveData.Health;
-	IsDead = saveData.IsDead;
+	bDead = saveData.IsDead;
 	isTimerToDeath = saveData.IsTimerToDeath;
 	if (saveData.IsTimerToDeath){
 		GetWorld()->GetTimerManager().SetTimer(
 			destructionTimer,
-			this,
 			FTimerDelegate::CreateWeakLambda(this, [this]() {
 				if (IsValid(this) && IsValid(this->GetOwner())) {
 					this->GetOwner()->Destroy();
@@ -63,7 +62,6 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 				isTimerToDeath = true;
 				GetWorld()->GetTimerManager().SetTimer(
 					destructionTimer,
-					this,
 					FTimerDelegate::CreateWeakLambda(this, [this]() {
 						if (IsValid(this) && IsValid(this->GetOwner())) {
 							this->GetOwner()->Destroy();

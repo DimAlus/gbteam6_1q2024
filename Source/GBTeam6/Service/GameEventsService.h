@@ -17,7 +17,7 @@ class GBTEAM6_API UGameEventsService : public UObject
 {
 	GENERATED_BODY()
 
-friendly class USaveService;
+friend class USaveService;
 private:
 	AGameStateDefault* gameState;
 
@@ -39,7 +39,7 @@ private:
 	const FTRGameEvent& GetEventData(FString name);
 public:
 
-	FORCEINLINE void SetGameState(AGameStateDefault* gs) const { gameState = sg; };
+	FORCEINLINE void SetGameState(AGameStateDefault* gs) { gameState = gs; };
 	void Update();
 	void CheckStartEvents();
 	

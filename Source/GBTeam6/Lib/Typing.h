@@ -303,23 +303,24 @@ struct FNeed {
 	ENeedType NeedType{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
-	ESocialTag SocialTag { ESocialTag::None };
+	ESocialTag SocialTag{ ESocialTag::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
-	FIntVector SocialTagConstrains { 0, 10000, 0 };
+	FIntVector SocialTagConstrains{ 0, 10000, 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
-	EResource Resource { EResource::None };
+	EResource Resource{ EResource::None };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
-	FIntVector ResourceConstrains { 0, 10000, 0 };
+	FIntVector ResourceConstrains{ 0, 10000, 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Time)
 	float Time{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
 	FString QuestName{};
-}
+};
+
 
 USTRUCT(BlueprintType)
 struct FNeedArray {
@@ -327,7 +328,7 @@ struct FNeedArray {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FNeed> Needs{};
-}
+};
 
 
 USTRUCT(BlueprintType)
@@ -338,7 +339,7 @@ struct FQuestAction {
 	EQuestActionType ActionType{};
 
 
-}
+};
 
 
 USTRUCT(BlueprintType)
@@ -346,20 +347,20 @@ struct FQuestPage {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UTexture* BackgroundImage{}; 
+	UTexture* BackgroundImage{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* BackgroundSound{}; 
+	USoundBase* BackgroundSound{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* ForegroundSound{}; 
+	USoundBase* ForegroundSound{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString HeaderText{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString Text{};
-}
+};
 
 
 USTRUCT(BlueprintType)
@@ -410,4 +411,4 @@ struct FGameEventConext {
 	TArray<UGameObjectCore*> SelectedObjects{};
 	TArray<UGameObjectCore*> SpawnedObjects{};
 	float CurrentTime{};
-}
+};

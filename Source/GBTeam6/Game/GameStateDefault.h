@@ -74,7 +74,7 @@ private:
 	UPROPERTY()
 	USoundService* SoundService;
 	UPROPERTY()
-	USoundService* GameEventsService;
+	UGameEventsService* GameEventsService;
 
 	
 public:

@@ -4,6 +4,7 @@
 #include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Game/GameStateDefault.h"
 #include "GameEventsService.h"
 
 void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& EventContext) {
@@ -11,7 +12,15 @@ void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& 
 }
 
 void UGameEventsService::StartEvent(FString EventName) {
-	
+	FGameEventConext context;
+	context.EventName = EventName;
+	const FTRGameEvent& evt = GetEventData(EventName);
+	ProcessEvents.Add(EventName);
+	CurrentEvents.Add(context);
+	for (auto act : evt.StartActions) {
+		DoAction(act, context);
+	}
+	ShowPages(evt.StartPages, context);
 }
 
 bool UGameEventsService::CheckNeed(const FNeed& need, FGameEventConext& EventContext) {
@@ -52,11 +61,11 @@ void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventCo
 
 
 const FTRGameEvent& UGameEventsService::GetEventData(FString name) {
-	return gameState->DT_GameEvents->FindRow<FTRGameEvent>(name);
+	return *gameState->DT_GameEvents->FindRow<FTRGameEvent>(FName(name), "");
 }
 
 void UGameEventsService::Update() {
-	for (int i = CurrentEvents.Num() - 1 i >= 0; i--) {
+	for (int i = CurrentEvents.Num() - 1; i >= 0; i--) {
 		FGameEventConext& context = CurrentEvents[i];
 		const FTRGameEvent& row = GetEventData(context.EventName);
 		context.CurrentTime += UpdateDelay;
@@ -79,17 +88,19 @@ void UGameEventsService::Update() {
 
 void UGameEventsService::CheckStartEvents() {
 	TArray<FString> EnabledEvents;
-	for(auto it : gameState->DT_GameEvents->RowMap) {
-		FTRGameEvent* row = it.Value;
-		if (CompletedEvents.Contains(it.Key)
-			|| ProcessEvents.Contains(it.Key)) {
+	for(auto it : gameState->DT_GameEvents->GetRowMap()) {
+		FTRGameEvent* row = (FTRGameEvent*)it.Value;
+		if (CompletedEvents.Contains(it.Key.ToString())
+			|| ProcessEvents.Contains(it.Key.ToString())) {
 			continue;
 		}
-		if CheckNeed(row->Requirements, NoneContext) {
-			EnabledEvents.Add(it.Key);
+		if (CheckNeedArray(row->Requirements, NoneContext)) {
+			EnabledEvents.Add(it.Key.ToString());
 		}
 	}
-
+	if (EnabledEvents.Num() > 0) {
+		StartEvent(EnabledEvents[FMath::RandRange(1, EnabledEvents.Num())]);
+	}
 }
 
 bool UGameEventsService::IsEventComplited(FString EventName) {

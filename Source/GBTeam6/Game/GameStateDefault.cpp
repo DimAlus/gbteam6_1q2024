@@ -213,16 +213,17 @@ bool AGameStateDefault::SetConfig(EConfig configType, FConfig config) {
 }
 
 bool AGameStateDefault::CheckNeed(const FNeed& need) { 
+	int cnt, cnt2;
 	switch (need.NeedType)
 	{
 	case ENeedType::Resource:
-		int cnt = GetResourceCount(need.Resource);
-		int cnt2 = std::clamp(cnt, need.ResourceConstrains.X, need.ResourceConstrains.Y);
+		cnt = GetResourceCount(need.Resource);
+		cnt2 = std::clamp(cnt, need.ResourceConstrains.X, need.ResourceConstrains.Y);
 		return cnt == cnt2;
 
 	case ENeedType::SocialTag:
-		int cnt = GetSocialService()->GetObjectsByTag(need.SocialTag);
-		int cnt2 = std::clamp(cnt, need.SocialTagConstrains.X, need.SocialTagConstrains.Y);
+		cnt = GetSocialService()->GetObjectsByTag(need.SocialTag).Num();
+		cnt2 = std::clamp(cnt, need.SocialTagConstrains.X, need.SocialTagConstrains.Y);
 		return cnt == cnt2;
 
 	case ENeedType::Quest:

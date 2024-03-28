@@ -3,6 +3,7 @@
 #include "../../Interface/GameObjectCore.h"
 #include "../../Interface/GameObjectInterface.h"
 #include "../Inventory/InventoryBaseComponent.h"
+#include "../Health/HealthBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
 #include "GeneratorStandardComponent.h"
