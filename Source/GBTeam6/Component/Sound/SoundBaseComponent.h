@@ -23,6 +23,9 @@ protected:
 	FObjectSound ObjectSound{};
 
 public:
-	
+
+	UFUNCTION(BlueprintCallable)
+	virtual const FObjectSound& GetObjectSound() {return ObjectSound;}
+
 	
 };

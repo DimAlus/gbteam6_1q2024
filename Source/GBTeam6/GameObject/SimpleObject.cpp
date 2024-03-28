@@ -3,6 +3,7 @@
 #include "../Game/GameStateDefault.h"
 #include "../Service/SaveService.h"
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Service/TaskManagerService.h"
 
 ASimpleObject::ASimpleObject() {
@@ -37,18 +38,24 @@ void ASimpleObject::BeginPlay() {
 	this->GameObjectCore->GetComponent(EGameComponentType::Generator));
 	GeneratorComponent->OnResourceGenerated.AddDynamic(this, &ASimpleObject::OnResourceGeneratedBehaviour);
 	
-	if (ObjectName == TEXT("ForesterHouse"))
+	this->GameObjectCore->SetIsCreated();
+
+	if(auto SocialComponent = Cast<USocialBaseComponent>(this->GameObjectCore->GetComponent(EGameComponentType::Social)))
 	{
-		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+		auto SocialTags = SocialComponent->GetSocialTags();
+
+		if (SocialTags.Contains(ESocialTag::MainStorage))
 		{
-			if (auto TaskManager = GameState->GetTaskManagerService())
+			if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
 			{
-				TaskManager->AddStorage(this);
+				if (auto TaskManager = GameState->GetTaskManagerService())
+				{
+					TaskManager->AddStorage(this);
+				}
 			}
 		}
 	}
-
-	this->GameObjectCore->SetIsCreated();
+	
 }
 
 void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)

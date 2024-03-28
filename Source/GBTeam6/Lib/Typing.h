@@ -221,6 +221,12 @@ struct FObjectSound {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Select{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Command{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Hit{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -234,13 +240,6 @@ struct FObjectSound {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Footsteps{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* Selected{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* Commanded{};
-	
 };
 
 USTRUCT(BlueprintType)

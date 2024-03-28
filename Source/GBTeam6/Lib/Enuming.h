@@ -90,6 +90,7 @@ enum class ESocialTeam : uint8 {
 UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
+	MainStorage			UMETA(DisplayName = "MainStorage"),
 	Storage				UMETA(DisplayName = "Storage"),
 	Worker				UMETA(DisplayName = "Worker"),
 	
@@ -154,6 +155,10 @@ enum class EUIGameObjectPanelType : uint8 {
 UENUM(BlueprintType)
 enum class EMessageTag : uint8 {
 	None			UMETA(DisplayName = "None"),
+
+	/** Global */
+	GLB				UMETA(DisplayName = "GLB Global events"),
+	
 	/** UI */
 	UI				UMETA(DisplayName = "UI"),
 	UIGame			UMETA(DisplayName = "UI In Menu"),
@@ -173,6 +178,9 @@ enum class EMessageTag : uint8 {
 	
 	/** Game Objects*/
 	GOE				UMETA(DisplayName = "GOE Game Object Element"),
+
+	GOASelect		UMETA(DisplayName = "GOA Select"),
+	GOACommand		UMETA(DisplayName = "GOA Command"),
 	
 	GOASpawn		UMETA(DisplayName = "GOA Spawn"),
 	GOAHit			UMETA(DisplayName = "GOA Hit"),
