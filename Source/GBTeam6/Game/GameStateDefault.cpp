@@ -9,6 +9,7 @@
 #include "../Service/TaskManagerService.h"
 #include "../Service/SocialService.h"
 #include "../Service/MessageService.h"
+#include "../Service/SoundService.h"
 
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
@@ -58,6 +59,11 @@ void AGameStateDefault::InitializeServices() {
 	this->SaveService = NewObject<USaveService>();
 	this->TaskManagerService = NewObject<UTaskManagerService>();
 	this->SocialService = NewObject<USocialService>();
+
+	this->SoundService = NewObject<USoundService>();
+	this->SoundService->Initialize(this, DT_SystemSound, DT_MusicSound);
+	this->MessageService->AddObserver(Cast<UObject>(SoundService),
+		SoundService->GetSubscriberMessageTags());
 }
 
 void AGameStateDefault::ClearServices()

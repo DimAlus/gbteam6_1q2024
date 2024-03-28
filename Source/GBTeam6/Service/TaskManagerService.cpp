@@ -5,6 +5,7 @@
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
 
 void UTaskManagerService::ShowGameTasksDebug()
@@ -37,7 +38,7 @@ bool UTaskManagerService::AddClientObject(AActor* ClientObject)
 {
 	if (Clients.Contains(ClientObject))
 		return false;
-	Clients.AddUnique(ClientObject);
+	Clients.Add(ClientObject);
 	UE_LOG(LogTemp, Warning, TEXT("TaskManager : Client added"));
 	return true;
 }
@@ -71,12 +72,22 @@ bool UTaskManagerService::RefreshNeeds()
 				)
 			{
 				auto CurrentClientNeeds = Generator->GetNeeds(1);
+				auto CurrentClientOvers = Generator->GetOvers(1);
 				
 				for (auto ClientNeed : CurrentClientNeeds)
 				{
 					if (Storage == Client)
 						continue;
 					FGameTask NewTask = {nullptr,ClientNeed.Resource,ClientNeed.Count, Storage, Client}; 
+					GameTasks.Add(NewTask);
+				}
+
+				
+				for (auto ClientOver : CurrentClientOvers)
+				{
+					if (Storage == Client)
+						continue;
+					FGameTask NewTask = {nullptr,ClientOver.Resource,ClientOver.Count, Client, Storage}; 
 					GameTasks.Add(NewTask);
 				}
 			}

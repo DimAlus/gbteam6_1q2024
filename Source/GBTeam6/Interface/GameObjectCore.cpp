@@ -4,6 +4,7 @@
 #include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
 #include "../Component/UI/UIBaseComponent.h"
+#include "../Component/Sound/SoundBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
@@ -108,6 +109,14 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	);
 	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::UI, NewUIComponent);
+
+	//Create Sound component
+	USoundBaseComponent* NewSoundComponent = NewObject<USoundBaseComponent>(
+		owner,
+		GetNvlClass(InitData.SoundComponentInitData.ComponentClass, USoundBaseComponent::StaticClass())
+	);
+	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Sound, NewUIComponent);
 
 }
 

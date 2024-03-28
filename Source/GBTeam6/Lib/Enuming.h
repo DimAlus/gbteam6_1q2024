@@ -39,7 +39,8 @@ enum class EGameComponentType : uint8 {
 	Generator	UMETA(DisplayName = "Generator"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
-	Social		UMETA(DisplayName = "Social")
+	Social		UMETA(DisplayName = "Social"),
+	Sound		UMETA(DisplayName = "Sound")
 };
 
 UENUM(BlueprintType)
@@ -74,7 +75,9 @@ enum class EResource : uint8 {
 	Mushroom	UMETA(DisplayName = "Mushroom"),
 	Berry		UMETA(DisplayName = "Berry"),
 	Potion		UMETA(DisplayName = "Potion"),
-	Infusion	UMETA(DisplayName = "Infusion")
+	Infusion	UMETA(DisplayName = "Infusion"),
+	Decoction	UMETA(DisplayName = "Decoction"),
+	Herb		UMETA(DisplayName = "Herb")
 };
 
 UENUM(BlueprintType)
@@ -87,11 +90,36 @@ enum class ESocialTeam : uint8 {
 
 UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
-	None			UMETA(DisplayName = "None"),
-	Storage			UMETA(DisplayName = "Storage"),
-	Worker			UMETA(DisplayName = "Worker"),
-	Forester		UMETA(DisplayName = "Forester"),
-	ForesterHouse	UMETA(DisplayName = "ForesterHouse")
+	None				UMETA(DisplayName = "None"),
+	Storage				UMETA(DisplayName = "Storage"),
+	Worker				UMETA(DisplayName = "Worker"),
+	
+	Forester			UMETA(DisplayName = "Forester"),
+	Forestling			UMETA(DisplayName = "Forestling"),
+	ShoreMaiden			UMETA(DisplayName = "ShoreMaiden"),
+	WoodMaiden			UMETA(DisplayName = "WoodMaiden"),
+	MeadowMan			UMETA(DisplayName = "MeadowMan"),
+	Swimmer				UMETA(DisplayName = "Swimmer"),
+	Wisp				UMETA(DisplayName = "Wisp"),
+	Human				UMETA(DisplayName = "Human"),
+	HumanWarrior		UMETA(DisplayName = "HumanWarrior"),
+	HumanWarriorLeader	UMETA(DisplayName = "HumanWarriorLeader"),
+	
+	ForesterHouse		UMETA(DisplayName = "ForesterHouse"),
+	ForestlingHouse		UMETA(DisplayName = "ForestlingHouse"),
+	ShoreMaidenHouse	UMETA(DisplayName = "ShoreMaidenHouse"),
+	WoodMaidenHouse		UMETA(DisplayName = "WoodMaidenHouse"),
+	MeadowManHouse		UMETA(DisplayName = "MeadowManHouse"),
+	SwimmerHouse		UMETA(DisplayName = "SwimmerHouse"),
+	ReedThickets		UMETA(DisplayName = "ReedThickets"),
+	Cellar				UMETA(DisplayName = "Cellar"),
+	StumpAltar			UMETA(DisplayName = "StumpAltar"),
+	
+	BerryGrove			UMETA(DisplayName = "BerryGrove"),
+	WoodGrove			UMETA(DisplayName = "WoodGrove"),
+	HolyGrove			UMETA(DisplayName = "HolyGrove"),
+	MushroomGrove		UMETA(DisplayName = "MushroomGrove"),
+	HerbGrove			UMETA(DisplayName = "HerbGrove")
 };
 
 UENUM(BlueprintType)
@@ -135,6 +163,9 @@ enum class EMessageTag : uint8 {
 	UIEIcon			UMETA(DisplayName = "UIE Icon"),
 	UIESelector		UMETA(DisplayName = "UIE Selector"),
 	UIESlider		UMETA(DisplayName = "UIE Slider"),
+
+	UIESliderEffectVolume		UMETA(DisplayName = "UIE Slider Effect Volume"),
+	UIESliderVoiceVolume		UMETA(DisplayName = "UIE Slider Voice Volume"),
 
 	UIAScroll		UMETA(DisplayName = "UIA Scroll"),
 	UIAClick		UMETA(DisplayName = "UIA Click"),

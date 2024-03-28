@@ -12,6 +12,7 @@ class UMappingService;
 class USaveService;
 class UTaskManagerService;
 class UMessageService;
+class USoundService;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayStateChanging, bool, IsDay);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayTimeChanging, float, DayPercents);
@@ -27,7 +28,6 @@ class GBTEAM6_API AGameStateDefault : public AGameStateBase
 public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 
 public:
 
@@ -46,6 +46,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_ResourceStack;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_SystemSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_MusicSound;
 
 private:
 
@@ -61,6 +66,8 @@ friend class USaveService;
 	USocialService* SocialService;
 	UPROPERTY()
 	UMessageService* MessageService;
+	UPROPERTY()
+	USoundService* SoundService;
 
 	
 public:
@@ -86,10 +93,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
 
-	/** Returns Social Service **/
+	/** Returns Message Service **/
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
 
+	/** Returns Sound Service **/
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
 
 /// Configs
 private:
