@@ -122,7 +122,7 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		GetNvlClass(InitData.SoundComponentInitData.ComponentClass, USoundBaseComponent::StaticClass())
 	);
 	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
-	BindComponent(EGameComponentType::Sound, NewUIComponent);
+	BindComponent(EGameComponentType::Sound, NewSoundComponent);
 
 }
 

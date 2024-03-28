@@ -10,6 +10,7 @@ ASimpleObject::ASimpleObject() {
 	PrimaryActorTick.bCanEverTick = false;
 	
 	SceneBase = CreateDefaultSubobject<USceneComponent>(TEXT("BaseSceneComponent"));
+	SetRootComponent(SceneBase);
 	
 	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
 	Collision->SetupAttachment(SceneBase);

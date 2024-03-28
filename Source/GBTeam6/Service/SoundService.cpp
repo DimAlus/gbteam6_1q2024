@@ -48,6 +48,12 @@ void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable*
 		UE_LOG(LgService, Error, TEXT("<%s> Can't find valid MusicSound!"), *GetNameSafe(this))
 	}
 
+	SubscriberMessageTags.Add(EMessageTag::GOASelect);
+	SubscriberMessageTags.Add(EMessageTag::GOACommand);
+	SubscriberMessageTags.Add(EMessageTag::GOASpawn);
+	SubscriberMessageTags.Add(EMessageTag::GOADamage);
+	SubscriberMessageTags.Add(EMessageTag::GOADeath);
+	
 	SubscriberMessageTags.Add(EMessageTag::UIEButton);
 	SubscriberMessageTags.Add(EMessageTag::UIESliderEffectVolume);
 	SubscriberMessageTags.Add(EMessageTag::UIESliderVoiceVolume);

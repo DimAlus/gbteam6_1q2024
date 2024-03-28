@@ -80,10 +80,10 @@ protected:
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
-	AActor* SelectedActor;
+	AActor* SelectedActor = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
-	AActor* TargetActor;
+	AActor* TargetActor = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector PointOfInterest;

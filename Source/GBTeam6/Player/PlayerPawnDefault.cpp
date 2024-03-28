@@ -5,7 +5,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Service/MessageService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -133,6 +135,21 @@ void APlayerPawnDefault::OnSelect_Implementation() {
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
 	SelectedActor = Hit.GetActor();
+	
+	if (IsValid(SelectedActor))
+	{
+		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+		{
+			TSet<EMessageTag> MessageTags{};
+			MessageTags.Add(EMessageTag::GOASelect);
+						
+			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
+			{
+				auto ObjectCore = ObjectInterface->Execute_GetCore(SelectedActor);
+				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
+			}
+		}
+	}
 }
 
 void APlayerPawnDefault::OnCommand_Implementation() {
@@ -140,11 +157,20 @@ void APlayerPawnDefault::OnCommand_Implementation() {
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
 	PointOfInterest = Hit.Location;
-	if(Cast<IGameObjectInterface>(Hit.GetActor())) {
-		TargetActor = Hit.GetActor();
-	}
-	else {
-		TargetActor = nullptr;
+
+	if (IsValid(SelectedActor))
+	{
+		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+		{
+			TSet<EMessageTag> MessageTags{};
+			MessageTags.Add(EMessageTag::GOACommand);
+			
+			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
+			{
+				auto ObjectCore = ObjectInterface->Execute_GetCore(SelectedActor);
+				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
+			}
+		}
 	}
 }
 
