@@ -75,7 +75,7 @@ public:
 	TArray<int> TaskStack{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FPassiveGenerator PassiveGeneration{};
+	TArray<FPassiveGenerator> PassiveGeneration{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsDestructed{};

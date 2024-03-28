@@ -20,6 +20,15 @@ void UInventoryStandardComponent::LoadComponent(const FInventorySaveData& saveDa
 	CurrentStacksCount = saveData.CountStacks;
 }
 
+const TSet<EResource>& UInventoryStandardComponent::GetIgnoreResources() {
+	static TSet<EResource> res {
+		EResource::None,
+		EResource::Actor,
+		EResource::Spirit
+	};
+	return res;
+}
+
 void UInventoryStandardComponent::SavePoint() {
 	FSaveStruct save;
 	save.CurrentStacksCount = CurrentStacksCount;
@@ -43,7 +52,7 @@ void UInventoryStandardComponent::RollBack(bool isBack) {
 bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 	bool success = true;
 	for (const FPrice& res : resources) {
-		if (IgnoreResources.Contains(EResource::Actor)) {
+		if (GetIgnoreResources().Contains(res.Resource)) {
 			continue;
 		}
 		if (!Resources.Contains(res.Resource)) {
@@ -64,7 +73,7 @@ bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 
 bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 	for (const FPrice& res : resources) {
-		if (IgnoreResources.Contains(res.Resource)) {
+		if (GetIgnoreResources().Contains(res.Resource)) {
 			continue;
 		}
 		if (Resources.Contains(res.Resource)
@@ -95,13 +104,13 @@ bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) 
 	}
 	if (!success) {
 		for (; i >= 0; i--) {
-			gameState->PopPlayerResource(resources[i].Resource, resources[i].Count)
+			gameState->PopPlayerResource(resources[i].Resource, resources[i].Count);
 		}
 	}
 	return success;
 }
 
-bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) {
+bool UInventoryStandardComponent::_player_pop(const TArray<FPrice>& resources) {
 	int i = 0;
 	bool success = true;
 	AGameStateDefault* gameState = GetGameState();
@@ -114,7 +123,7 @@ bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) 
 	}
 	if (!success) {
 		for (; i >= 0; i--) {
-			gameState->PushPlayerResource(resources[i].Resource, resources[i].Count)
+			gameState->PushPlayerResource(resources[i].Resource, resources[i].Count);
 		}
 	}
 	return success;
@@ -164,7 +173,7 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool success = _pop(resources);
 	if (success) {
-		success = _player_ppp(resources);
+		success = _player_pop(resources);
 	}
 	UE_LOG_COMPONENT(Log, "Pop resources (%d): %d!", resources.Num(), success);
 	if (success) {

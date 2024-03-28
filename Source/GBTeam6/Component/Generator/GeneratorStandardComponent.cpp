@@ -78,7 +78,7 @@ void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	saveData.IsBuilded = IsBuilded;
 	saveData.TaskStack = TaskStack;
 	saveData.PassiveGeneration = PassiveGenerators;
-	saveDate.IsDestructed = IsDestructed;
+	saveData.IsDestructed = IsDestructed;
 }
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
@@ -91,7 +91,7 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 	TaskStack = saveData.TaskStack;
 	SetWorkEnabled(saveData.IsWorked);
 	PassiveGenerators = saveData.PassiveGeneration;
-	IsDestructed = saveDate.IsDestructed;
+	IsDestructed = saveData.IsDestructed;
 	if (PassiveGenerators.Num() > 0) {
 		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
 	}
@@ -125,7 +125,7 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
-	if (GetIsDesеstruction()) {
+	if (GetIsDestruction()) {
 		return {};
 	}
 	return GetGameState()->GetResourcesByStacks(_getNeeds(steps));
@@ -133,7 +133,7 @@ TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
-	if (GetIsDesеstruction()) {
+	if (GetIsDestruction()) {
 		return GetGameState()->GetResourcesByStacks(GetInventory()->GetAllResources());
 	}
 	TMap<EResource, int> needs = _getNeeds(steps);
@@ -244,7 +244,7 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
-	if (GetIsDesеstruction()) {
+	if (GetIsDestruction()) {
 		if (GetInventory()->GetAllResources().Num() == 0){
 			GetOwner()->Destroy();
 		}
@@ -261,7 +261,7 @@ void UGeneratorStandardComponent::WorkLoop() {
 }
 
 void UGeneratorStandardComponent::PassiveWorkLoop() {
-	if (GetIsDesеstruction()){
+	if (GetIsDestruction()){
 		return;
 	}
 	UInventoryBaseComponent* inventory = GetInventory();
@@ -363,14 +363,14 @@ void UGeneratorStandardComponent::ChangeGenerationLimit(int index, int newLimit)
 }
 
 FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
-	if (!IsWorked || GetIsDesеstruction()) {
+	if (!IsWorked || GetIsDestruction()) {
 		return FGenerator();
 	}
 	return GetCurrentGenerics()[WorkIndex];
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
-	if (GetIsDesеstruction()) return {};
+	if (GetIsDestruction()) return {};
 	return GetCurrentGenerics();
 }
 
@@ -383,13 +383,13 @@ float UGeneratorStandardComponent::GetTimePercents() {
 }
 
 bool UGeneratorStandardComponent::IsWorking() {
-	if (GetIsDesеstruction()) return false;
+	if (GetIsDestruction()) return false;
 	return IsWorked;
 }
 
 TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
 	TArray<FGenerator> result;
-	if (GetIsDesеstruction()) {
+	if (GetIsDestruction()) {
 		return result;
 	}
 	for (int i : TaskStack) {
@@ -418,10 +418,10 @@ void UGeneratorStandardComponent::CancelTask() {
 	}
 }
 
-void UGeneratorStandardComponent::SetIsDesеstruction(bool isDestroy) {
+void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
 	IsDestructed = isDestroy;	
 }
 
-bool UGeneratorStandardComponent::GetIsDesеstruction() { 
+bool UGeneratorStandardComponent::GetIsDestruction() { 
 	return IsDestructed; 
 }

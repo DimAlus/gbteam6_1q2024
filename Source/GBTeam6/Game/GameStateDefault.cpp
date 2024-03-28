@@ -11,6 +11,8 @@
 #include "../Service/MessageService.h"
 
 #include "../Component/Inventory/InventoryBaseComponent.h"
+#include "../Interface/GameObjectInterface.h"
+#include "../Interface/GameObjectCore.h"
 
 
 void AGameStateDefault::LoadConfig() {
@@ -147,7 +149,7 @@ void AGameStateDefault::DayChangingLoop(){
 	bool isDay = perc > dayPeriod.X && perc < dayPeriod.Y;
 	if (isDay != CurrentIsDay) {
 		CurrentIsDay = isDay;
-		OnDayStateChanging(isDay);
+		OnDayStateChanging.Broadcast(isDay);
 	}
 }
 

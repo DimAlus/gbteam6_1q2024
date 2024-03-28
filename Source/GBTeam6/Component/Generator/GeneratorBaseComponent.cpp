@@ -64,9 +64,9 @@ void UGeneratorBaseComponent::RemoveFromStack(int index) {
 void UGeneratorBaseComponent::CancelTask() {
 }
 
-void UGeneratorBaseComponent::SetIsDesеstruction(bool isDestroy) {
+void UGeneratorBaseComponent::SetIsDestruction(bool isDestroy) {
 }
 
-bool UGeneratorBaseComponent::GetIsDesеstruction() { 
+bool UGeneratorBaseComponent::GetIsDestruction() { 
 	return false; 
 }

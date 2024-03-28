@@ -29,6 +29,6 @@ public:
 	float CurrentDayTime;
 
     UPROPERTY(VisibleAnywhere)
-	TMap<EResource, int> PleyerResources;
+	TMap<EResource, int> PlayerResources;
 
 };

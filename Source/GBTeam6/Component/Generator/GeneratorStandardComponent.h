@@ -87,6 +87,6 @@ public:
 	virtual void CancelTask() override;
 
 
-	virtual void SetIsDesеstruction(bool isDestroy) override;
-	virtual bool GetIsDesеstruction() override;
+	virtual void SetIsDestruction(bool isDestroy) override;
+	virtual bool GetIsDestruction() override;
 };

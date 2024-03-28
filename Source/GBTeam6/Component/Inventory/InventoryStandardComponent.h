@@ -31,11 +31,7 @@ protected:
 	};
 	TArray<FSaveStruct> Saves;
 
-	static TSet<EResource> IgnoreResources{
-		EResource::None,
-		EResource::Actor,
-		EResource::Spirit
-	};
+	static const TSet<EResource>& GetIgnoreResources(); 
 private:
 	void SavePoint();
 	void RollBack(bool isBack);

@@ -247,7 +247,7 @@ void USaveService::SaveGame(AGameStateDefault* gameState, FString SlotName, bool
 			isDevMap
 		));
 		if (IsValid(saveProgress)) {
-			SaveObjects(gameState, saveProgress);
+			SaveProgress(gameState, saveProgress);
 			SaveSave(saveProgress);
 		}
 	}
@@ -297,7 +297,7 @@ void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool
 			isDevMap
 		));
 		if (IsValid(saveProgress)) {
-			LoadObjects(gameState, saveProgress);
+			LoadProgress(gameState, saveProgress);
 		}
 	}
 }
