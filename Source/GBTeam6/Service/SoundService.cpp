@@ -50,6 +50,7 @@ void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable*
 
 	SubscriberMessageTags.Add(EMessageTag::GOASelect);
 	SubscriberMessageTags.Add(EMessageTag::GOACommand);
+	SubscriberMessageTags.Add(EMessageTag::GOAHit);
 	SubscriberMessageTags.Add(EMessageTag::GOASpawn);
 	SubscriberMessageTags.Add(EMessageTag::GOADamage);
 	SubscriberMessageTags.Add(EMessageTag::GOADeath);
@@ -83,7 +84,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Select sound is not valid!"), *GetNameSafe(this));
 
 			if (ObjectSound.Command && tags.Contains(EMessageTag::GOACommand))
 			{
@@ -93,7 +93,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Command sound is not valid!"), *GetNameSafe(this));
 
 			if (ObjectSound.Spawn && tags.Contains(EMessageTag::GOASpawn))
 			{
@@ -103,7 +102,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Spawn sound is not valid!"), *GetNameSafe(this));
 
 			if (ObjectSound.Hit && tags.Contains(EMessageTag::GOAHit))
 			{
@@ -113,7 +111,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Hit sound is not valid!"), *GetNameSafe(this));
 
 			if (ObjectSound.Damage && tags.Contains(EMessageTag::GOADamage))
 			{
@@ -123,7 +120,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Damage sound is not valid!"), *GetNameSafe(this));
 
 			if (ObjectSound.Death && tags.Contains(EMessageTag::GOADeath))
 			{
@@ -133,7 +129,6 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 					sender->GetOwner()->GetActorLocation()
 					);
 			}
-			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Death sound is not valid!"), *GetNameSafe(this));
 		}
 		return;
 	}

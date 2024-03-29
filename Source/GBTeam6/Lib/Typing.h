@@ -290,6 +290,9 @@ struct FMusicSound : public FTableRowBase {
 	USoundBase* MusicPeaceful{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* MusicPeacefulNight{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* MusicBattle{};
 	
 };
