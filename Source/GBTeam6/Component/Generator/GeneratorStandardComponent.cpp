@@ -265,9 +265,12 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 
 void UGeneratorStandardComponent::WorkLoop() {
 	if (GetIsDestruction()) {
-		if (GetInventory()->GetAllResources().Num() == 0){
-			GetOwner()->Destroy();
+		for (auto res : GetInventory()->GetAllResources()) {
+			if (res.Value > 0)
+				return;
 		}
+		
+		GetOwner()->Destroy();
 		return;
 	}
 	if (IsWorked) {

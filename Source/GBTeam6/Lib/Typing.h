@@ -13,7 +13,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
-//TEXT("<%s>: (%s) Message")
+#define UE_LOG_SERVICE(LogType, Message, ...) \
+	UE_LOG(LgService, LogType, TEXT("<%s>: %s"), *GetNameSafe(this), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
 
 class UGameObjectCore;
 
@@ -418,13 +419,13 @@ struct FTRGameEvent : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	TArray<FQuestPage> SuccessPages{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	TArray<FQuestAction> SuccessActions{};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	TArray<FNeedArray> FailNeeds{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	TArray<FQuestPage> FailPages{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)

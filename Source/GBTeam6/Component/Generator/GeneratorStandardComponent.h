@@ -51,6 +51,7 @@ private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
 
+	UFUNCTION()
 	void OnOwnerDeath();
 
 	UInventoryBaseComponent* GetInventory();

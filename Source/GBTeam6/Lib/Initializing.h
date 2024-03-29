@@ -132,6 +132,9 @@ struct FUIComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FUIGameObjectPanelData> EnabledPanels{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ETopPanelType TopPanelType{};
 };
 
 

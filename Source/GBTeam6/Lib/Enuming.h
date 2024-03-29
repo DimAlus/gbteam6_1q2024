@@ -214,7 +214,7 @@ enum class EQuestActionType : uint8 {
 	SpawnActors			UMETA(DisplayName = "SpawnActors"),
 	ChangeInventory		UMETA(DisplayName = "ChangeInventory"),
 	AddSelectionWidget	UMETA(DisplayName = "AddSelectionWidget"),
-	FindLocation		UMETA(DisplayName = "Select"),
+	FindLocation		UMETA(DisplayName = "FindLocation"),
 	Select				UMETA(DisplayName = "Select"),
 	Deselect			UMETA(DisplayName = "Deselect")
 };
@@ -233,5 +233,13 @@ enum class EActionFindLocationType : uint8 {
 	Spawned				UMETA(DisplayName = "Spawned"),
 	Random				UMETA(DisplayName = "Random"),
 	BySocialTag			UMETA(DisplayName = "BySocialTag")
+};
+
+
+UENUM(BlueprintType)
+enum class ETopPanelType : uint8 {
+	None				UMETA(DisplayName = "None"),
+	Pawn				UMETA(DisplayName = "Pawn"),
+	Building			UMETA(DisplayName = "Buildingx")
 };
 
