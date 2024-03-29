@@ -30,14 +30,14 @@ void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData) {
 
 void USocialDefaultComponent::RegisterObjectInService() {
 	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
-		GameState->GetSocialService()->AddObjectByTags(GetOwner(), SocialTags);
+		GameState->GetSocialService()->AddObjectByTags(GetCore(), SocialTags);
 		UE_LOG_COMPONENT(Log, "registered in social service <%s>!", *GetNameSafe(GameState));
 	}
 }
 
 void USocialDefaultComponent::UnRegisterObjectInService() {
 	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
-		GameState->GetSocialService()->RemoveObject(GetOwner());
+		GameState->GetSocialService()->RemoveObject(GetCore());
 		UE_LOG_COMPONENT(Log, "UNregistered in social service <%s>!", *GetNameSafe(GameState));
 	}
 }

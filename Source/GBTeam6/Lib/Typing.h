@@ -216,7 +216,7 @@ struct FGameTask {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* TaskPerformer {nullptr};
+	UGameObjectCore* TaskPerformer {nullptr};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EResource ResType {};
@@ -226,10 +226,12 @@ struct FGameTask {
 	
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* From {};
+	UGameObjectCore* From {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	AActor* To {};
-	
+	UGameObjectCore* To {};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool ResourceGettedFromSource{};
 };
 
 USTRUCT(BlueprintType)
@@ -444,6 +446,6 @@ struct FGameEventConext {
 
 	TArray<UGameObjectCore*> SelectedObjects{};
 	TArray<UGameObjectCore*> SpawnedObjects{};
-	FVector SelectedLocation;
+	FVector SelectedLocation{};
 	float CurrentTime{};
 };

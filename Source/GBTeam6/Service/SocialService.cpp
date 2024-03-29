@@ -1,6 +1,6 @@
 #include "./SocialService.h"
 
-void USocialService::AddObjectByTags(AActor* NewObject, const TArray<ESocialTag>& SocialTags) {
+void USocialService::AddObjectByTags(UGameObjectCore* NewObject, const TArray<ESocialTag>& SocialTags) {
 	for (auto Tag : SocialTags) {
 		if(!ObjectsByTags.Contains(Tag)) {
 			ObjectsByTags.Add(Tag);
@@ -12,7 +12,7 @@ void USocialService::AddObjectByTags(AActor* NewObject, const TArray<ESocialTag>
 	}
 }
 
-void USocialService::RemoveObject(AActor* OldObject) {
+void USocialService::RemoveObject(UGameObjectCore* OldObject) {
 	TSet<ESocialTag> tags;
 	ObjectsByTags.GetKeys(tags);
 	for (ESocialTag tag : tags) {
@@ -20,9 +20,20 @@ void USocialService::RemoveObject(AActor* OldObject) {
 	}
 }
 
-const TSet<AActor*>& USocialService::GetObjectsByTag(ESocialTag SocialTag) {
+const TSet<UGameObjectCore*>& USocialService::GetObjectsByTag(ESocialTag SocialTag) {
 	if (!ObjectsByTags.Contains(SocialTag))
 		return EmptyObjectsArray;
 
 	return ObjectsByTags[SocialTag];
+}
+
+TSet<UGameObjectCore*> USocialService::GetObjectsByTags(TSet<ESocialTag> SocialTags, TSet<ESocialTag> IgnoreTags) {
+	TSet<UGameObjectCore*> result;
+	for (ESocialTag tag : SocialTags) {
+		result.Append(GetObjectsByTag(tag));
+	}
+	for (ESocialTag tag : IgnoreTags) {
+		result = result.Difference(GetObjectsByTag(tag));
+	}
+	return result;
 }

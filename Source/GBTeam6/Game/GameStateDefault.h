@@ -162,7 +162,7 @@ public:
 /// Day Time Changing
 private:
 	float CurrentDayTime;
-	float DayChangingDelay = 0.5f;
+	float DayChangingDelay = 0.1f;
 	bool CurrentIsDay = true;
 	FTimerHandle DayChangingTimer;
 	void DayChangingLoop();

@@ -72,12 +72,7 @@ void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventC
 	case EActionSelectionType::BySocialTag:
 		int i;
 		i = 0;
-		IGameObjectInterface* obj;
-		UGameObjectCore* core;
-		for (AActor* act : gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag)) {
-			obj = Cast<IGameObjectInterface>(act);
-			core = obj->Execute_GetCore(act);
-
+		for (UGameObjectCore* core : gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag)) {
 			if (Action.ActionType == EQuestActionType::Deselect) {
 				EventContext.SelectedObjects.Remove(core);
 			}
@@ -104,9 +99,9 @@ void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEve
 		*UEnum::GetValueAsString(Action.SocialTag), *rands);
 
 	if (Action.FindLocationType == EActionFindLocationType::BySocialTag) {
-		const TSet<AActor*>& objects = gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag);
+		const TSet<UGameObjectCore*>& objects = gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag);
 		if (objects.Num() > 0) {
-			EventContext.SelectedLocation = objects.begin().ElementIt->Value->GetActorLocation();
+			EventContext.SelectedLocation = objects.begin().ElementIt->Value->GetOwner()->GetActorLocation();
 		}
 	}
 	else if (Action.FindLocationType == EActionFindLocationType::Random) {
