@@ -134,29 +134,38 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
-	if (GetIsDestruction()) {
-		return {};
-	}
-	return GetGameState()->GetResourcesByStacks(_getNeeds(steps));
+	return GetGameState()->GetResourcesByStacks(GetNeedsMap(steps));
 }
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
+	
+	return GetGameState()->GetResourcesByStacks(GetOversMap(steps));
+}
+
+TMap<EResource, int> UGeneratorStandardComponent::GetNeedsMap(int steps) {
 	if (GetIsDestruction()) {
-		return GetGameState()->GetResourcesByStacks(GetInventory()->GetAllResources());
+		return {};
+	}
+	return _getNeeds(steps);
+}
+
+TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
+	if (GetIsDestruction()) {
+		return GetInventory()->GetAllResources();
 	}
 	TMap<EResource, int> needs = _getNeeds(steps);
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
 	for (auto res : resources) {
-		if (needs.Contains(res.Key) && needs[res.Key] > 0){
+		if (needs.Contains(res.Key) && needs[res.Key] > 0) {
 			result.Add(res.Key, res.Value - needs[res.Key]);
 		}
 		else {
 			result.Add(res.Key, res.Value);
 		}
 	}
-	return GetGameState()->GetResourcesByStacks(result);
+	return result;
 }
 
 

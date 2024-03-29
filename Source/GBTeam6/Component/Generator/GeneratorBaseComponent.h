@@ -35,6 +35,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<FPrice> GetOvers(int steps);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TMap<EResource, int> GetNeedsMap(int steps);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TMap<EResource, int> GetOversMap(int steps);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWorkEnabled(bool isEnabled);

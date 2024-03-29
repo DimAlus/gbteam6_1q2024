@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +5,9 @@
 #include "../Lib/Lib.h"
 #include "TaskManagerService.generated.h"
 
+
+class UGameObjectCore;
+class AGameStateDefault;
 /**
  * 
  */
@@ -16,42 +17,37 @@ class GBTEAM6_API UTaskManagerService : public UObject
 	GENERATED_BODY()
 
 private:
+	FGameTask NoneTask;
 
-	UPROPERTY()
-	AActor* Storage;
 
-	UPROPERTY()
-	TSet<AActor*> Clients;
+	TMap<UGameObjectCore*, TMap<EResource, int>> ReserverResources;
+	TMap<UGameObjectCore*, FGameTask> CurrentTasks;
 
-	UPROPERTY()
-	TArray<FGameTask> GameTasks;
+	AGameStateDefault* gameState;
 
+	float WorkerStackMultiplyer;
+
+private:
+	bool FindTask(FGameTask& gameTask);
+	void ReserveResouce(UGameObjectCore* core, EResource resource, int count);
 public:
 
-	/****	Debug	******/
-	UFUNCTION(BlueprintCallable)
-	void ShowGameTasksDebug();
+	void SetGameState(AGameStateDefault* ownerGameState);
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FGameTask>& GetGameTasksDebug();
-	/*********************/
+	bool GetTask(UGameObjectCore* TaskPerformer, FGameTask& GameTask);
 
 	UFUNCTION(BlueprintCallable)
-	bool AddStorage(AActor* InStorage);
-	
-	UFUNCTION(BlueprintCallable)
-	bool AddClientObject(AActor* ClientObject);
-
-	void AddTasksByObject(AActor* ClientObject, TArray<FPrice> InTasks);
+	const FGameTask& GetTaskByPerformer(UGameObjectCore* TaskPerformer);
 
 	UFUNCTION(BlueprintCallable)
-	bool RefreshNeeds();
+	FORCEINLINE bool HasTask(UGameObjectCore* TaskPerformer) const { return CurrentTasks.Contains(TaskPerformer); };
 
 	UFUNCTION(BlueprintCallable)
-	bool ReserveTask(AActor* TaskPerformer, FGameTask& TaskToReserve);
+	void ConfirmReceive(UGameObjectCore* TaskPerformer, bool Success);
 
 	UFUNCTION(BlueprintCallable)
-	bool CompleteTask(AActor* TaskPerformer);
+	void ConfirmDelivery(UGameObjectCore* TaskPerformer, bool Success);
 
 	
 };

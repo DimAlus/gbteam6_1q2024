@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "./Enuming.h"
+#include "./Typing.h"
 #include "Initializing.generated.h"
 
 class UHealthBaseComponent;
@@ -12,9 +13,6 @@ class UInventoryBaseComponent;
 class USocialBaseComponent;
 class UUIBaseComponent;
 class USoundBaseComponent;
-struct FMapInfo;
-struct FBarter;
-struct FPrice;
 
 /**
  * 

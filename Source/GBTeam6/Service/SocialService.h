@@ -5,25 +5,30 @@
 #include "UObject/NoExportTypes.h"
 #include "SocialService.generated.h"
 
+class UGameObjectCore;
+
 UCLASS()
 class GBTEAM6_API USocialService : public UObject
 {
 	GENERATED_BODY()
 	
 private:
-	TMap<ESocialTag, TSet<AActor*>> ObjectsByTags{};
+	TMap<ESocialTag, TSet<UGameObjectCore*>> ObjectsByTags{};
 	
-	const TSet<AActor*> EmptyObjectsArray{};
+	const TSet<UGameObjectCore*> EmptyObjectsArray{};
 
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void AddObjectByTags(AActor* NewObject, const TArray<ESocialTag>& SocialTags);
+	void AddObjectByTags(UGameObjectCore* NewObject, const TArray<ESocialTag>& SocialTags);
 
 	UFUNCTION(BlueprintCallable)
-	void RemoveObject(AActor* OldObject);
+	void RemoveObject(UGameObjectCore* OldObject);
 
 	UFUNCTION(BlueprintCallable)
-	const TSet<AActor*>& GetObjectsByTag(ESocialTag SocialTag);
+	const TSet<UGameObjectCore*>& GetObjectsByTag(ESocialTag SocialTag);
+
+	UFUNCTION(BlueprintCallable)
+	TSet<UGameObjectCore*> GetObjectsByTags(TSet<ESocialTag> SocialTags, TSet<ESocialTag> IgnoreTags);
 	
 };

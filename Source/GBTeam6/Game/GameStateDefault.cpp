@@ -60,6 +60,7 @@ void AGameStateDefault::InitializeServices() {
 
 	this->SaveService = NewObject<USaveService>();
 	this->TaskManagerService = NewObject<UTaskManagerService>();
+	this->TaskManagerService->SetGameState(this);
 	this->SocialService = NewObject<USocialService>();
 
 	this->SoundService = NewObject<USoundService>();
@@ -92,16 +93,11 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 		return PlayerResources[resource];
 	}
 	int cnt = 0;
-	const TSet<AActor*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
-	for (auto actr : actors) {
-		if (IGameObjectInterface* obj = Cast<IGameObjectInterface>(actr)) {
-			if (UGameObjectCore* core = obj->Execute_GetCore(actr)) {
-				cnt += Cast<UInventoryBaseComponent>(
-					core->GetComponent(EGameComponentType::Inventory)
-				)->GetResourceCount(resource);
-			}
-		}
-		
+	const TSet<UGameObjectCore*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
+	for (auto core : actors) {
+		cnt += Cast<UInventoryBaseComponent>(
+			core->GetComponent(EGameComponentType::Inventory)
+		)->GetResourceCount(resource);
 	}
 	return cnt;
 }

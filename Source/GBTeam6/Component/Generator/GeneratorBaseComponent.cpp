@@ -22,6 +22,14 @@ TArray<FPrice> UGeneratorBaseComponent::GetOvers(int steps) {
 	return {};
 }
 
+TMap<EResource, int> UGeneratorBaseComponent::GetNeedsMap(int steps) {
+	return TMap<EResource, int>();
+}
+
+TMap<EResource, int> UGeneratorBaseComponent::GetOversMap(int steps) {
+	return TMap<EResource, int>();
+}
+
 void UGeneratorBaseComponent::SetWorkEnabled(bool isEnabled) {
 }
 

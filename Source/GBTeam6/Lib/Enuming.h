@@ -63,8 +63,9 @@ enum class EConfig : uint8 {
 	StartGameTime		UMETA(DisplayName = "F  Day Start Time"),
 	WorkDelay			UMETA(DisplayName = "F  Work Delay"),
 
-	NewEventDelay		UMETA(DisplayName = "F  New Event Delay")
+	NewEventDelay		UMETA(DisplayName = "F  New Event Delay"),
 
+	WorkerStackMultiplyer	UMETA(DisplayName = "F Worker Stack Multiplyer")
 };
 
 UENUM(BlueprintType)

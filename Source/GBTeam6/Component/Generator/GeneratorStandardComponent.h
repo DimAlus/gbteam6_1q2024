@@ -73,6 +73,8 @@ public:
 
 	virtual TArray<FPrice> GetNeeds(int steps) override;
 	virtual TArray<FPrice> GetOvers(int steps) override;
+	virtual TMap<EResource, int> GetNeedsMap(int steps) override;
+	virtual TMap<EResource, int> GetOversMap(int steps) override;
 	
 	virtual void SetWorkEnabled(bool isEnabled) override;
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;

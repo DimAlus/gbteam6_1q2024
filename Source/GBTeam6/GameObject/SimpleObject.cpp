@@ -57,43 +57,15 @@ void ASimpleObject::BeginPlay() {
 	
 	this->GameObjectCore->SetIsCreated();
 
-	if(auto SocialComponent = Cast<USocialBaseComponent>(this->GameObjectCore->GetComponent(EGameComponentType::Social)))
-	{
-		auto SocialTags = SocialComponent->GetSocialTags();
-
-		if (SocialTags.Contains(ESocialTag::MainStorage))
-		{
-			if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-			{
-				if (auto TaskManager = GameState->GetTaskManagerService())
-				{
-					TaskManager->AddStorage(this);
-				}
-			}
-		}
-	}
-	
 }
 
 void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)
 {
 	if (!IsBuilded)
 		return;
-	if (AGameStateDefault* GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-	{
-		GameState->GetTaskManagerService()->AddClientObject(this);
-	};
 }
 
-void ASimpleObject::OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes)
-{
-	if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-	{
-		if (auto TaskManager = GameState->GetTaskManagerService())
-		{
-			TaskManager->AddTasksByObject(this, GeneratedRes);
-		}
-	}
+void ASimpleObject::OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes) {
 }
 
 
