@@ -24,7 +24,8 @@ const TSet<EResource>& UInventoryStandardComponent::GetIgnoreResources() {
 	static TSet<EResource> res {
 		EResource::None,
 		EResource::Actor,
-		EResource::Spirit
+		EResource::Spirit,
+		EResource::Self
 	};
 	return res;
 }

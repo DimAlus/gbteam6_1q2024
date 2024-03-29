@@ -287,10 +287,28 @@ struct FSoundComponentInitData {
 
 
 /***********************************************************************************/
+/// <summary>
+/// Game Object Initializing
+/// </summary>
+///
+USTRUCT(BlueprintType)
+struct FGameObjectInitializer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Speed = 0.f;
+};
 
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameObjectInitializer GameObjectInitializer{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FUIComponentInitData UIComponentInitData{};
@@ -310,3 +328,5 @@ struct FGameObjectInitData : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoundComponentInitData SoundComponentInitData{};
 };
+
+/***********************************************************************************/
