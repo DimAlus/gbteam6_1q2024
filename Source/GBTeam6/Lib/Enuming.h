@@ -61,7 +61,10 @@ enum class EConfig : uint8 {
 	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
 	DayPeriod			UMETA(DisplayName = "FV Day Period"),
 	StartGameTime		UMETA(DisplayName = "F  Day Start Time"),
-	WorkDelay			UMETA(DisplayName = "F  Work Delay")
+	WorkDelay			UMETA(DisplayName = "F  Work Delay"),
+
+	NewEventDelay		UMETA(DisplayName = "F  New Event Delay")
+
 };
 
 UENUM(BlueprintType)
@@ -196,4 +199,47 @@ enum class EMessageTag : uint8 {
 	MFailed			UMETA(DisplayName = "Failed")
 };
 
+
+UENUM(BlueprintType)
+enum class ENeedType : uint8 {
+	Resource		UMETA(DisplayName = "Resource"),
+	SocialTag		UMETA(DisplayName = "SocialTag"),
+	Time			UMETA(DisplayName = "Time"),
+	Quest			UMETA(DisplayName = "Quest")
+};
+
+
+UENUM(BlueprintType)
+enum class EQuestActionType : uint8 {
+	SpawnActors			UMETA(DisplayName = "SpawnActors"),
+	ChangeInventory		UMETA(DisplayName = "ChangeInventory"),
+	AddSelectionWidget	UMETA(DisplayName = "AddSelectionWidget"),
+	FindLocation		UMETA(DisplayName = "FindLocation"),
+	Select				UMETA(DisplayName = "Select"),
+	Deselect			UMETA(DisplayName = "Deselect")
+};
+
+
+UENUM(BlueprintType)
+enum class EActionSelectionType : uint8 {
+	AllSpawned			UMETA(DisplayName = "AllSpawned"),
+	SpawnedRange		UMETA(DisplayName = "SpawnedRange"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag"),
+	All					UMETA(DisplayName = "All")
+};
+
+UENUM(BlueprintType)
+enum class EActionFindLocationType : uint8 {
+	Spawned				UMETA(DisplayName = "Spawned"),
+	Random				UMETA(DisplayName = "Random"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag")
+};
+
+
+UENUM(BlueprintType)
+enum class ETopPanelType : uint8 {
+	None				UMETA(DisplayName = "None"),
+	Pawn				UMETA(DisplayName = "Pawn"),
+	Building			UMETA(DisplayName = "Buildingx")
+};
 

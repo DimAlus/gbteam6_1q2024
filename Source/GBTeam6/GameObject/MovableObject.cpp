@@ -21,6 +21,7 @@ AMovableObject::AMovableObject() {
 	if (MovementComponent)
 	{
 		MovementComponent->bUseRVOAvoidance = true;
+		MovementComponent->AvoidanceConsiderationRadius = 200.f;
 		MovementComponent->bOrientRotationToMovement = true;
 		MovementComponent->bUseControllerDesiredRotation = false;
 	}

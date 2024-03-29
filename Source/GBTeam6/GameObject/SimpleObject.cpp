@@ -50,12 +50,6 @@ void ASimpleObject::BeginPlay() {
 	);
 	this->GameObjectCore->InitDataByName(ObjectName);
 
-
-	/** OnDeath logic for testing purposes */
-	auto HealthComponent = Cast<UHealthBaseComponent>(
-		this->GameObjectCore->GetComponent(EGameComponentType::Health));
-	HealthComponent->OnDeath.AddDynamic(this, &ASimpleObject::OnDeathBehaviour);
-
 	/** On resource generated */
 	auto GeneratorComponent = Cast<UGeneratorBaseComponent>(
 	this->GameObjectCore->GetComponent(EGameComponentType::Generator));

@@ -3,6 +3,7 @@
 #include "../../Interface/GameObjectCore.h"
 #include "../../Interface/GameObjectInterface.h"
 #include "../Inventory/InventoryBaseComponent.h"
+#include "../Health/HealthBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
 #include "GeneratorStandardComponent.h"
@@ -56,6 +57,14 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	if (PassiveGenerators.Num() > 0) {
 		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
 	}
+
+
+	if (auto health = Cast<UHealthBaseComponent>(
+			GetCore()->GetComponent(EGameComponentType::Health)
+		)) {
+		health->OnDeath.AddDynamic(this, &UGeneratorStandardComponent::OnOwnerDeath);
+	}
+
 
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
@@ -155,6 +164,17 @@ TArray<FGenerator>& UGeneratorStandardComponent::GetCurrentGenerics() {
 	return *CurrentGenerics;
 }
 
+void UGeneratorStandardComponent::OnOwnerDeath() {
+	if (GetInventory()->GetAllResources().Num() > 0) {
+		if (auto health = Cast<UHealthBaseComponent>(
+				GetCore()->GetComponent(EGameComponentType::Health)
+			)) {
+			health->NotDestroyNow();
+			this->SetIsDestruction(true);
+		}
+	}
+}
+
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 	UGameObjectCore* core = GetCore();
 
@@ -245,9 +265,12 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 
 void UGeneratorStandardComponent::WorkLoop() {
 	if (GetIsDestruction()) {
-		if (GetInventory()->GetAllResources().Num() == 0){
-			GetOwner()->Destroy();
+		for (auto res : GetInventory()->GetAllResources()) {
+			if (res.Value > 0)
+				return;
 		}
+		
+		GetOwner()->Destroy();
 		return;
 	}
 	if (IsWorked) {

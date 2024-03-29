@@ -43,4 +43,6 @@ public:
 	virtual float GetPercentageHealth() {return 0.f;};
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsDead() {return false;};
+	UFUNCTION(BlueprintCallable)
+	virtual void NotDestroyNow() {}
 };

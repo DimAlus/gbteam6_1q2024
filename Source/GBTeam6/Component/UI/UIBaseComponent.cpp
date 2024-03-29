@@ -11,6 +11,7 @@ void UUIBaseComponent::Initialize(const FUIComponentInitializer& initializer) {
 	this->Icon = initializer.Icon;
 	this->EnabledCommands = initializer.EnabledCommands;
 	this->EnabledPanels = initializer.EnabledPanels;
+	this->TopPanelType = initializer.TopPanelType;
 }
 
 void UUIBaseComponent::SaveComponent(FUISaveData& saveData) {
