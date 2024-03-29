@@ -131,14 +131,14 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 void APlayerPawnDefault::OnSelect_Implementation() {
 	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
 	SelectedActor = Hit.GetActor();
 }
 
 void APlayerPawnDefault::OnCommand_Implementation() {
 	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
 	PointOfInterest = Hit.Location;
 	if(Cast<IGameObjectInterface>(Hit.GetActor())) {
 		TargetActor = Hit.GetActor();

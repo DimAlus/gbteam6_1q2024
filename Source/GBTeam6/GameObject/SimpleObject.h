@@ -7,6 +7,7 @@
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "../Interface/GameObjectCore.h"
+#include "Components/BoxComponent.h"
 #include "SimpleObject.generated.h"
 
 class UMappingDefaultComponent;
@@ -23,12 +24,23 @@ public:
 	virtual void Destroyed() override;
 
 protected:
+
+	/** Basic simple object components */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	USceneComponent* SceneBase;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UBoxComponent* Collision;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMeshComponent* ObjectMesh;
+		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMappingDefaultComponent* MappingComponent;
-
+	
+	// Object Core
 	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* GameObjectCore;
-	// FGameObjectInitData GameObjectInitData;
 	
 	//Object name to get InitData from table
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Object Name")

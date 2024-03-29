@@ -12,7 +12,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
-	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT("Message"), ##__VA_ARGS__))
+	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
 //TEXT("<%s>: (%s) Message")
 
 class UGameObjectCore;
@@ -236,6 +236,12 @@ struct FObjectSound {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Select{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USoundBase* Command{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Hit{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -249,13 +255,6 @@ struct FObjectSound {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Footsteps{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* Selected{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USoundBase* Commanded{};
-	
 };
 
 USTRUCT(BlueprintType)

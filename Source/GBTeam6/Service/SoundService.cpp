@@ -1,6 +1,8 @@
 #include "./SoundService.h"
 
 #include "GameFramework/GameStateBase.h"
+#include "GBTeam6/Component/Sound/SoundBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 #include "Kismet/GameplayStatics.h"
 
 void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable)
@@ -59,6 +61,79 @@ TSet<EMessageTag> USoundService::GetSubscriberMessageTags()
 
 void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UGameObjectCore* sender)
 {
+
+	if (sender)
+	{
+		if(auto GameObjectSoundComponent =
+			Cast<USoundBaseComponent>(sender->GetComponent(EGameComponentType::Sound)))
+		{
+			auto ObjectSound = GameObjectSoundComponent->GetObjectSound();
+
+			if (ObjectSound.Select && tags.Contains(EMessageTag::GOASelect))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Select,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Select sound is not valid!"), *GetNameSafe(this));
+
+			if (ObjectSound.Command && tags.Contains(EMessageTag::GOACommand))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Command,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Command sound is not valid!"), *GetNameSafe(this));
+
+			if (ObjectSound.Spawn && tags.Contains(EMessageTag::GOASpawn))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Spawn,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Spawn sound is not valid!"), *GetNameSafe(this));
+
+			if (ObjectSound.Hit && tags.Contains(EMessageTag::GOAHit))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Hit,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Hit sound is not valid!"), *GetNameSafe(this));
+
+			if (ObjectSound.Damage && tags.Contains(EMessageTag::GOADamage))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Damage,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Damage sound is not valid!"), *GetNameSafe(this));
+
+			if (ObjectSound.Death && tags.Contains(EMessageTag::GOADeath))
+			{
+				UGameplayStatics::PlaySoundAtLocation(
+					GameState->GetWorld(),
+					ObjectSound.Death,
+					sender->GetOwner()->GetActorLocation()
+					);
+			}
+			else UE_LOG(LgService, Error, TEXT("<%s> ObjectSound.Death sound is not valid!"), *GetNameSafe(this));
+		}
+		return;
+	}
+	
+	//System sounds
+	
 	if (SystemSound.PressButton && tags.Contains(EMessageTag::UIEButton))
 	{
 		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.PressButton);
@@ -76,8 +151,5 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundVoice);
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
-	
-
-	//ToDo GameStart, Guidance;  ADD OBSERVER
 	
 }
