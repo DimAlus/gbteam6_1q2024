@@ -60,7 +60,10 @@ enum class EConfig : uint8 {
 	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
 	DayPeriod			UMETA(DisplayName = "FV Day Period"),
 	StartGameTime		UMETA(DisplayName = "F  Day Start Time"),
-	WorkDelay			UMETA(DisplayName = "F  Work Delay")
+	WorkDelay			UMETA(DisplayName = "F  Work Delay"),
+
+	NewEventDelay		UMETA(DisplayName = "F  New Event Delay")
+
 };
 
 UENUM(BlueprintType)
@@ -199,10 +202,27 @@ enum class ENeedType : uint8 {
 
 UENUM(BlueprintType)
 enum class EQuestActionType : uint8 {
-	SpawnActors,
-	ChangeInventory,
-	AddSelectionWidget,
-	Select,
-	Deselect
+	SpawnActors			UMETA(DisplayName = "SpawnActors"),
+	ChangeInventory		UMETA(DisplayName = "ChangeInventory"),
+	AddSelectionWidget	UMETA(DisplayName = "AddSelectionWidget"),
+	FindLocation		UMETA(DisplayName = "Select"),
+	Select				UMETA(DisplayName = "Select"),
+	Deselect			UMETA(DisplayName = "Deselect")
+};
+
+
+UENUM(BlueprintType)
+enum class EActionSelectionType : uint8 {
+	AllSpawned			UMETA(DisplayName = "AllSpawned"),
+	SpawnedRange		UMETA(DisplayName = "SpawnedRange"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag"),
+	All					UMETA(DisplayName = "All")
+};
+
+UENUM(BlueprintType)
+enum class EActionFindLocationType : uint8 {
+	Spawned				UMETA(DisplayName = "Spawned"),
+	Random				UMETA(DisplayName = "Random"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag")
 };
 

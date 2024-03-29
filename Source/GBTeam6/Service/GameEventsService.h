@@ -25,10 +25,18 @@ private:
 	TSet<FString> ProcessEvents;
 	TArray<FGameEventConext> CurrentEvents;
 	FGameEventConext NoneContext{};
+	FQuestAction DeselectAllAction{};
 
-	float UpdateDelay = 0.5f;
+	float UpdateDelay = 1.f;
+	FTimerHandle updateTaskTimer;
+	FTimerHandle newEventTimer;
 private:
 	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext);
+	void ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext);
+	void ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext);
+	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext);
+	void ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext);
+	void ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext);
 	void StartEvent(FString EventName);
 
 	bool CheckNeed(const FNeed& need, FGameEventConext& EventContext);
@@ -39,9 +47,10 @@ private:
 	const FTRGameEvent& GetEventData(FString name);
 public:
 
-	FORCEINLINE void SetGameState(AGameStateDefault* gs) { gameState = gs; };
+	void SetGameState(AGameStateDefault* gs);
 	void Update();
 	void CheckStartEvents();
 	
-	bool IsEventComplited(FString EventName);
+	bool IsEventCompleted(FString EventName);
+	bool IsEventProcessed(FString EventName);
 };

@@ -338,7 +338,38 @@ struct FQuestAction {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EQuestActionType ActionType{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CountConstraint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag SocialTag;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
+	EActionSelectionType SelectionType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
+	FIntVector SpawnSelectionRange;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	EActionFindLocationType FindLocationType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	int SpawnActorIndex;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	TArray<FVector> RandomLocation;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
+	TSubclassOf<AActor> SpawnClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
+	int SpawnCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	bool ApplyForAll;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	FPrice InventoryChanging;
 };
 
 
@@ -410,5 +441,6 @@ struct FGameEventConext {
 
 	TArray<UGameObjectCore*> SelectedObjects{};
 	TArray<UGameObjectCore*> SpawnedObjects{};
+	FVector SelectedLocation;
 	float CurrentTime{};
 };

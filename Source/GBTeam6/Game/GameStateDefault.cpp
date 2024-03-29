@@ -227,7 +227,7 @@ bool AGameStateDefault::CheckNeed(const FNeed& need) {
 		return cnt == cnt2;
 
 	case ENeedType::Quest:
-		return GetGameEventsService()->IsEventComplited(need.QuestName);
+		return GetGameEventsService()->IsEventCompleted(need.QuestName);
 		
 	default:
 		return true;
