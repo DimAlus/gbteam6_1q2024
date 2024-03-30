@@ -167,6 +167,8 @@ private:
 	float DayChangingDelay = 0.1f;
 	bool CurrentIsDay = true;
 	FTimerHandle DayChangingTimer;
+	//FVector DayPeriod{ 0.2f, 0.8f, 0.f };
+	float SunPosition;
 	void DayChangingLoop();
 	
 private:
@@ -178,6 +180,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetCurrentDayTime() const { return CurrentDayTime; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetSunPosition() const { return SunPosition; }
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDayStateChanging OnDayStateChanging;

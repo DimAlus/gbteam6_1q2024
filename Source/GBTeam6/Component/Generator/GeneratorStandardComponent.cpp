@@ -16,7 +16,7 @@ void UGeneratorStandardComponent::BeginPlay() {
 	CreateTimer();
 	if (auto gameObject = Cast<IGameObjectInterface>(GetOwner())) {
 		if (auto mapping = Cast<UMappingBaseComponent>(
-			gameObject->Execute_GetCore(GetOwner())->GetComponent(EGameComponentType::Mapping)
+			gameObject->GetCore_Implementation()/*(GetOwner())*/->GetComponent(EGameComponentType::Mapping)
 		)) {
 			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
 		}
