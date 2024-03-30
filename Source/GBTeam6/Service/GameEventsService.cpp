@@ -127,12 +127,17 @@ void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConex
 		*GetNameSafe(Action.SpawnClass), Action.SpawnCount,
 		EventContext.SelectedLocation.X, EventContext.SelectedLocation.Y, EventContext.SelectedLocation.Z);
 	if (Action.SpawnClass) {
+		FActorSpawnParameters par;
+		par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		for (int i = 0; i < Action.SpawnCount; i++) {
 			FRotator rot;
-			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, EventContext.SelectedLocation, rot);
-			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
-			EventContext.SpawnedObjects.Add(core);
+			FVector RandVec{ FMath::RandRange(-300.f, 300.f), FMath::RandRange(-300.f, 300.f), 0 };
+			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, EventContext.SelectedLocation + RandVec, rot, par);
+			if (IsValid(act)) {
+				IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+				UGameObjectCore* core = obj->Execute_GetCore(act);
+				EventContext.SpawnedObjects.Add(core);
+			}
 		}
 	}
 }
@@ -171,8 +176,12 @@ void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventC
 	}
 }
 
-void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext)
-{
+void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext) {
+	for (UGameObjectCore* core : EventContext.SelectedObjects) {
+		if (IsValid(core)) {
+			gameState->AddSelectedWidget.Broadcast(10, true, core->GetOwner(), FVector::Zero());
+		}
+	}
 }
 
 void UGameEventsService::StartEvent(FString EventName) {
@@ -224,7 +233,7 @@ bool UGameEventsService::UpdateRow(const TArray<FNeedArray>& NeedArrays,
 }
 
 void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext){
-
+	gameState->OnShowPages.Broadcast(Pages);
 }
 
 

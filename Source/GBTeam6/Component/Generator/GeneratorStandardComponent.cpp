@@ -21,6 +21,7 @@ void UGeneratorStandardComponent::BeginPlay() {
 			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
 		}
 	}
+	AGameStateDefault* gameState = GetGameState();
 }
 
 void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
@@ -29,7 +30,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
 		FGenerator gen;
 		gen.Barter = initializer.BarterTypes[i];
-		gen.Selected = false;
+		gen.Selected = true;
 		if (gen.Barter.Result.Num() == 0) {
 			FPrice prc{};
 			prc.Resource = EResource::None;
@@ -286,6 +287,8 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
+	if (!GetGameState()->IsDay())
+		return;
 	if (GetIsDestruction()) {
 		for (auto res : GetInventory()->GetAllResources()) {
 			if (res.Value > 0)
@@ -392,6 +395,10 @@ void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
 	else {
 		GetWorld()->GetTimerManager().PauseTimer(generatorTimer);
 	}
+}
+
+void UGeneratorStandardComponent::OnChangeDay(bool IsDay) {
+	SetWorkEnabled(IsDay);
 }
 
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
