@@ -1,6 +1,6 @@
 Content/ThirdParty/*
 !Content/ThirdParty/.void
-StarterContent/*
+*StarterContent/*
 
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudio,unrealengine,rider
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,unrealengine,rider
