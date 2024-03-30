@@ -94,6 +94,8 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraZoom);
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::CameraZoom);
 		// Select action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Select);

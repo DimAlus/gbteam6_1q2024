@@ -118,6 +118,8 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
 		GetOwner()->Destroy();
 	}
+	bIsBuilded = true;
+	OnBuilded.Broadcast(bIsBuilded);
 	if(GetCore())
 	{
 		if (auto Collision =
