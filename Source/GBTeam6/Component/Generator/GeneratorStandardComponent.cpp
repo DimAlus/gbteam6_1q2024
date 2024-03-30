@@ -129,6 +129,16 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 			}
 		}
 	}
+	for (const FPassiveGenerator& gen : PassiveGenerators) {
+		if (gen.Resource.Count < 0) {
+			if (!needs.Contains(gen.Resource.Resource)) {
+				needs.Add(gen.Resource.Resource, gen.Resource.Count - inventory->GetResourceCount(gen.Resource.Resource));
+			}
+			else {
+				needs[gen.Resource.Resource] += gen.Resource.Count;
+			}
+		}
+	}
 	return needs;
 }
 
@@ -139,7 +149,6 @@ TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 
 
 TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
-	
 	return GetGameState()->GetResourcesByStacks(GetOversMap(steps));
 }
 
@@ -171,6 +180,10 @@ TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
 
 TArray<FGenerator>& UGeneratorStandardComponent::GetCurrentGenerics() {
 	return *CurrentGenerics;
+}
+
+void UGeneratorStandardComponent::DayStateChanging(bool IsDay) {
+
 }
 
 void UGeneratorStandardComponent::OnOwnerDeath() {
@@ -293,31 +306,34 @@ void UGeneratorStandardComponent::WorkLoop() {
 }
 
 void UGeneratorStandardComponent::PassiveWorkLoop() {
-	if (GetIsDestruction()){
+	if (GetIsDestruction() || !IsBuilded){
 		return;
 	}
+	bool isDay = GetGameState()->IsDay();
 	UInventoryBaseComponent* inventory = GetInventory();
 	if (IsBuilded && inventory) {
 		TArray<FPrice> prs;
 		prs.Add({});
 		for (int i = 0; i < PassiveGenerators.Num(); i++) {
-			if ((PassiveGenerators[i].CurrentTime -= TimerPassiveDelay) < 0){
-				prs[0] = PassiveGenerators[i].Resource;
-				prs[0].Count = abs(prs[0].Count);
-				if (PassiveGenerators[i].Resource.Count > 0 
-					? inventory->Push(prs)
-					: inventory->Pop(prs)) {
-					PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
-					OnPassiveGeneratorSuccess.Broadcast(
-						PassiveGenerators[i].Resource.Resource, 
-						PassiveGenerators[i].CurrentTime
-					);
-				}
-				else {
-					OnPassiveGeneratorFailed.Broadcast(
-						PassiveGenerators[i].Resource.Resource, 
-						PassiveGenerators[i].CurrentTime
-					);
+			if (isDay || PassiveGenerators[i].WorkAtNight) {
+				if ((PassiveGenerators[i].CurrentTime -= TimerPassiveDelay) < 0){
+					prs[0] = PassiveGenerators[i].Resource;
+					prs[0].Count = abs(prs[0].Count);
+					if (PassiveGenerators[i].Resource.Count > 0 
+						? inventory->Push(prs)
+						: inventory->Pop(prs)) {
+						PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
+						OnPassiveGeneratorSuccess.Broadcast(
+							PassiveGenerators[i].Resource.Resource, 
+							PassiveGenerators[i].CurrentTime
+						);
+					}
+					else {
+						OnPassiveGeneratorFailed.Broadcast(
+							PassiveGenerators[i].Resource.Resource, 
+							PassiveGenerators[i].CurrentTime
+						);
+					}
 				}
 			}
 		}
@@ -344,7 +360,9 @@ void UGeneratorStandardComponent::CreateTimer() {
 		true,
 		TimerPassiveDelay
 	);
-	GetWorld()->GetTimerManager().PauseTimer(passiveGeneratorTimer);
+	// GetWorld()->GetTimerManager().PauseTimer(passiveGeneratorTimer);
+
+	GetGameState()->OnDayStateChanging.AddDynamic(this, &UGeneratorStandardComponent::DayStateChanging);
 }
 
 void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
