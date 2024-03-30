@@ -287,8 +287,6 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
-	if (!GetGameState()->IsDay())
-		return;
 	if (GetIsDestruction()) {
 		for (auto res : GetInventory()->GetAllResources()) {
 			if (res.Value > 0)
@@ -398,7 +396,7 @@ void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
 }
 
 void UGeneratorStandardComponent::OnChangeDay(bool IsDay) {
-	SetWorkEnabled(IsDay);
+	// SetWorkEnabled(IsDay);
 }
 
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
