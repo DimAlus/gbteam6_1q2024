@@ -18,7 +18,8 @@ UGameObjectCore* UBaseComponent::GetCore() {
 		UE_LOG_COMPONENT(Error, "IGameObjectInterface not Valid!");
 		return nullptr;
 	}
-	UGameObjectCore* core = obj->Execute_GetCore(GetOwner());
+	
+	UGameObjectCore* core = obj->GetCore_Implementation();//obj->Execute_GetCore(obj->_getUObject());
 	if (!IsValid(core)) {
 		UE_LOG_COMPONENT(Error, "UGameObjectCore not Valid!");
 		return nullptr;

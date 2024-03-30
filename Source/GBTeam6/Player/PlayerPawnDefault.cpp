@@ -147,7 +147,7 @@ void APlayerPawnDefault::OnSelect_Implementation() {
 						
 			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
 			{
-				auto ObjectCore = ObjectInterface->Execute_GetCore(SelectedActor);
+				auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
 				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
 			}
 		}
@@ -169,7 +169,7 @@ void APlayerPawnDefault::OnCommand_Implementation() {
 			
 			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
 			{
-				auto ObjectCore = ObjectInterface->Execute_GetCore(SelectedActor);
+				auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
 				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
 			}
 		}

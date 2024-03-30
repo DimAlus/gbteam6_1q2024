@@ -16,7 +16,7 @@ void UGeneratorStandardComponent::BeginPlay() {
 	CreateTimer();
 	if (auto gameObject = Cast<IGameObjectInterface>(GetOwner())) {
 		if (auto mapping = Cast<UMappingBaseComponent>(
-			gameObject->Execute_GetCore(GetOwner())->GetComponent(EGameComponentType::Mapping)
+			gameObject->GetCore_Implementation()/*(GetOwner())*/->GetComponent(EGameComponentType::Mapping)
 		)) {
 			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
 		}
@@ -30,7 +30,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
 		FGenerator gen;
 		gen.Barter = initializer.BarterTypes[i];
-		gen.Selected = true;
+		gen.Selected = initializer.BarterTypes[i].DefaultSelection;
 		if (gen.Barter.Result.Num() == 0) {
 			FPrice prc{};
 			prc.Resource = EResource::None;
@@ -287,8 +287,6 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::WorkLoop() {
-	if (!GetGameState()->IsDay())
-		return;
 	if (GetIsDestruction()) {
 		for (auto res : GetInventory()->GetAllResources()) {
 			if (res.Value > 0)
@@ -398,7 +396,7 @@ void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
 }
 
 void UGeneratorStandardComponent::OnChangeDay(bool IsDay) {
-	SetWorkEnabled(IsDay);
+	// SetWorkEnabled(IsDay);
 }
 
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
@@ -429,6 +427,10 @@ FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
 	if (GetIsDestruction()) return {};
 	return GetCurrentGenerics();
+}
+
+TArray<FPassiveGenerator> UGeneratorStandardComponent::GetPassiveGenerators() {
+	return PassiveGenerators;
 }
 
 float UGeneratorStandardComponent::GetTime() {

@@ -135,7 +135,7 @@ void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConex
 			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, EventContext.SelectedLocation + RandVec, rot, par);
 			if (IsValid(act)) {
 				IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-				UGameObjectCore* core = obj->Execute_GetCore(act);
+				UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 				EventContext.SpawnedObjects.Add(core);
 			}
 		}
