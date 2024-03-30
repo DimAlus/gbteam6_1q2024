@@ -87,6 +87,7 @@ public:
 
 	virtual FGenerator GetCurrentGenerator() override;
 	virtual TArray<FGenerator> GetGenerators() override;
+	virtual TArray<FPassiveGenerator> GetPassiveGenerators() override;
 	virtual float GetTime() override;
 	virtual float GetTimePercents() override;
 	virtual bool IsWorking() override;

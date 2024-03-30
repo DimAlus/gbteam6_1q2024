@@ -47,6 +47,10 @@ TArray<FGenerator> UGeneratorBaseComponent::GetGenerators() {
 	return TArray<FGenerator>();
 }
 
+TArray<FPassiveGenerator> UGeneratorBaseComponent::GetPassiveGenerators() {
+	return TArray<FPassiveGenerator>();
+}
+
 float UGeneratorBaseComponent::GetTime() {
 	return 0.0f;
 }

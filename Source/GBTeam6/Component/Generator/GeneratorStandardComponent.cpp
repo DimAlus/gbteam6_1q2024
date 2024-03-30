@@ -30,7 +30,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
 		FGenerator gen;
 		gen.Barter = initializer.BarterTypes[i];
-		gen.Selected = true;
+		gen.Selected = initializer.BarterTypes[i].DefaultSelection;
 		if (gen.Barter.Result.Num() == 0) {
 			FPrice prc{};
 			prc.Resource = EResource::None;
@@ -427,6 +427,10 @@ FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
 	if (GetIsDestruction()) return {};
 	return GetCurrentGenerics();
+}
+
+TArray<FPassiveGenerator> UGeneratorStandardComponent::GetPassiveGenerators() {
+	return PassiveGenerators;
 }
 
 float UGeneratorStandardComponent::GetTime() {

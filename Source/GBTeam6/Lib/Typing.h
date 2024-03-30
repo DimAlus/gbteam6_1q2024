@@ -181,6 +181,9 @@ struct FBarter {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Time{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool DefaultSelection = true;
 };
 
 USTRUCT(BlueprintType)
