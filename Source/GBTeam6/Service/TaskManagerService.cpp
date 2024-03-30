@@ -16,15 +16,9 @@ struct ClientNeeds {
 	int count;
 };
 
-bool UTaskManagerService::FindTask(FGameTask& gameTask) {
-	TArray<FGameTask> Candidats;
-	USocialService* social = gameState->GetSocialService();
-	TSet<UGameObjectCore*> mainStorage = social->GetObjectsByTag(ESocialTag::MainStorage);
-	TSet<UGameObjectCore*> clients = social->GetObjectsByTag(ESocialTag::Storage);
-
+TMap<EResource, TArray<ClientNeeds>> UTaskManagerService::GetOversByCores(const TSet<UGameObjectCore*>& CoresWithOvers) {
 	TMap<EResource, TArray<ClientNeeds>> OverMap;
-
-	for (UGameObjectCore* core : clients) {
+	for (UGameObjectCore* core : CoresWithOvers) {
 		if (!ReserverResources.Contains(core)) {
 			ReserverResources.Add(core, {});
 		}
@@ -44,45 +38,67 @@ bool UTaskManagerService::FindTask(FGameTask& gameTask) {
 			}
 		}
 	}
-	if (OverMap.Num() == 0) {
-		return false;
-	}
-	for (UGameObjectCore* core : clients) {
+	return OverMap;
+}
+
+
+TArray<FGameTask> UTaskManagerService::FindTasksByOvers(TSet<UGameObjectCore*> CoresWithNeeds, TMap<EResource, TArray<ClientNeeds>>& Overs) {
+	TArray<FGameTask> Tasks;
+	for (UGameObjectCore* core : CoresWithNeeds) {
 		TMap<EResource, int>& reserve = ReserverResources[core];
 
 		auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator));
 		if (generator) {
 			TMap<EResource, int> needs = generator->GetNeedsMap(5);
 			for (auto need : needs) {
-				if (OverMap.Contains(need.Key)) {
+				if (Overs.Contains(need.Key)) {
 					int reserv = reserve.Contains(need.Key) ? reserve[need.Key] : 0;
 					int needCnt = need.Value - reserv;
 					if (needCnt > 0) {
 						int mx = 0;
-						if (OverMap[need.Key][0].core == core)
+						if (Overs[need.Key][0].core == core)
 							mx++;
-						for (int i = mx + 1; i < OverMap[need.Key].Num(); i++) {
-							if (OverMap[need.Key][i].core == core)
+						for (int i = mx + 1; i < Overs[need.Key].Num(); i++) {
+							if (Overs[need.Key][i].core == core)
 								continue;
-							if (OverMap[need.Key][i].count > needCnt
-								|| OverMap[need.Key][i].count > OverMap[need.Key][mx].count
+							if (Overs[need.Key][i].count > needCnt
+								|| Overs[need.Key][i].count > Overs[need.Key][mx].count
 								) {
 								mx = i;
 							}
 						}
 						FGameTask task;
-						if (mx < OverMap[need.Key].Num()) {
-							task.From = OverMap[need.Key][mx].core;
+						if (mx < Overs[need.Key].Num()) {
+							task.From = Overs[need.Key][mx].core;
 							task.To = core;
 							task.ResType = need.Key;
-							task.ResAmount = std::min(OverMap[need.Key][mx].count, needCnt);
-							Candidats.Add(task);
+							task.ResAmount = std::min(Overs[need.Key][mx].count, needCnt);
+							Tasks.Add(task);
 						}
 					}
 				}
 			}
 		}
 	}
+	return Tasks;
+}
+
+
+bool UTaskManagerService::FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores) {
+	TArray<FGameTask> Candidats;
+	USocialService* social = gameState->GetSocialService();
+	TSet<UGameObjectCore*> mainStorage = social->GetObjectsByTag(ESocialTag::MainStorage);
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(Sources, SourcesIgnores);
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(Destinations, DestinationsIgnores);
+
+	TMap<EResource, TArray<ClientNeeds>> OverMap = GetOversByCores(sources);
+
+	if (OverMap.Num() == 0) {
+		return false;
+	}
+
+	Candidats = FindTasksByOvers(dests, OverMap);
+	
 	int maxCount = 0;
 	if (Candidats.Num() == 0) {
 		if (mainStorage.Num() == 0) {
@@ -131,14 +147,52 @@ void UTaskManagerService::SetGameState(AGameStateDefault* ownerGameState) {
 	WorkerStackMultiplyer = conf.FloatValue;
 }
 
-bool UTaskManagerService::GetTask(UGameObjectCore* TaskPerformer, FGameTask& GameTask) {
+bool UTaskManagerService::GetTask(UGameObjectCore* TaskPerformer) {
+	return GetTaskByTags(TaskPerformer, { ESocialTag::Storage }, { ESocialTag::Storage }, {}, {});
+}
+
+
+bool UTaskManagerService::GetTaskForReceiver(UGameObjectCore* TaskReceiver) {
+	if (CurrentTasks.Contains(TaskReceiver)) {
+		ConfirmDelivery(TaskReceiver, false);
+	}
+	USocialService* social = gameState->GetSocialService();
+	TSet<UGameObjectCore*> mainStorage = social->GetObjectsByTag(ESocialTag::MainStorage);
+
+	if (mainStorage.Num() == 0) {
+		return false;
+	}
+
+	FGameTask GameTask;
+	TMap<EResource, TArray<ClientNeeds>> overs = GetOversByCores({ TaskReceiver });
+
+	for (auto over : overs) {
+		for (const ClientNeeds& need : over.Value) {
+			if (need.count > 0) {
+				GameTask.TaskPerformer = TaskReceiver;
+				GameTask.From = TaskReceiver;
+				GameTask.To = mainStorage.begin().ElementIt->Value;
+				GameTask.ResAmount = need.count;
+				GameTask.ResType = over.Key;
+				GameTask.ResourceGettedFromSource = true;
+				ReserveResouce(GameTask.To, GameTask.ResType, GameTask.ResAmount);
+				CurrentTasks.Add(TaskReceiver, GameTask);
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+bool UTaskManagerService::GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores) {
 	if (CurrentTasks.Contains(TaskPerformer)) {
 		ConfirmDelivery(TaskPerformer, false);
 	}
-
-	if (FindTask(GameTask)) {
+	FGameTask GameTask;
+	if (FindTask(GameTask, Sources, Destinations, SourcesIgnores, DestinationsIgnores)) {
 		GameTask.ResAmount = std::min(
-			GameTask.ResAmount, 
+			GameTask.ResAmount,
 			FMath::RoundToInt(std::max(1.f, gameState->GetStackSize(GameTask.ResType) * WorkerStackMultiplyer))
 		);
 		GameTask.TaskPerformer = TaskPerformer;
@@ -151,12 +205,14 @@ bool UTaskManagerService::GetTask(UGameObjectCore* TaskPerformer, FGameTask& Gam
 	return false;
 }
 
+
 const FGameTask& UTaskManagerService::GetTaskByPerformer(UGameObjectCore* TaskPerformer) {
 	if (CurrentTasks.Contains(TaskPerformer)) {
 		return CurrentTasks[TaskPerformer];
 	}
 	return NoneTask;
 }
+
 
 void UTaskManagerService::ConfirmReceive(UGameObjectCore* TaskPerformer, bool Success) {
 	if (CurrentTasks.Contains(TaskPerformer)) {

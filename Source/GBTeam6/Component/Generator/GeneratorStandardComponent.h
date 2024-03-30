@@ -42,7 +42,7 @@ private:
 
 
 	FTimerHandle passiveGeneratorTimer;
-	float TimerPassiveDelay = 0.5f;
+	float TimerPassiveDelay = 0.1f;
 
 	TArray<FPassiveGenerator> PassiveGenerators;
 
@@ -50,6 +50,9 @@ private:
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
+
+	UFUNCTION()
+	void DayStateChanging(bool IsDay);
 
 	UFUNCTION()
 	void OnOwnerDeath();

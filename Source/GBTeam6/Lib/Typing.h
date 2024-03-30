@@ -205,6 +205,9 @@ struct FPassiveGenerator {
 	FPrice Resource{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool WorkAtNight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Time{};
 
 	UPROPERTY()

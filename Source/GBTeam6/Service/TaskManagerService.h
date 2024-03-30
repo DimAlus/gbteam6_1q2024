@@ -8,6 +8,8 @@
 
 class UGameObjectCore;
 class AGameStateDefault;
+
+struct ClientNeeds;
 /**
  * 
  */
@@ -28,14 +30,22 @@ private:
 	float WorkerStackMultiplyer;
 
 private:
-	bool FindTask(FGameTask& gameTask);
+	TMap<EResource, TArray<ClientNeeds>> GetOversByCores(const TSet<UGameObjectCore*>& CoresWithOvers);
+	TArray<FGameTask> FindTasksByOvers(TSet<UGameObjectCore*> CoresWithNeeds, TMap<EResource, TArray<ClientNeeds>>& Overs);
+	bool FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
 	void ReserveResouce(UGameObjectCore* core, EResource resource, int count);
 public:
 
 	void SetGameState(AGameStateDefault* ownerGameState);
 
 	UFUNCTION(BlueprintCallable)
-	bool GetTask(UGameObjectCore* TaskPerformer, FGameTask& GameTask);
+	bool GetTask(UGameObjectCore* TaskPerformer);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetTaskForReceiver(UGameObjectCore* TaskReceiver);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
 
 	UFUNCTION(BlueprintCallable)
 	const FGameTask& GetTaskByPerformer(UGameObjectCore* TaskPerformer);
