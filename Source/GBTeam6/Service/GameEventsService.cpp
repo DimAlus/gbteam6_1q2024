@@ -1,4 +1,4 @@
-#include "../Service/TaskManagerService.h"
+#include "../Service/GameEventsService.h"
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
