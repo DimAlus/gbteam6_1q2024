@@ -18,9 +18,59 @@
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
+#include "PlatformFeatures.h"
+#include "GameFramework/SaveGame.h"
 
 #include "../Interface/GameObjectCore.h"
-#include "SaveService.h"
+
+
+
+
+//TArray<FString> GetAllSaveGameSlotNames()
+//{
+//	//////////////////////////////////////////////////////////////////////////////
+//	class FFindSavesVisitor : public IPlatformFile::FDirectoryVisitor
+//	{
+//	public:
+//		FFindSavesVisitor() {}
+//
+//		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
+//		{
+//			if (!bIsDirectory)
+//			{
+//				FString FullFilePath(FilenameOrDirectory);
+//				if (FPaths::GetExtension(FullFilePath) == TEXT("sav"))
+//				{
+//					FString CleanFilename = FPaths::GetBaseFilename(FullFilePath);
+//					CleanFilename = CleanFilename.Replace(TEXT(".sav"), TEXT(""));
+//					SavesFound.Add(CleanFilename);
+//				}
+//			}
+//			return true;
+//		}
+//		TArray<FString> SavesFound;
+//	};
+//	//////////////////////////////////////////////////////////////////////////////
+//
+//	TArray<FString> Saves;
+//	const FString SavesFolder = FPaths::GameSavedDir() + TEXT("SaveGames");
+//
+//	if (!SavesFolder.IsEmpty())
+//	{
+//		FFindSavesVisitor Visitor;
+//		FPlatformFileManager::Get().GetPlatformFile().IterateDirectory(*SavesFolder, Visitor);
+//		Saves = Visitor.SavesFound;
+//	}
+//
+//	return Saves;
+//}
+//
+
+
+
+
+
+
 
 
 USaveDefault* USaveService::CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
@@ -301,6 +351,44 @@ void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool
 		}
 	}
 }
+
+TArray<FString> USaveService::GetSaveNames(AGameStateDefault* gameState, FString MapName) {
+	TArray<FString> result = {
+		FString("save1"),
+		FString("save2"),
+		FString("save3"),
+		FString("save4"),
+		FString("QuickSave")
+	};
+	FString playerName = FString("player");
+	for (int i = result.Num() - 1; i >= 0; i--) {
+		USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(LoadSave(
+			gameState,
+			USaveGameObjects::StaticClass(),
+			playerName,
+			USaveGameObjects::GetSlotName(playerName, result[i], MapName, false),
+			false
+		));
+		if (!IsValid(saveGameObjects)) {
+			result.RemoveAt(i);
+		}
+		else {
+			USaveProgress* saveProgress = Cast<USaveProgress>(LoadSave(
+				gameState,
+				USaveProgress::StaticClass(),
+				playerName,
+				USaveProgress::GetSlotName(playerName, result[i], MapName, false),
+				false
+			));
+			if (!IsValid(saveProgress)) {
+				result.RemoveAt(i);
+			}
+		}
+	}
+	return result;
+}
+
+
 
 
 

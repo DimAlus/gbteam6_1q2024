@@ -49,7 +49,10 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	res.Resource = EResource::Self;
 	BuildingGenerics[0].Barter.Result = { res };
 	CurrentGenerics = &BuildingGenerics;
-	IsBuilded = false;
+	IsBuilded = !initializer.NeedBuilding;
+	if (IsBuilded) {
+		CurrentGenerics = &Generics;
+	}
 
 	PassiveGenerators = initializer.PassiveGeneration;
 	for (int i = 0; i < PassiveGenerators.Num(); i++) {
@@ -133,10 +136,10 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 	for (const FPassiveGenerator& gen : PassiveGenerators) {
 		if (gen.Resource.Count < 0) {
 			if (!needs.Contains(gen.Resource.Resource)) {
-				needs.Add(gen.Resource.Resource, gen.Resource.Count - inventory->GetResourceCount(gen.Resource.Resource));
+				needs.Add(gen.Resource.Resource, -gen.Resource.Count - inventory->GetResourceCount(gen.Resource.Resource));
 			}
 			else {
-				needs[gen.Resource.Resource] += gen.Resource.Count;
+				needs[gen.Resource.Resource] -= gen.Resource.Count;
 			}
 		}
 	}
@@ -173,6 +176,13 @@ TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
 		}
 		else {
 			result.Add(res.Key, res.Value);
+		}
+	}
+	for (const FPassiveGenerator& gen : PassiveGenerators) {
+		if (gen.Resource.Count < 0) {
+			if (result.Contains(gen.Resource.Resource)) {
+				result[gen.Resource.Resource] += gen.Resource.Count;
+			}
 		}
 	}
 	return result;
