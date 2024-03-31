@@ -458,3 +458,17 @@ struct FGameEventConext {
 	FVector SelectedLocation{};
 	float CurrentTime{};
 };
+
+USTRUCT(BlueprintType)
+struct FGameEventConextSave {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
+	FString EventName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
+	FVector SelectedLocation{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
+	float CurrentTime{};
+};

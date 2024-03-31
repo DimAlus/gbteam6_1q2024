@@ -498,7 +498,8 @@ void UGeneratorStandardComponent::CancelTask() {
 }
 
 void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
-	IsDestructed = isDestroy;	
+	IsDestructed = isDestroy;
+	this->SetWorkEnabled(true);
 }
 
 bool UGeneratorStandardComponent::GetIsDestruction() { 

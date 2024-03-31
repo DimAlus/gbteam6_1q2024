@@ -19,6 +19,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayStateChanging, bool, IsDay);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayTimeChanging, float, DayPercents);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAddSelectionWidget, float, TimeLimit, bool, IsObjectSelector, AActor*, SelectedObject, FVector, Location);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowPages, const TArray<FQuestPage>&, Pages);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameOver);
 
 
 /**
@@ -137,6 +138,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CheckNeed(const FNeed& need);
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	bool isMenuMap;
+
 /// Player Resources
 private:
 	TMap<EResource, int> StackSizes;
@@ -203,4 +207,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnShowPages OnShowPages;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnGameOver OnGameOver;
 };
