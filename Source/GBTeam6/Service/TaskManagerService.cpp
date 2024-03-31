@@ -187,6 +187,7 @@ bool UTaskManagerService::GetTaskForReceiver(UGameObjectCore* TaskReceiver) {
 
 bool UTaskManagerService::GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores) {
 	if (CurrentTasks.Contains(TaskPerformer)) {
+		UE_LOG(LogTemp, Error, TEXT("Test Core: %d from %d"), TaskPerformer, CurrentTasks.Num());
 		ConfirmDelivery(TaskPerformer, false);
 	}
 	FGameTask GameTask;
