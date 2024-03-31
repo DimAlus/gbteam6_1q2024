@@ -54,7 +54,7 @@ void AGameStateDefault::LoadSizeStacks() {
 void AGameStateDefault::InitializeServices() {
 	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
 	this->MessageService = NewObject<UMessageService>();
-	
+
 	this->MappingService = NewObject<UMappingService>();
 	this->MappingService->Initialize(this);
 
@@ -68,8 +68,10 @@ void AGameStateDefault::InitializeServices() {
 	this->MessageService->AddObserver(Cast<UObject>(SoundService),
 		SoundService->GetSubscriberMessageTags());
 
-	this->GameEventsService = NewObject<UGameEventsService>();
-	this->GameEventsService->SetGameState(this);
+	if (!isMenuMap) {
+		this->GameEventsService = NewObject<UGameEventsService>();
+		this->GameEventsService->SetGameState(this);
+	}
 }
 
 void AGameStateDefault::ClearServices()
