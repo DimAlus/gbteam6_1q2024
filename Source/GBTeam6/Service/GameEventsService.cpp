@@ -54,11 +54,11 @@ void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventC
 			start = Action.SpawnSelectionRange.X;
 			end = std::min(
 				Action.SpawnSelectionRange.Y + 1,
-				EventContext.SelectedObjects.Num()
+				EventContext.SpawnedObjects.Num()
 			);
 		}
 		for (int i = start; i < end; i++) {
-			UGameObjectCore* core = EventContext.SelectedObjects[i];
+			UGameObjectCore* core = EventContext.SpawnedObjects[i];
 			if (IsValid(core) && IsValid(core->GetOwner())) {
 				if (Action.ActionType == EQuestActionType::Deselect) {
 					EventContext.SelectedObjects.Remove(core);
@@ -279,14 +279,16 @@ void UGameEventsService::Update() {
 				CompletedEvents.Add(context.EventName);
 			}
 			CurrentEvents.RemoveAt(i);
-			ProcessEvents.Remove(context.EventName);
+			/*if (ProcessEvents.Contains())
+				ProcessEvents.Remove(context.EventName);*/
 		}
 		if (UpdateRow(row.FailNeeds, row.FailPages, row.FailActions, context)){
 			if (row.CompleteOnFail) {
 				CompletedEvents.Add(context.EventName);
 			}
 			CurrentEvents.RemoveAt(i);
-			ProcessEvents.Remove(context.EventName);
+			/*if (ProcessEvents.Contains(context.EventName))
+				ProcessEvents.Remove(context.EventName);*/
 		}
 	}
 }

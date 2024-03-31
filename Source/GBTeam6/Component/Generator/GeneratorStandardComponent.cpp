@@ -310,7 +310,7 @@ void UGeneratorStandardComponent::PassiveWorkLoop() {
 	if (GetIsDestruction() || !IsBuilded){
 		return;
 	}
-	bool isDay = GetGameState()->IsDay();
+	bool isDay = true;//GetGameState()->IsDay();
 	UInventoryBaseComponent* inventory = GetInventory();
 	if (IsBuilded && inventory) {
 		TArray<FPrice> prs;
