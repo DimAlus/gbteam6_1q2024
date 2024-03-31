@@ -1,7 +1,9 @@
 #include "./SocialDefaultComponent.h"
 
 #include "GBTeam6/Game/GameStateDefault.h"
+#include "../../Interface/GameObjectCore.h"
 #include "GBTeam6/Service/SocialService.h"
+#include "../Mapping/MappingBaseComponent.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	this->UnRegisterObjectInService();
@@ -14,7 +16,18 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 	SocialTags = Initializer.SocialTags;
 	HomeObjectTag = Initializer.HomeObjectTag;
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
-		this->RegisterObjectInService();
+		UMappingBaseComponent* mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping));
+		if (mapping) {
+			if (mapping->GetIsBuilded()) {
+				OnBuildedRegist(true);
+			}
+			else {
+				mapping->OnBuilded.AddDynamic(this, &USocialDefaultComponent::OnBuildedRegist);
+			}
+		}
+		else {
+			OnBuildedRegist(true);
+		}
 	}));
 	
 }
@@ -40,6 +53,10 @@ void USocialDefaultComponent::UnRegisterObjectInService() {
 		GameState->GetSocialService()->RemoveObject(GetCore());
 		UE_LOG_COMPONENT(Log, "UNregistered in social service <%s>!", *GetNameSafe(GameState));
 	}
+}
+
+void USocialDefaultComponent::OnBuildedRegist(bool IsBuilded) {
+	this->RegisterObjectInService();
 }
 
 bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam) {

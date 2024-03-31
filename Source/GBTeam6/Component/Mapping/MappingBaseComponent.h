@@ -52,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsBuilded(bool isBuilded);
 
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetIsBuilded();
+
 
 public:
 	UPROPERTY(BlueprintAssignable)

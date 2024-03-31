@@ -33,6 +33,7 @@ private:
 	TMap<EResource, TArray<ClientNeeds>> GetOversByCores(const TSet<UGameObjectCore*>& CoresWithOvers);
 	TArray<FGameTask> FindTasksByOvers(TSet<UGameObjectCore*> CoresWithNeeds, TMap<EResource, TArray<ClientNeeds>>& Overs);
 	bool FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
+	bool FindTaskToStorage(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
 	void ReserveResouce(UGameObjectCore* core, EResource resource, int count);
 public:
 
@@ -43,6 +44,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool GetTaskForReceiver(UGameObjectCore* TaskReceiver);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetTaskByTagsToStorage(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
 
 	UFUNCTION(BlueprintCallable)
 	bool GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
