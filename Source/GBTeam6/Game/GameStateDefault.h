@@ -175,7 +175,9 @@ private:
 	void LoadSizeStacks();
 
 	void SendMessageBeginPlay();
-	
+
+protected:
+	UFUNCTION()
 	void SendMessageDayStateChange(bool IsDay);
 
 public:

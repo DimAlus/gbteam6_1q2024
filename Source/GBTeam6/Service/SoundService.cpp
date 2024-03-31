@@ -1,9 +1,11 @@
 #include "./SoundService.h"
 
+#include "Components/AudioComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GBTeam6/Component/Sound/SoundBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable)
 {
@@ -93,6 +95,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 
 			if (ObjectSound.Select && tags.Contains(EMessageTag::GOASelect))
 			{
+				UGameplayStatics::
 				UGameplayStatics::PlaySoundAtLocation(
 					GameState->GetWorld(),
 					ObjectSound.Select,
@@ -149,28 +152,45 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 	}
 
 
+
 	//Music sounds
 	if (MusicSound.MusicMainMenu && tags.Contains(EMessageTag::GLBGameStart))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicMainMenu);
+		if (MusicAudioComponent) {
+			MusicAudioComponent->SetActive(false);
+		}
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicMainMenu);
+		MusicAudioComponent->Play();
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBEnterPlayMap))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		if (MusicAudioComponent) {
+			MusicAudioComponent->SetActive(false);
+		}
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		MusicAudioComponent->Play();
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBDay))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		if (MusicAudioComponent) {
+			MusicAudioComponent->SetActive(false);
+		}
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		MusicAudioComponent->Play();
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeacefulNight && tags.Contains(EMessageTag::GLBNight))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeacefulNight);
+		if (MusicAudioComponent) {
+			MusicAudioComponent->SetActive(false);
+		}
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeacefulNight);
+		MusicAudioComponent->Play();
 	}
 	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
 	
