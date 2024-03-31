@@ -27,6 +27,9 @@ void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& 
 	case EQuestActionType::SpawnActors:
 		ActionSpawn(Action, EventContext);
 		break;
+	case EQuestActionType::GameOver:
+		gameState->OnGameOver.Broadcast();
+		break;
 	default:
 		break;
 	}

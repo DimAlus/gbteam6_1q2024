@@ -222,7 +222,8 @@ enum class EQuestActionType : uint8 {
 	AddSelectionWidget	UMETA(DisplayName = "AddSelectionWidget"),
 	FindLocation		UMETA(DisplayName = "FindLocation"),
 	Select				UMETA(DisplayName = "Select"),
-	Deselect			UMETA(DisplayName = "Deselect")
+	Deselect			UMETA(DisplayName = "Deselect"),
+	GameOver			UMETA(DisplayName = "GameOver")
 };
 
 

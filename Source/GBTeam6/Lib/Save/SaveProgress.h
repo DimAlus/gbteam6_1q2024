@@ -31,4 +31,13 @@ public:
     UPROPERTY(VisibleAnywhere)
 	TMap<EResource, int> PlayerResources;
 
+	UPROPERTY(VisibleAnywhere)
+	TSet<FString> CompletedEvents;
+
+	UPROPERTY(VisibleAnywhere)
+	TSet<FString> ProcessEvents;
+
+	UPROPERTY(VisibleAnywhere)
+	TArray<FGameEventConextSave> CurrentEvents;
+
 };
