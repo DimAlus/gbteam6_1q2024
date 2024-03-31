@@ -81,7 +81,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				Collision->SetCollisionEnabled(bIsBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 			}
 			else
 			{
@@ -125,7 +125,7 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 		if (auto Collision =
 				Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 		{
-			Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		}
 	}
 	else
@@ -237,7 +237,7 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+				Collision->SetCollisionEnabled(isBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
 			}
 		}
 		else

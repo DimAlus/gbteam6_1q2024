@@ -34,7 +34,6 @@ void ASimpleObject::Destroyed() {
 }
 
 void ASimpleObject::BeginPlay() {
-	Super::BeginPlay();
 
 	this->GameObjectCore = NewObject<UGameObjectCore>();
 	this->GameObjectCore->SetOwner(this);
@@ -56,6 +55,7 @@ void ASimpleObject::BeginPlay() {
 	GeneratorComponent->OnResourceGenerated.AddDynamic(this, &ASimpleObject::OnResourceGeneratedBehaviour);
 	
 	this->GameObjectCore->SetIsCreated();
+	Super::BeginPlay();
 
 }
 
