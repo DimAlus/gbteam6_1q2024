@@ -95,21 +95,31 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 
 			if (ObjectSound.Select && tags.Contains(EMessageTag::GOASelect))
 			{
-				UGameplayStatics::
-				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
-					ObjectSound.Select,
-					sender->GetOwner()->GetActorLocation()
-					);
+
+				if(!SelectCommandAudioComponent || !SelectCommandAudioComponent->IsPlaying())
+				{
+					SelectCommandAudioComponent =
+					UGameplayStatics::SpawnSoundAtLocation(
+						GameState->GetWorld(),
+						ObjectSound.Select,
+						sender->GetOwner()->GetActorLocation()
+						);
+				}
+				
+
 			}
 
 			if (ObjectSound.Command && tags.Contains(EMessageTag::GOACommand))
 			{
-				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
-					ObjectSound.Command,
-					sender->GetOwner()->GetActorLocation()
-					);
+				if(!SelectCommandAudioComponent || !SelectCommandAudioComponent->IsPlaying())
+				{
+					SelectCommandAudioComponent =
+					UGameplayStatics::SpawnSoundAtLocation(
+						GameState->GetWorld(),
+						ObjectSound.Command,
+						sender->GetOwner()->GetActorLocation()
+						);
+				}
 			}
 
 			if (ObjectSound.Spawn && tags.Contains(EMessageTag::GOASpawn))
