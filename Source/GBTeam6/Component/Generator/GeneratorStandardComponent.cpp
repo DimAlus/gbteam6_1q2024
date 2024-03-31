@@ -16,11 +16,12 @@ void UGeneratorStandardComponent::BeginPlay() {
 	CreateTimer();
 	if (auto gameObject = Cast<IGameObjectInterface>(GetOwner())) {
 		if (auto mapping = Cast<UMappingBaseComponent>(
-			gameObject->Execute_GetCore(GetOwner())->GetComponent(EGameComponentType::Mapping)
+			gameObject->GetCore_Implementation()/*(GetOwner())*/->GetComponent(EGameComponentType::Mapping)
 		)) {
 			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
 		}
 	}
+	AGameStateDefault* gameState = GetGameState();
 }
 
 void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
@@ -29,7 +30,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
 		FGenerator gen;
 		gen.Barter = initializer.BarterTypes[i];
-		gen.Selected = false;
+		gen.Selected = initializer.BarterTypes[i].DefaultSelection;
 		if (gen.Barter.Result.Num() == 0) {
 			FPrice prc{};
 			prc.Resource = EResource::None;
@@ -309,7 +310,7 @@ void UGeneratorStandardComponent::PassiveWorkLoop() {
 	if (GetIsDestruction() || !IsBuilded){
 		return;
 	}
-	bool isDay = GetGameState()->IsDay();
+	bool isDay = true;//GetGameState()->IsDay();
 	UInventoryBaseComponent* inventory = GetInventory();
 	if (IsBuilded && inventory) {
 		TArray<FPrice> prs;
@@ -394,6 +395,10 @@ void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
 	}
 }
 
+void UGeneratorStandardComponent::OnChangeDay(bool IsDay) {
+	// SetWorkEnabled(IsDay);
+}
+
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
 	UE_LOG_COMPONENT(Log, "Set Generator selection <%d>: <%d>", index, isSelected ? 1 : 0);
 	if (index >= GetCurrentGenerics().Num()) {
@@ -422,6 +427,10 @@ FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
 TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
 	if (GetIsDestruction()) return {};
 	return GetCurrentGenerics();
+}
+
+TArray<FPassiveGenerator> UGeneratorStandardComponent::GetPassiveGenerators() {
+	return PassiveGenerators;
 }
 
 float UGeneratorStandardComponent::GetTime() {

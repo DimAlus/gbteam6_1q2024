@@ -39,7 +39,6 @@ void AMovableObject::Destroyed() {
 
 // Called when the game starts or when spawned
 void AMovableObject::BeginPlay() {
-	Super::BeginPlay();
 
 	this->GameObjectCore = NewObject<UGameObjectCore>();
 	this->GameObjectCore->SetOwner(this);
@@ -61,6 +60,7 @@ void AMovableObject::BeginPlay() {
 
 	this->GameObjectCore->InitDataByName(ObjectName);
 	this->GameObjectCore->SetIsCreated();
+	Super::BeginPlay();
 }
 
 UGameObjectCore* AMovableObject::GetCore_Implementation()

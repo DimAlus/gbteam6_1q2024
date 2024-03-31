@@ -152,12 +152,22 @@ void AGameStateDefault::DayChangingLoop(){
 		CurrentDayTime -= dayLength;
 	}
 	float perc = CurrentDayTime / dayLength;
-	OnDayTimeChanging.Broadcast(perc);
+	//OnDayTimeChanging.Broadcast(perc);
 	bool isDay = perc > dayPeriod.X && perc < dayPeriod.Y;
 	if (isDay != CurrentIsDay) {
 		CurrentIsDay = isDay;
 		OnDayStateChanging.Broadcast(isDay);
 	}
+	if (isDay) {
+		SunPosition = (perc - dayPeriod.X) / (dayPeriod.Y - dayPeriod.X) / 2.f + 0.5f;
+	}
+	else {
+		SunPosition = (perc < dayPeriod.X ? (1 - dayPeriod.Y + perc) : (perc - dayPeriod.Y)) / (1 - dayPeriod.Y + dayPeriod.X) / 2.f;
+	}
+	SunPosition -= 0.25;
+	if (SunPosition < 0)
+		SunPosition += 1;
+	OnDayTimeChanging.Broadcast(SunPosition);
 }
 
 void AGameStateDefault::BeginPlay() {

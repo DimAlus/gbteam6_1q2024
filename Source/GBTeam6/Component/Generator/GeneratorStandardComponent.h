@@ -80,11 +80,14 @@ public:
 	virtual TMap<EResource, int> GetOversMap(int steps) override;
 	
 	virtual void SetWorkEnabled(bool isEnabled) override;
+	UFUNCTION()
+	void OnChangeDay(bool IsDay);
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;
 
 	virtual FGenerator GetCurrentGenerator() override;
 	virtual TArray<FGenerator> GetGenerators() override;
+	virtual TArray<FPassiveGenerator> GetPassiveGenerators() override;
 	virtual float GetTime() override;
 	virtual float GetTimePercents() override;
 	virtual bool IsWorking() override;

@@ -112,7 +112,7 @@ void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* s
 		if (saveData.ObjectClass) {
 			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
+			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 			if (!(IsValid(act) && obj)) {
 				UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
 				act->Destroy();
@@ -308,7 +308,7 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 	for (AActor* act : actors) {
 		if (IsValid(act)) {
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
+			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 			FGameObjectSaveData SaveData;
 
 			SaveData.ObjectClass = act->GetClass();
@@ -348,14 +348,14 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 		mapping->LoadComponent(objectSaveData.MappingData);
 	}
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		social->LoadComponent(objectSaveData.SocialData);
+	}
 	if (auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory))) {
 		inventory->LoadComponent(objectSaveData.InventoryData);
 	}
 	if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 		generator->LoadComponent(objectSaveData.GeneratorData);
-	}
-	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		social->LoadComponent(objectSaveData.SocialData);
 	}
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);

@@ -17,6 +17,8 @@ class UGameEventsService;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayStateChanging, bool, IsDay);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayTimeChanging, float, DayPercents);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAddSelectionWidget, float, TimeLimit, bool, IsObjectSelector, AActor*, SelectedObject, FVector, Location);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowPages, const TArray<FQuestPage>&, Pages);
 
 
 /**
@@ -165,6 +167,8 @@ private:
 	float DayChangingDelay = 0.1f;
 	bool CurrentIsDay = true;
 	FTimerHandle DayChangingTimer;
+	//FVector DayPeriod{ 0.2f, 0.8f, 0.f };
+	float SunPosition;
 	void DayChangingLoop();
 	
 private:
@@ -176,10 +180,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetCurrentDayTime() const { return CurrentDayTime; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE float GetSunPosition() const { return SunPosition; }
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDayStateChanging OnDayStateChanging;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnDayTimeChanging OnDayTimeChanging;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnAddSelectionWidget AddSelectedWidget;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FOnShowPages OnShowPages;
 };

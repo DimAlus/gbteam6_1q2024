@@ -54,11 +54,11 @@ void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventC
 			start = Action.SpawnSelectionRange.X;
 			end = std::min(
 				Action.SpawnSelectionRange.Y + 1,
-				EventContext.SelectedObjects.Num()
+				EventContext.SpawnedObjects.Num()
 			);
 		}
 		for (int i = start; i < end; i++) {
-			UGameObjectCore* core = EventContext.SelectedObjects[i];
+			UGameObjectCore* core = EventContext.SpawnedObjects[i];
 			if (IsValid(core) && IsValid(core->GetOwner())) {
 				if (Action.ActionType == EQuestActionType::Deselect) {
 					EventContext.SelectedObjects.Remove(core);
@@ -127,12 +127,17 @@ void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConex
 		*GetNameSafe(Action.SpawnClass), Action.SpawnCount,
 		EventContext.SelectedLocation.X, EventContext.SelectedLocation.Y, EventContext.SelectedLocation.Z);
 	if (Action.SpawnClass) {
+		FActorSpawnParameters par;
+		par.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		for (int i = 0; i < Action.SpawnCount; i++) {
 			FRotator rot;
-			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, EventContext.SelectedLocation, rot);
-			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
-			EventContext.SpawnedObjects.Add(core);
+			FVector RandVec{ FMath::RandRange(-300.f, 300.f), FMath::RandRange(-300.f, 300.f), 0 };
+			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, EventContext.SelectedLocation + RandVec, rot, par);
+			if (IsValid(act)) {
+				IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+				UGameObjectCore* core = obj->GetCore_Implementation();//(act);
+				EventContext.SpawnedObjects.Add(core);
+			}
 		}
 	}
 }
@@ -171,8 +176,12 @@ void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventC
 	}
 }
 
-void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext)
-{
+void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext) {
+	for (UGameObjectCore* core : EventContext.SelectedObjects) {
+		if (IsValid(core)) {
+			gameState->AddSelectedWidget.Broadcast(10, true, core->GetOwner(), FVector::Zero());
+		}
+	}
 }
 
 void UGameEventsService::StartEvent(FString EventName) {
@@ -224,7 +233,7 @@ bool UGameEventsService::UpdateRow(const TArray<FNeedArray>& NeedArrays,
 }
 
 void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext){
-
+	gameState->OnShowPages.Broadcast(Pages);
 }
 
 
@@ -270,14 +279,16 @@ void UGameEventsService::Update() {
 				CompletedEvents.Add(context.EventName);
 			}
 			CurrentEvents.RemoveAt(i);
-			ProcessEvents.Remove(context.EventName);
+			/*if (ProcessEvents.Contains())
+				ProcessEvents.Remove(context.EventName);*/
 		}
 		if (UpdateRow(row.FailNeeds, row.FailPages, row.FailActions, context)){
 			if (row.CompleteOnFail) {
 				CompletedEvents.Add(context.EventName);
 			}
 			CurrentEvents.RemoveAt(i);
-			ProcessEvents.Remove(context.EventName);
+			/*if (ProcessEvents.Contains(context.EventName))
+				ProcessEvents.Remove(context.EventName);*/
 		}
 	}
 }

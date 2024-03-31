@@ -58,6 +58,9 @@ public:
 	virtual TArray<FGenerator> GetGenerators();
 
 	UFUNCTION(BlueprintCallable)
+	virtual TArray<FPassiveGenerator> GetPassiveGenerators();
+
+	UFUNCTION(BlueprintCallable)
 	virtual float GetTime();
 
 	UFUNCTION(BlueprintCallable)

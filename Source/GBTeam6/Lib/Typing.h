@@ -181,6 +181,9 @@ struct FBarter {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Time{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool DefaultSelection = true;
 };
 
 USTRUCT(BlueprintType)
@@ -395,10 +398,13 @@ struct FQuestPage {
 	USoundBase* ForegroundSound{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString HeaderText{};
+	FText HeaderText{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString Text{};
+	FText Text{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText AddText{};
 };
 
 
@@ -427,7 +433,7 @@ struct FTRGameEvent : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	TArray<FQuestPage> SuccessPages{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	TArray<FQuestAction> SuccessActions{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
@@ -436,7 +442,7 @@ struct FTRGameEvent : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	TArray<FQuestPage> FailPages{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	TArray<FQuestAction> FailActions{};
 };
 

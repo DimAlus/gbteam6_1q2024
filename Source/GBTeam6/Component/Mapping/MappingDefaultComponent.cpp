@@ -81,7 +81,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				Collision->SetCollisionEnabled(bIsBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 			}
 			else
 			{
@@ -118,12 +118,14 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
 		GetOwner()->Destroy();
 	}
+	bIsBuilded = true;
+	OnBuilded.Broadcast(bIsBuilded);
 	if(GetCore())
 	{
 		if (auto Collision =
 				Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 		{
-			Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+			Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 		}
 	}
 	else
@@ -235,7 +237,7 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+				Collision->SetCollisionEnabled(isBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
 			}
 		}
 		else
