@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
 
+	UFUNCTION(BlueprintCallable)
+	TArray<FString>GetSaveNames(AGameStateDefault* gameState, FString MapName);
+
 private:
 	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);
 

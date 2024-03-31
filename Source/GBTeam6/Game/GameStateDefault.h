@@ -174,7 +174,12 @@ private:
 private:
 	void LoadSizeStacks();
 
+	void SendMessageBeginPlay();
+	
+	void SendMessageDayStateChange(bool IsDay);
+
 public:
+	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsDay() const { return CurrentIsDay; }
 

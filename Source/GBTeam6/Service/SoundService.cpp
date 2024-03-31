@@ -48,17 +48,32 @@ void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable*
 		UE_LOG(LgService, Error, TEXT("<%s> Can't find valid MusicSound!"), *GetNameSafe(this))
 	}
 
+
+	/*************************************************************************/
+	/********************	Subscibing on messages	**************************/
+	/*************************************************************************/
+	
+	//GLB messages
+	SubscriberMessageTags.Add(EMessageTag::GLBGameStart);
+	SubscriberMessageTags.Add(EMessageTag::GLBEnterPlayMap);
+	SubscriberMessageTags.Add(EMessageTag::GLBDay);
+	SubscriberMessageTags.Add(EMessageTag::GLBNight);
+
+	//GOA messages
 	SubscriberMessageTags.Add(EMessageTag::GOASelect);
 	SubscriberMessageTags.Add(EMessageTag::GOACommand);
 	SubscriberMessageTags.Add(EMessageTag::GOAHit);
 	SubscriberMessageTags.Add(EMessageTag::GOASpawn);
 	SubscriberMessageTags.Add(EMessageTag::GOADamage);
 	SubscriberMessageTags.Add(EMessageTag::GOADeath);
-	
+
+	//UIE messages
 	SubscriberMessageTags.Add(EMessageTag::UIEButton);
 	SubscriberMessageTags.Add(EMessageTag::UIESliderEffectVolume);
 	SubscriberMessageTags.Add(EMessageTag::UIESliderVoiceVolume);
 	
+	/*************************************************************************/
+	/*************************************************************************/
 }
 
 TSet<EMessageTag> USoundService::GetSubscriberMessageTags()
@@ -132,6 +147,33 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		}
 		return;
 	}
+
+
+	//Music sounds
+	if (MusicSound.MusicMainMenu && tags.Contains(EMessageTag::GLBGameStart))
+	{
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicMainMenu);
+	}
+	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
+
+	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBEnterPlayMap))
+	{
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+	}
+	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
+
+	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBDay))
+	{
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+	}
+	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
+
+	if (MusicSound.MusicPeacefulNight && tags.Contains(EMessageTag::GLBNight))
+	{
+		UGameplayStatics::PlaySound2D(GameState->GetWorld(), MusicSound.MusicPeacefulNight);
+	}
+	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
+	
 	
 	//System sounds
 	

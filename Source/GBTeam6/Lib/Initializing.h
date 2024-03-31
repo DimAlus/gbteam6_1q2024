@@ -77,6 +77,9 @@ struct FGeneratorComponentInitializer {
 	bool BuildSelectedDefault{false};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool NeedBuilding{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BuildTime{};
 };
 
@@ -185,14 +188,14 @@ public:
 	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(), 
 		NULL, 
-		TEXT("/Engine/MapTemplates/Materials/BasicAsset03")
+		TEXT("/Game/Enviroment/Material/M_TileEnabled")
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(),
 		NULL,
-		TEXT("/Engine/MapTemplates/Materials/BasicAsset01")
+		TEXT("/Game/Enviroment/Material/M_TileDisabled")
 	));
 };
 
