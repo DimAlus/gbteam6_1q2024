@@ -45,6 +45,9 @@ TMap<EResource, TArray<ClientNeeds>> UTaskManagerService::GetOversByCores(const 
 TArray<FGameTask> UTaskManagerService::FindTasksByOvers(TSet<UGameObjectCore*> CoresWithNeeds, TMap<EResource, TArray<ClientNeeds>>& Overs) {
 	TArray<FGameTask> Tasks;
 	for (UGameObjectCore* core : CoresWithNeeds) {
+		if (!ReserverResources.Contains(core)) {
+			ReserverResources.Add(core);
+		}
 		TMap<EResource, int>& reserve = ReserverResources[core];
 
 		auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator));
@@ -101,7 +104,8 @@ bool UTaskManagerService::FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources
 	
 	int maxCount = 0;
 	if (Candidats.Num() == 0) {
-		if (mainStorage.Num() == 0) {
+		return false;
+		/*if (mainStorage.Num() == 0) {
 			return false;
 		}
 		UGameObjectCore* storage = mainStorage.begin().ElementIt->Value;
@@ -119,13 +123,41 @@ bool UTaskManagerService::FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources
 				}
 			}
 		}
-		return found;
+		return found;*/
 	}
 	/*for (int i = 1; i < Candidats.Num(); i++) {
 		if (Candidats[i].ResAmount > Candidats[maxCount].ResAmount)
 			maxCount = i;
 	}*/
 	gameTask = Candidats[FMath::RandRange(0, Candidats.Num() - 1)];
+	return true;
+}
+bool UTaskManagerService::FindTaskToStorage(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores) {
+	USocialService* social = gameState->GetSocialService();
+	TSet<UGameObjectCore*> mainStorage = social->GetObjectsByTag(ESocialTag::MainStorage);
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(Sources, SourcesIgnores);
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(Destinations, DestinationsIgnores);
+
+	TMap<EResource, TArray<ClientNeeds>> OverMap = GetOversByCores(sources);
+
+	if (OverMap.Num() == 0 || dests.Num() == 0) {
+		return false;
+	}
+	FGameTask task;
+	int over = FMath::RandRange(0, OverMap.Num() - 1);
+	for (auto it : OverMap) {
+		if (over-- == 0) {it.Value[FMath::RandRange(0, it.Value.Num() - 1)];
+			ClientNeeds& need = it.Value[FMath::RandRange(0, it.Value.Num() - 1)];
+			task.From = need.core;
+			task.ResAmount = need.count;
+			task.ResType = it.Key;
+			auto ptr = dests.begin();
+			for (int i = 0; i < FMath::RandRange(0, dests.Num() - 1); i++)
+				++ptr;
+			task.To = ptr.ElementIt->Value;
+		}
+	}
+	gameTask = task;
 	return true;
 }
 
@@ -206,6 +238,26 @@ bool UTaskManagerService::GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESo
 	return false;
 }
 
+bool UTaskManagerService::GetTaskByTagsToStorage(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores) {
+	if (CurrentTasks.Contains(TaskPerformer)) {
+		UE_LOG(LogTemp, Error, TEXT("Test Core: %d from %d"), TaskPerformer, CurrentTasks.Num());
+		ConfirmDelivery(TaskPerformer, false);
+	}
+	FGameTask GameTask;
+	if (FindTaskToStorage(GameTask, Sources, Destinations, SourcesIgnores, DestinationsIgnores)) {
+		GameTask.ResAmount = std::min(
+			GameTask.ResAmount,
+			FMath::RoundToInt(std::max(1.f, gameState->GetStackSize(GameTask.ResType) * WorkerStackMultiplyer))
+		);
+		GameTask.TaskPerformer = TaskPerformer;
+		GameTask.ResourceGettedFromSource = false;
+		ReserveResouce(GameTask.From, GameTask.ResType, -GameTask.ResAmount);
+		ReserveResouce(GameTask.To, GameTask.ResType, GameTask.ResAmount);
+		CurrentTasks.Add(TaskPerformer, GameTask);
+		return true;
+	}
+	return false;
+}
 
 const FGameTask& UTaskManagerService::GetTaskByPerformer(UGameObjectCore* TaskPerformer) {
 	if (CurrentTasks.Contains(TaskPerformer)) {

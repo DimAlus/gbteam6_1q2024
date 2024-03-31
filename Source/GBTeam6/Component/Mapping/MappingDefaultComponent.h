@@ -47,4 +47,5 @@ public:
 	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) override;
 	virtual void SetPreviewVisibility(bool isVilible) override;
 	virtual bool SetIsBuilded(bool isBuilded) override;
+	virtual bool GetIsBuilded() override;
 };

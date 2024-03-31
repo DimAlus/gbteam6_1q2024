@@ -201,6 +201,8 @@ void AGameStateDefault::BeginPlay() {
 	LoadSizeStacks();
 	InitializeServices();
 
+	GetSaveService()->LoadConfigPublic(this);
+
 	FConfig conf;
 	GetConfig(EConfig::StartGameTime, conf);
 	CurrentDayTime = conf.FloatValue;

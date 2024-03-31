@@ -24,3 +24,7 @@ void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {
 bool UMappingBaseComponent::SetIsBuilded(bool isBuilded) {
 	return true;
 }
+
+bool UMappingBaseComponent::GetIsBuilded() {
+	return true;
+}

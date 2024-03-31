@@ -6,6 +6,7 @@
 #include "../Health/HealthBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../../Service/MessageService.h"
+#include "../../Service/SocialService.h"
 #include "GeneratorStandardComponent.h"
 
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
@@ -222,6 +223,15 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 }
 
 bool UGeneratorStandardComponent::CanGenerate(int index) {
+	for (const FPrice& prc : GetCurrentGenerics()[index].Barter.Result) {
+		if (prc.Resource == EResource::Actor) {
+			USocialService* social = GetGameState()->GetSocialService();
+			int cnt = social->GetObjectsByTag(ESocialTag::Forestling).Num() + prc.Count;
+			int max = 5 + social->GetObjectsByTag(ESocialTag::ForestlingHouse).Num() * 5;
+			if (cnt > max)
+				return false;
+		}
+	}
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		return inventory->CanPop(GetCurrentGenerics()[index].Barter.Price)
 			&& inventory->CanPush(GetCurrentGenerics()[index].Barter.Result);

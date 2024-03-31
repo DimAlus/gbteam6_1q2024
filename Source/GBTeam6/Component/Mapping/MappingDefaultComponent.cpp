@@ -249,3 +249,7 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 	}
 	return false;
 }
+
+bool UMappingDefaultComponent::GetIsBuilded() {
+	return bIsBuilded;
+}

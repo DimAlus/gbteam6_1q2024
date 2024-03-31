@@ -22,6 +22,8 @@ protected:
 	virtual void RegisterObjectInService() override;
 	void UnRegisterObjectInService();
 
+	UFUNCTION()
+	void OnBuildedRegist(bool IsBuilded);
 public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) override;
 
