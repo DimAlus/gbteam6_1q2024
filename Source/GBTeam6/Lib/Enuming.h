@@ -161,9 +161,14 @@ enum class EUIGameObjectPanelType : uint8 {
 UENUM(BlueprintType)
 enum class EMessageTag : uint8 {
 	None			UMETA(DisplayName = "None"),
-
+	
 	/** Global */
-	GLB				UMETA(DisplayName = "GLB Global events"),
+	GLB					UMETA(DisplayName = "GLB Global Events"),
+	GLBGameStart		UMETA(DisplayName = "GLB Game Start"),
+	GLBEnterPlayMap		UMETA(DisplayName = "GLB Enter PlayMap"),
+	GLBDay				UMETA(DisplayName = "GLB Day Start"),
+	GLBNight			UMETA(DisplayName = "GLB Night Start"),
+	
 	
 	/** UI */
 	UI				UMETA(DisplayName = "UI"),
@@ -184,7 +189,7 @@ enum class EMessageTag : uint8 {
 	
 	/** Game Objects*/
 	GOE				UMETA(DisplayName = "GOE Game Object Element"),
-
+	
 	GOASelect		UMETA(DisplayName = "GOA Select"),
 	GOACommand		UMETA(DisplayName = "GOA Command"),
 	
@@ -192,10 +197,10 @@ enum class EMessageTag : uint8 {
 	GOAHit			UMETA(DisplayName = "GOA Hit"),
 	GOADamage		UMETA(DisplayName = "GOA Get Damage"),
 	GOADeath		UMETA(DisplayName = "GOA Death"),
-
+	
 	GOAInventory	UMETA(DisplayName = "GOA Inventory Changing"),
 	GOAGenerator	UMETA(DisplayName = "GOA Generator"),
-
+	
 	MSuccess		UMETA(DisplayName = "Success"),
 	MFailed			UMETA(DisplayName = "Failed")
 };

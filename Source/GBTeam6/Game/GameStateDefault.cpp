@@ -140,6 +140,28 @@ TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> reso
 	return result;
 }
 
+
+void AGameStateDefault::SendMessageBeginPlay()
+{
+	if (auto ms = GetMessageService()) {
+		TSet<EMessageTag> tag{};
+		auto MapName = GetWorld()->GetMapName();
+		MapName == TEXT("StartMap") ? tag = {EMessageTag::GLBGameStart} : tag = {EMessageTag::GLBEnterPlayMap};
+		ms->Send(tag, nullptr);
+	}
+}
+
+
+void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
+{
+	if (auto ms = GetMessageService()) {
+		TSet<EMessageTag> tag{};
+		IsDay == true ? tag = {EMessageTag::GLBDay} : tag = {EMessageTag::GLBNight};
+		ms->Send(tag, nullptr);
+	}
+}
+
+
 void AGameStateDefault::DayChangingLoop(){
 	CurrentDayTime += DayChangingDelay;
 	FConfig conf;
@@ -190,6 +212,9 @@ void AGameStateDefault::BeginPlay() {
 		true,
 		DayChangingDelay
 	);
+
+	SendMessageBeginPlay();
+	OnDayStateChanging.AddDynamic(this, &AGameStateDefault::SendMessageDayStateChange);
 }
 
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
