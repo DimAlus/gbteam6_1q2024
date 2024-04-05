@@ -21,6 +21,8 @@ public:
 	virtual void LoadComponent(const FInventorySaveData& saveData) override;
 
 protected:
+	bool ShowChaging;
+
 	TMap<EResource, int> Resources;
 	int CurrentStacksCount = 0;
 	int MaxStacksCount = 0;

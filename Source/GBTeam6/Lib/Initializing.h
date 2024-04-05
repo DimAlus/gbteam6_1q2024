@@ -81,6 +81,9 @@ struct FGeneratorComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float BuildTime{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowPassiveGeneratorWork{ false };
 };
 
 
@@ -222,6 +225,9 @@ struct FInventoryComponentInitializer {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CountStacks = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowInventoryChanging{ false };
 };
 
 

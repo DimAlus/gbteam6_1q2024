@@ -46,6 +46,7 @@ void UGameObjectCore::SetIsCreated() {
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
 	UE_LOG_COMPONENT(Log, "Actor Initialization!");
+	OwnerName = ObjectName.ToString();
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState());
 	if (!gameState) {
 		UE_LOG_COMPONENT(Error, "Failed to get AGameStateDefault at InitDataByName!");
