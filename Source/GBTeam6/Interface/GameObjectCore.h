@@ -20,6 +20,8 @@ protected:
 
 	bool isCreated = false;
 
+	FString OwnerName;
+
 	/** Currently existing actor components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;

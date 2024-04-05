@@ -55,6 +55,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 		CurrentGenerics = &Generics;
 	}
 
+	ShowPassiveGeneratorWork = initializer.ShowPassiveGeneratorWork;
 	PassiveGenerators = initializer.PassiveGeneration;
 	for (int i = 0; i < PassiveGenerators.Num(); i++) {
 		PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
@@ -348,6 +349,13 @@ void UGeneratorStandardComponent::PassiveWorkLoop() {
 							PassiveGenerators[i].Resource.Resource, 
 							PassiveGenerators[i].CurrentTime
 						);
+						if (ShowPassiveGeneratorWork) {
+							AGameStateDefault* gameState = GetGameState();
+							UGameObjectCore* core = GetCore();
+							gameState->OnShowInventoryChanging.Broadcast(core, PassiveGenerators[i].Resource);
+							
+							
+						}
 					}
 					else {
 						OnPassiveGeneratorFailed.Broadcast(

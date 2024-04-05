@@ -45,6 +45,7 @@ private:
 	float TimerPassiveDelay = 0.1f;
 
 	TArray<FPassiveGenerator> PassiveGenerators;
+	bool ShowPassiveGeneratorWork;
 
 	bool IsDestructed = false;
 private:
