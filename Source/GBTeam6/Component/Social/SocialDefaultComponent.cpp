@@ -44,6 +44,7 @@ void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData) {
 void USocialDefaultComponent::RegisterObjectInService() {
 	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
 		GameState->GetSocialService()->AddObjectByTags(GetCore(), SocialTags);
+		GameState->GetSocialService()->AddObjectByTeams(GetCore(), { SocialTeam });
 		UE_LOG_COMPONENT(Log, "registered in social service <%s>!", *GetNameSafe(GameState));
 	}
 }

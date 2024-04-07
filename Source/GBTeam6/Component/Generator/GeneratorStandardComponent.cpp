@@ -56,6 +56,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	}
 
 	ShowPassiveGeneratorWork = initializer.ShowPassiveGeneratorWork;
+	ShowPassiveGeneratorWorkIgnore = initializer.ShowPassiveGeneratorWorkIgnore;
 	PassiveGenerators = initializer.PassiveGeneration;
 	for (int i = 0; i < PassiveGenerators.Num(); i++) {
 		PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
@@ -205,6 +206,7 @@ void UGeneratorStandardComponent::OnOwnerDeath() {
 				GetCore()->GetComponent(EGameComponentType::Health)
 			)) {
 			health->NotDestroyNow();
+			IsDead = false;
 			this->SetIsDestruction(true);
 		}
 	}
@@ -309,12 +311,23 @@ void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
 
 void UGeneratorStandardComponent::WorkLoop() {
 	if (GetIsDestruction()) {
+		if (IsDead)
+			return;
 		for (auto res : GetInventory()->GetAllResources()) {
 			if (res.Value > 0)
 				return;
 		}
+
+		if (auto health = Cast<UHealthBaseComponent>(
+			GetCore()->GetComponent(EGameComponentType::Health)
+		)) {
+			health->PleaseDead();
+			IsDead = true;
+		}
+		else {
+			GetOwner()->Destroy();
+		}
 		
-		GetOwner()->Destroy();
 		return;
 	}
 	if (IsWorked) {
@@ -342,14 +355,19 @@ void UGeneratorStandardComponent::PassiveWorkLoop() {
 					prs[0] = PassiveGenerators[i].Resource;
 					prs[0].Count = abs(prs[0].Count);
 					if (PassiveGenerators[i].Resource.Count > 0 
-						? inventory->Push(prs)
-						: inventory->Pop(prs)) {
+						? inventory->CanPush(prs)
+						: inventory->CanPop(prs)) {
+						if (PassiveGenerators[i].Resource.Count > 0)
+							inventory->Push(prs);
+						else
+							inventory->Pop(prs);
+
 						PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
 						OnPassiveGeneratorSuccess.Broadcast(
 							PassiveGenerators[i].Resource.Resource, 
 							PassiveGenerators[i].CurrentTime
 						);
-						if (ShowPassiveGeneratorWork) {
+						if (ShowPassiveGeneratorWork && !ShowPassiveGeneratorWorkIgnore.Contains(PassiveGenerators[i].Resource.Resource)) {
 							AGameStateDefault* gameState = GetGameState();
 							UGameObjectCore* core = GetCore();
 							gameState->OnShowInventoryChanging.Broadcast(core, PassiveGenerators[i].Resource);

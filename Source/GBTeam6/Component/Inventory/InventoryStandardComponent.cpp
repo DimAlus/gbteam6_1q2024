@@ -7,6 +7,7 @@ void UInventoryStandardComponent::Initialize(const FInventoryComponentInitialize
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxStacksCount = initializer.CountStacks;
 	ShowChaging = initializer.ShowInventoryChanging;
+	ShowChagingIgnore = initializer.ShowInventoryChangingIgnore;
 }
 
 void UInventoryStandardComponent::SaveComponent(FInventorySaveData& saveData) {
@@ -170,7 +171,9 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 			AGameStateDefault* gameState = GetGameState();
 			UGameObjectCore* core = GetCore();
 			for (const FPrice& prc : resources) {
-				gameState->OnShowInventoryChanging.Broadcast(core, prc);
+				if (!ShowChagingIgnore.Contains(prc.Resource)) {
+					gameState->OnShowInventoryChanging.Broadcast(core, prc);
+				}
 			}
 		}
 		
@@ -192,9 +195,11 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 			AGameStateDefault* gameState = GetGameState();
 			UGameObjectCore* core = GetCore();
 			for (const FPrice& prc : resources) {
-				FPrice cprc = prc;
-				cprc.Count *= -1;
-				gameState->OnShowInventoryChanging.Broadcast(core, cprc);
+				if (ShowChagingIgnore.Contains(prc.Resource)) {
+					FPrice cprc = prc;
+					cprc.Count *= -1;
+					gameState->OnShowInventoryChanging.Broadcast(core, cprc);
+				}
 			}
 		}
 	}

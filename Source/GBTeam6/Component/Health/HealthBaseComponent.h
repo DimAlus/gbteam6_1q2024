@@ -9,6 +9,7 @@
 #include "HealthBaseComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTryDead, int, Lifes);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -29,7 +30,8 @@ public:
 	FOnDamage OnDamage;
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
-
+	UPROPERTY(BlueprintAssignable)
+	FOnTryDead OnTryDead;
 public:
 	
 	virtual void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
@@ -45,4 +47,6 @@ public:
 	virtual bool IsDead() {return false;};
 	UFUNCTION(BlueprintCallable)
 	virtual void NotDestroyNow() {}
+	UFUNCTION(BlueprintCallable)
+	virtual void PleaseDead() {}
 };

@@ -27,8 +27,7 @@ protected:
 
 protected:
 
-	bool destroyOnDeath;
-	bool isTimerToDeath = false;
+	int lifeCount = 0;
 	FTimerHandle destructionTimer;
 
 	float DeadTime;
@@ -54,6 +53,7 @@ public:
 	virtual float GetPercentageHealth() override {return CurrentHealth/MaxHealth;}
 	virtual bool IsDead() override { return bDead; }
 	// If will called at OnDeath, actor will not destroyed
-	virtual void NotDestroyNow() override { destroyOnDeath = false; }
-	
+	virtual void NotDestroyNow() override;
+	virtual void PleaseDead() override;
+
 };

@@ -46,8 +46,10 @@ private:
 
 	TArray<FPassiveGenerator> PassiveGenerators;
 	bool ShowPassiveGeneratorWork;
+	TSet<EResource> ShowPassiveGeneratorWorkIgnore;
 
 	bool IsDestructed = false;
+	bool IsDead = false;
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
