@@ -84,6 +84,9 @@ struct FGeneratorComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool ShowPassiveGeneratorWork{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSet<EResource> ShowPassiveGeneratorWorkIgnore{};
 };
 
 
@@ -228,6 +231,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool ShowInventoryChanging{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSet<EResource> ShowInventoryChangingIgnore{};
 };
 
 

@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class IGameObjectInterface;
 struct FInputActionValue;
 
 UCLASS()
@@ -97,12 +98,18 @@ protected:
 	void Command(const FInputActionValue& Value);
 
 	/** Select object function*/
+	void CallSelect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnSelect(); void OnSelect_Implementation();
+	void OnSelect(FVector Location, UGameObjectCore* Core, bool IsObject);
+	void OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
+
+
 
 	/** Command object function*/
+	void CallCommand();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnCommand(); void OnCommand_Implementation();
+	void OnCommand(FVector Location, UGameObjectCore* Core, bool IsObject);
+	void OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
 
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);

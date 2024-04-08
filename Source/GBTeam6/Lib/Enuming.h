@@ -94,6 +94,14 @@ enum class ESocialTeam : uint8 {
 };
 
 UENUM(BlueprintType)
+enum class ERelations : uint8 {
+	None		UMETA(DisplayName = "None"),
+	Neutral		UMETA(DisplayName = "Neutral"),
+	Friendly	UMETA(DisplayName = "Friendly"),
+	Hostile		UMETA(DisplayName = "Hostile")
+};
+
+UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
 	MainStorage			UMETA(DisplayName = "MainStorage"),

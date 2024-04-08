@@ -16,21 +16,17 @@ void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.Health = CurrentHealth;
 	saveData.IsDead = bDead;
-	saveData.IsTimerToDeath = isTimerToDeath;
 }
 
 void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	CurrentHealth = saveData.Health;
 	bDead = saveData.IsDead;
-	isTimerToDeath = saveData.IsTimerToDeath;
-	if (saveData.IsTimerToDeath){
+	if (bDead){
 		GetWorld()->GetTimerManager().SetTimer(
 			destructionTimer,
 			FTimerDelegate::CreateWeakLambda(this, [this]() {
-				if (IsValid(this) && IsValid(this->GetOwner())) {
-					this->GetOwner()->Destroy();
-				}
+				this->PleaseDead();
 			}),
 			DeadTime,
 			false,
@@ -56,22 +52,33 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 			CurrentHealth = 0.f;
 			bDead = true;
 			UE_LOG_COMPONENT(Log, "Death");
-			destroyOnDeath = true;
+			lifeCount = 1;
 			OnDeath.Broadcast();
-			if (destroyOnDeath) {
-				isTimerToDeath = true;
-				GetWorld()->GetTimerManager().SetTimer(
-					destructionTimer,
-					FTimerDelegate::CreateWeakLambda(this, [this]() {
-						if (IsValid(this) && IsValid(this->GetOwner())) {
-							this->GetOwner()->Destroy();
-						}
-					}),
-					DeadTime,
-					false,
-					DeadTime
-				);
-			}
+
+			GetWorld()->GetTimerManager().SetTimer(
+				destructionTimer,
+				FTimerDelegate::CreateWeakLambda(this, [this]() {
+					this->PleaseDead();
+				}),
+				DeadTime,
+				false,
+				DeadTime
+			);
 		}
+	}
+}
+
+void UHealthDefaultComponent::NotDestroyNow() {
+	lifeCount++;
+}
+
+void UHealthDefaultComponent::PleaseDead() {
+	if (--lifeCount <= 0) {
+		if (IsValid(this) && IsValid(this->GetOwner())) {
+			this->GetOwner()->Destroy();
+		}
+	}
+	else {
+		OnTryDead.Broadcast(lifeCount);
 	}
 }

@@ -22,6 +22,7 @@ public:
 
 protected:
 	bool ShowChaging;
+	TSet<EResource> ShowChagingIgnore;
 
 	TMap<EResource, int> Resources;
 	int CurrentStacksCount = 0;

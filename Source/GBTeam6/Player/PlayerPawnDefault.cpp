@@ -125,55 +125,69 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 }
 
 void APlayerPawnDefault::Select(const FInputActionValue& Value) {
-	OnSelect();
+	CallSelect();
 }
 
 void APlayerPawnDefault::Command(const FInputActionValue& Value) {
-	OnCommand();
+	CallCommand();
 }
 
-void APlayerPawnDefault::OnSelect_Implementation() {
+void APlayerPawnDefault::CallSelect() {
 	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
-	SelectedActor = Hit.GetActor();
-	
-	if (IsValid(SelectedActor))
-	{
-		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-		{
-			TSet<EMessageTag> MessageTags{};
-			MessageTags.Add(EMessageTag::GOASelect);
-						
-			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
-			{
-				auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
-				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
-			}
-		}
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+
+	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
+		OnSelect(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
+	}
+	else {
+		OnSelect(Hit.Location, nullptr, false);
 	}
 }
 
-void APlayerPawnDefault::OnCommand_Implementation() {
-	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
-	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel1);
-	PointOfInterest = Hit.Location;
+void APlayerPawnDefault::OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
+	if (IsObject) {
+		SelectedActor = Core->GetOwner();
 
-	if (IsValid(SelectedActor))
-	{
-		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-		{
-			TSet<EMessageTag> MessageTags{};
-			MessageTags.Add(EMessageTag::GOACommand);
-			
-			if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
-			{
-				auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
-				GameState->GetMessageService()->Send(MessageTags, ObjectCore);
-			}
+		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
+			GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
 		}
 	}
+	else {
+		SelectedActor = nullptr;
+	}
+}
+
+void APlayerPawnDefault::CallCommand() {
+	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+
+	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
+		OnCommand(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
+	}
+	else {
+		OnCommand(Hit.Location, nullptr, false);
+	}
+}
+
+void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
+	PointOfInterest = Location;
+
+	//if (IsObject) {
+	//	TSet<EMessageTag> MessageTags{};
+	//	MessageTags.Add();
+	//	if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+	//	{
+	//		GameState->GetMessageService()->Send({ EMessageTag::GOACommand }, Core);
+	//		
+	//		if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
+	//		{
+	//			auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
+	//			
+	//		}
+	//	}
+	//}
 }
 
 
