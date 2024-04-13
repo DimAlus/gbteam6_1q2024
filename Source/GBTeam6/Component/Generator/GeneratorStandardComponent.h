@@ -50,6 +50,8 @@ private:
 
 	bool IsDestructed = false;
 	bool IsDead = false;
+
+	TSet<UGameObjectCore*> AttachedCores;
 private:
 	TArray<FGenerator>* CurrentGenerics;
 	TArray<FGenerator>& GetCurrentGenerics();
@@ -61,6 +63,9 @@ private:
 	void OnOwnerDeath();
 
 	UInventoryBaseComponent* GetInventory();
+	bool HasAllSocialTags(const FGenerator& generator);
+	bool HasConstraintByResultActors(const FGenerator& generator);
+	bool HasConstraintByInventory(const FGenerator& generator);
 	bool CanGenerate(int index);
 	bool IsGeneratorEnabled(int index);
 	void StartWork(int index);
@@ -103,4 +108,9 @@ public:
 
 	virtual void SetIsDestruction(bool isDestroy) override;
 	virtual bool GetIsDestruction() override;
+
+	virtual void AttachCore(UGameObjectCore* Core) override;
+	virtual void DetachCore(UGameObjectCore* Core) override;
+	virtual TSet<ESocialTag> GetNeededSocialTags() override;
+
 };

@@ -167,6 +167,9 @@ struct FPrice {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AActor> ActorClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> SocialTags;
 };
 
 USTRUCT(BlueprintType)

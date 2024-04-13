@@ -5,6 +5,7 @@
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Health/HealthBaseComponent.h"
 #include "../Mapping/MappingBaseComponent.h"
+#include "../Social/SocialBaseComponent.h"
 #include "../../Service/MessageService.h"
 #include "../../Service/SocialService.h"
 #include "GeneratorStandardComponent.h"
@@ -127,6 +128,8 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 						: GetCurrentGenerics()[TaskStack[j]];
 		if (gen.Selected || j >= 0) {
 			for (const FPrice& price : gen.Barter.Price) {
+				if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource))
+					continue;
 				if (!needs.Contains(price.Resource)) {
 					needs.Add(price.Resource, price.Count * steps - inventory->GetResourceCount(price.Resource));
 				}
@@ -137,6 +140,8 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 		}
 	}
 	for (const FPassiveGenerator& gen : PassiveGenerators) {
+		if (UInventoryBaseComponent::GetIgnoreResources().Contains(gen.Resource.Resource))
+			continue;
 		if (gen.Resource.Count < 0) {
 			if (!needs.Contains(gen.Resource.Resource)) {
 				needs.Add(gen.Resource.Resource, -gen.Resource.Count - inventory->GetResourceCount(gen.Resource.Resource));
@@ -174,6 +179,8 @@ TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
 	for (auto res : resources) {
+		if (UInventoryBaseComponent::GetIgnoreResources().Contains(res.Key))
+			continue;
 		if (needs.Contains(res.Key) && needs[res.Key] > 0) {
 			result.Add(res.Key, res.Value - needs[res.Key]);
 		}
@@ -182,6 +189,8 @@ TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
 		}
 	}
 	for (const FPassiveGenerator& gen : PassiveGenerators) {
+		if (UInventoryBaseComponent::GetIgnoreResources().Contains(gen.Resource.Resource))
+			continue;
 		if (gen.Resource.Count < 0) {
 			if (result.Contains(gen.Resource.Resource)) {
 				result[gen.Resource.Resource] += gen.Resource.Count;
@@ -225,21 +234,59 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 	return inventory;
 }
 
-bool UGeneratorStandardComponent::CanGenerate(int index) {
-	for (const FPrice& prc : GetCurrentGenerics()[index].Barter.Result) {
+bool UGeneratorStandardComponent::HasAllSocialTags(const FGenerator& generator) {
+	for (const FPrice& prc : generator.Barter.Price) {
+		if (prc.Resource == EResource::SocialTag) {
+			int cnt = prc.Count;
+			for (UGameObjectCore* core : AttachedCores) {
+				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+						cnt--;
+					}
+				}
+				if (cnt <= 0)
+					break;
+			}
+			if (cnt > 0) {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+bool UGeneratorStandardComponent::HasConstraintByResultActors(const FGenerator& generator) {
+	for (const FPrice& prc : generator.Barter.Result) {
 		if (prc.Resource == EResource::Actor) {
 			USocialService* social = GetGameState()->GetSocialService();
 			int cnt = social->GetObjectsByTag(ESocialTag::Forestling).Num() + prc.Count;
 			int max = 5 + social->GetObjectsByTag(ESocialTag::ForestlingHouse).Num() * 5;
 			if (cnt > max)
-				return false;
+				return true;
 		}
 	}
+	return false;
+}
+
+bool UGeneratorStandardComponent::HasConstraintByInventory(const FGenerator& generator) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		return inventory->CanPop(GetCurrentGenerics()[index].Barter.Price)
-			&& inventory->CanPush(GetCurrentGenerics()[index].Barter.Result);
+		return !(inventory->CanPop(generator.Barter.Price)
+			  && inventory->CanPush(generator.Barter.Result));
 	}
 	return false;
+}
+
+bool UGeneratorStandardComponent::CanGenerate(int index) {
+	if (!HasAllSocialTags(GetCurrentGenerics()[index])) {
+		return false;
+	}
+	if (HasConstraintByResultActors(GetCurrentGenerics()[index])) {
+		return false;
+	}
+	if (HasConstraintByInventory(GetCurrentGenerics()[index])) {
+		return false;
+	}
+	return true;
 }
 
 
@@ -290,6 +337,7 @@ void UGeneratorStandardComponent::CancelWork(const FGenerator& generator) {
 }
 
 void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
+	OnGeneratorSuccess.Broadcast(generator);
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		if (inventory->Push(generator.Barter.Result)) {
 			SpawnActors(generator.Barter.Result);
@@ -530,4 +578,44 @@ void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
 
 bool UGeneratorStandardComponent::GetIsDestruction() { 
 	return IsDestructed; 
+}
+
+void UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
+	AttachedCores.Add(Core);
+}
+
+void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
+	AttachedCores.Remove(Core);
+}
+
+TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
+	TSet<ESocialTag> result;
+	for (auto gen : GetCurrentGenerics()) {
+		if (   HasConstraintByResultActors(gen)
+			|| HasConstraintByInventory(gen)){
+			continue;
+		}
+		TSet<UGameObjectCore*> reserved;
+		for (const FPrice& prc : gen.Barter.Price) {
+			if (prc.Resource != EResource::SocialTag) {
+				continue;
+			}
+			int cnt = prc.Count;
+			for (auto core : AttachedCores) {
+				if (reserved.Contains(core))
+					continue;
+				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+						cnt--;
+					}
+				}
+				if (cnt <= 0)
+					break;
+			}
+			if (cnt > 0) {
+				result.Append(prc.SocialTags);
+			}
+		}
+	}
+	return result;
 }

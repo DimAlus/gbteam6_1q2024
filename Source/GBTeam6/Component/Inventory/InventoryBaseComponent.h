@@ -16,6 +16,8 @@ class GBTEAM6_API UInventoryBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	
+	static const TSet<EResource>& GetIgnoreResources();
+
 	UInventoryBaseComponent();
 
 	UFUNCTION(BlueprintCallable)
@@ -23,6 +25,7 @@ public:
 
 	virtual void SaveComponent(FInventorySaveData& saveData);
 	virtual void LoadComponent(const FInventorySaveData& saveData);
+
 
 public:
 	UFUNCTION(BlueprintCallable)

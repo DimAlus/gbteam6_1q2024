@@ -1,6 +1,17 @@
 #include "./InventoryBaseComponent.h"
 #include "InventoryBaseComponent.h"
 
+const TSet<EResource>& UInventoryBaseComponent::GetIgnoreResources() {
+	static TSet<EResource> res{
+		EResource::None,
+		EResource::Actor,
+		EResource::SocialTag,
+		EResource::Spirit,
+		EResource::Self
+	};
+	return res;
+}
+
 UInventoryBaseComponent::UInventoryBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
 }

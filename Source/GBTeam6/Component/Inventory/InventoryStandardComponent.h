@@ -34,7 +34,6 @@ protected:
 	};
 	TArray<FSaveStruct> Saves;
 
-	static const TSet<EResource>& GetIgnoreResources(); 
 private:
 	void SavePoint();
 	void RollBack(bool isBack);
