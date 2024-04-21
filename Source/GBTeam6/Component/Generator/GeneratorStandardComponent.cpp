@@ -176,6 +176,10 @@ TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
 		return GetInventory()->GetAllResources();
 	}
 	TMap<EResource, int> needs = _getNeeds(steps);
+	UInventoryBaseComponent* inventory = GetInventory();
+	if (!inventory) {
+		return needs;
+	}
 	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
 	TMap<EResource, int> result;
 	for (auto res : resources) {
@@ -590,9 +594,13 @@ void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
 
 TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 	TSet<ESocialTag> result;
-	for (auto gen : GetCurrentGenerics()) {
-		if (   HasConstraintByResultActors(gen)
-			|| HasConstraintByInventory(gen)){
+	int StackIndex = TaskStack.Num() > 0 ? TaskStack[0] : -1;
+	const TArray<FGenerator>& gens = GetCurrentGenerics();
+	for (int i = 0; i < gens.Num(); i++) {
+		auto gen = gens[i];
+		if (!(gen.Selected || StackIndex == i || (i == WorkIndex && IsWorked))
+			|| HasConstraintByResultActors(gen)
+			|| HasConstraintByInventory(gen)) {
 			continue;
 		}
 		TSet<UGameObjectCore*> reserved;
@@ -612,6 +620,31 @@ TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 				if (cnt <= 0)
 					break;
 			}
+			if (cnt > 0) {
+				result.Append(prc.SocialTags);
+			}
+		}
+	}
+	return result;
+}
+
+TSet<ESocialTag> UGeneratorStandardComponent::GetUsedSocialTags() {
+	TSet<ESocialTag> result;
+	int StackIndex = TaskStack.Num() > 0 ? TaskStack[0] : -1;
+	const TArray<FGenerator>& gens = GetCurrentGenerics();
+	for (int i = 0; i < gens.Num(); i++) {
+		auto gen = gens[i];
+		if (!(gen.Selected || StackIndex == i || (i == WorkIndex && IsWorked))
+			|| HasConstraintByResultActors(gen)
+			|| HasConstraintByInventory(gen)) {
+			continue;
+		}
+		TSet<UGameObjectCore*> reserved;
+		for (const FPrice& prc : gen.Barter.Price) {
+			if (prc.Resource != EResource::SocialTag) {
+				continue;
+			}
+			int cnt = prc.Count;
 			if (cnt > 0) {
 				result.Append(prc.SocialTags);
 			}

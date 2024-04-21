@@ -100,6 +100,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual TSet<ESocialTag> GetNeededSocialTags();
 
+	UFUNCTION(BlueprintCallable)
+	virtual TSet<ESocialTag> GetUsedSocialTags();
+
 
 	UPROPERTY(BlueprintAssignable)
 	FOnTaskStackChanging OnTaskStackChanging;

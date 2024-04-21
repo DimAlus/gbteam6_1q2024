@@ -92,3 +92,7 @@ void UGeneratorBaseComponent::DetachCore(UGameObjectCore* Core) {
 TSet<ESocialTag> UGeneratorBaseComponent::GetNeededSocialTags() {
 	return TSet<ESocialTag>();
 }
+
+TSet<ESocialTag> UGeneratorBaseComponent::GetUsedSocialTags() {
+	return TSet<ESocialTag>();
+}

@@ -112,5 +112,6 @@ public:
 	virtual void AttachCore(UGameObjectCore* Core) override;
 	virtual void DetachCore(UGameObjectCore* Core) override;
 	virtual TSet<ESocialTag> GetNeededSocialTags() override;
+	virtual TSet<ESocialTag> GetUsedSocialTags() override;
 
 };
