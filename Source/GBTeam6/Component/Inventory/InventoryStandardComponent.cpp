@@ -22,15 +22,6 @@ void UInventoryStandardComponent::LoadComponent(const FInventorySaveData& saveDa
 	CurrentStacksCount = saveData.CountStacks;
 }
 
-const TSet<EResource>& UInventoryStandardComponent::GetIgnoreResources() {
-	static TSet<EResource> res {
-		EResource::None,
-		EResource::Actor,
-		EResource::Spirit,
-		EResource::Self
-	};
-	return res;
-}
 
 void UInventoryStandardComponent::SavePoint() {
 	FSaveStruct save;

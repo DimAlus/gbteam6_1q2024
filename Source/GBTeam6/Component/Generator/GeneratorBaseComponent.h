@@ -8,8 +8,11 @@
 
 #include "GeneratorBaseComponent.generated.h"
 
+class UGameObjectCore;
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGeneratorSuccess, const FGenerator&, Generator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPassiveGenerator, EResource, Resource, float, Time);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -88,6 +91,19 @@ public:
 	virtual bool GetIsDestruction();
 
 
+	UFUNCTION(BlueprintCallable)
+	virtual void AttachCore(UGameObjectCore* Core);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void DetachCore(UGameObjectCore* Core);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TSet<ESocialTag> GetNeededSocialTags();
+
+	UFUNCTION(BlueprintCallable)
+	virtual TSet<ESocialTag> GetUsedSocialTags();
+
+
 	UPROPERTY(BlueprintAssignable)
 	FOnTaskStackChanging OnTaskStackChanging;
 
@@ -99,4 +115,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnPassiveGenerator OnPassiveGeneratorSuccess;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnGeneratorSuccess OnGeneratorSuccess;
 };

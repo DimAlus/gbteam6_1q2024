@@ -74,6 +74,7 @@ enum class EResource : uint8 {
 	Self		UMETA(DisplayName = "Self"),
 
 	Actor		UMETA(DisplayName = "Actor"),
+	SocialTag	UMETA(DisplayName = "SocialTag"),
 
 	Spirit		UMETA(DisplayName = "Spirit"),
 	Wood		UMETA(DisplayName = "Wood"),

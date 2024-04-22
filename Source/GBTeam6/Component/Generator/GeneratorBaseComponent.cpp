@@ -82,3 +82,17 @@ void UGeneratorBaseComponent::SetIsDestruction(bool isDestroy) {
 bool UGeneratorBaseComponent::GetIsDestruction() { 
 	return false; 
 }
+
+void UGeneratorBaseComponent::AttachCore(UGameObjectCore* Core) {
+}
+
+void UGeneratorBaseComponent::DetachCore(UGameObjectCore* Core) {
+}
+
+TSet<ESocialTag> UGeneratorBaseComponent::GetNeededSocialTags() {
+	return TSet<ESocialTag>();
+}
+
+TSet<ESocialTag> UGeneratorBaseComponent::GetUsedSocialTags() {
+	return TSet<ESocialTag>();
+}
