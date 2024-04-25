@@ -465,7 +465,7 @@ void UGeneratorStandardComponent::CreateTimer() {
 }
 
 void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
-	FVector loc = GetOwner()->GetActorLocation() + FVector(400, 0, 100);
+	FVector loc = GetOwner()->GetActorLocation() + FVector(0, 0, 100);
 	FRotator rot;
 	for (const FPrice& res : resources) {
 		if (res.Resource == EResource::Actor) {
