@@ -118,4 +118,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnGeneratorSuccess OnGeneratorSuccess;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnGeneratorSuccess OnGenerationBegin;
 };

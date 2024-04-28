@@ -313,13 +313,17 @@ bool UGeneratorStandardComponent::FindWork() {
 			&& CanGenerate(TaskStack[0])) {
 			StartWork(TaskStack[0]);
 			RemoveFromStack(0);
-			return IsWorked = true;
+			IsWorked = true;
+			OnGenerationBegin.Broadcast(GetCurrentGenerics()[WorkIndex]);
+			return IsWorked;
 		}
 		for (int i = 0; i < GetCurrentGenerics().Num(); i++) {
 			int index = (i + WorkIndex) % GetCurrentGenerics().Num();
 			if (IsGeneratorEnabled(index)) {
 				StartWork(index);
-				return IsWorked = true;
+				IsWorked = true;
+				OnGenerationBegin.Broadcast(GetCurrentGenerics()[WorkIndex]);
+				return IsWorked;
 			}
 		}
 	}
@@ -589,6 +593,25 @@ void UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
 }
 
 void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
+	if (IsWorked)
+	{
+		auto CurrentGenerator = GetGenerators()[WorkIndex];
+
+		if (auto Social = Cast<USocialBaseComponent>(Core->GetComponent(EGameComponentType::Social)))
+		{
+			for (auto Price : CurrentGenerator.Barter.Price) {
+				if (Price.Resource == EResource::SocialTag)
+				{
+					if (Price.SocialTags.Intersect(TSet<ESocialTag>(Social->GetSocialTags())).Num() > 0) {
+						CancelTask();
+					}
+				}
+			}
+		}
+		
+
+	}
+
 	AttachedCores.Remove(Core);
 }
 
@@ -598,20 +621,20 @@ TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 	const TArray<FGenerator>& gens = GetCurrentGenerics();
 	for (int i = 0; i < gens.Num(); i++) {
 		auto gen = gens[i];
-		if (!(gen.Selected || StackIndex == i || (i == WorkIndex && IsWorked))
-			|| HasConstraintByResultActors(gen)
-			|| HasConstraintByInventory(gen)) {
-			continue;
+		if (!(i == WorkIndex && IsWorked))
+		{
+			if (!(gen.Selected || StackIndex == i)
+				|| HasConstraintByResultActors(gen)
+				|| HasConstraintByInventory(gen)) {
+				continue;
+			}
 		}
-		TSet<UGameObjectCore*> reserved;
 		for (const FPrice& prc : gen.Barter.Price) {
 			if (prc.Resource != EResource::SocialTag) {
 				continue;
 			}
 			int cnt = prc.Count;
 			for (auto core : AttachedCores) {
-				if (reserved.Contains(core))
-					continue;
 				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
 						cnt--;
@@ -634,12 +657,14 @@ TSet<ESocialTag> UGeneratorStandardComponent::GetUsedSocialTags() {
 	const TArray<FGenerator>& gens = GetCurrentGenerics();
 	for (int i = 0; i < gens.Num(); i++) {
 		auto gen = gens[i];
-		if (!(gen.Selected || StackIndex == i || (i == WorkIndex && IsWorked))
-			|| HasConstraintByResultActors(gen)
-			|| HasConstraintByInventory(gen)) {
-			continue;
+		if (!(i == WorkIndex && IsWorked))
+		{
+			if (!(gen.Selected || StackIndex == i)
+				|| HasConstraintByResultActors(gen)
+				|| HasConstraintByInventory(gen)) {
+				continue;
+				}
 		}
-		TSet<UGameObjectCore*> reserved;
 		for (const FPrice& prc : gen.Barter.Price) {
 			if (prc.Resource != EResource::SocialTag) {
 				continue;
