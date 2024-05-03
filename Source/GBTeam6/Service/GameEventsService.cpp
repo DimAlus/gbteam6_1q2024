@@ -8,7 +8,7 @@
 #include "GBTeam6/Service/SocialService.h"
 #include "GameEventsService.h"
 
-void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	switch (Action.ActionType)
 	{
 	case EQuestActionType::AddSelectionWidget:
@@ -35,7 +35,7 @@ void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& 
 	}
 }
 
-void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	UE_LOG_SERVICE(Log, "Action %s: '%s'; spawnes (%d, %d); Tag '%s' max %d", *UEnum::GetValueAsString(Action.ActionType),
 		*UEnum::GetValueAsString(Action.SelectionType), Action.SpawnSelectionRange.X, Action.SpawnSelectionRange.Y,
 		*UEnum::GetValueAsString(Action.SocialTag), Action.CountConstraint);
@@ -93,7 +93,7 @@ void UGameEventsService::ActionSelection(const FQuestAction& Action, FGameEventC
 	}
 }
 
-void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	FString rands{};
 	for (const FVector& vec : Action.RandomLocation)
 		rands += FString::Printf(TEXT("(%d, %d)"), (int)vec.X, (int)vec.Y);
@@ -125,7 +125,7 @@ void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEve
 		EventContext.SelectedLocation.X, EventContext.SelectedLocation.Y, EventContext.SelectedLocation.Z);
 }
 
-void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	UE_LOG_SERVICE(Log, "Action Spawn: '%s'; Count '%d'; At (%f, %f, %f)",
 		*GetNameSafe(Action.SpawnClass), Action.SpawnCount,
 		EventContext.SelectedLocation.X, EventContext.SelectedLocation.Y, EventContext.SelectedLocation.Z);
@@ -145,7 +145,7 @@ void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConex
 	}
 }
 
-void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	UE_LOG_SERVICE(Log, "Action InventoryChange: '%s'; Count '%d'; ForAll: %d",
 		*UEnum::GetValueAsString(Action.InventoryChanging.Resource),
 		Action.InventoryChanging.Count, Action.ApplyForAll ? 1 : 0);
@@ -179,7 +179,7 @@ void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventC
 	}
 }
 
-void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext) {
+void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	for (UGameObjectCore* core : EventContext.SelectedObjects) {
 		if (IsValid(core)) {
 			gameState->AddSelectedWidget.Broadcast(10, true, core->GetOwner(), FVector::Zero());
@@ -187,24 +187,11 @@ void UGameEventsService::ActionAddWidget(const FQuestAction& Action, FGameEventC
 	}
 }
 
-void UGameEventsService::StartEvent(FString EventName) {
-	UE_LOG_SERVICE(Log, "Start Event '%s'", *EventName);
-	FGameEventConext context;
-	context.EventName = EventName;
-	const FTRGameEvent& evt = GetEventData(EventName);
-	ProcessEvents.Add(EventName);
-	CurrentEvents.Add(context);
-	for (auto act : evt.StartActions) {
-		DoAction(act, context);
-	}
-	DoAction(DeselectAllAction, context);
-	ShowPages(evt.StartPages, context);
-}
 
 bool UGameEventsService::CheckNeed(const FNeed& need, FGameEventConext& EventContext) {
-	if (need.NeedType == ENeedType::Time) {
-		return EventContext.CurrentTime > need.Time;
-	}
+	// if (need.NeedType == ENeedType::Time) {
+	// 	return EventContext.CurrentTime > need.Time;
+	// }
 	return gameState->CheckNeed(need);
 }
 
@@ -217,18 +204,16 @@ bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventCo
 	return true;
 }
 
-bool UGameEventsService::UpdateRow(const TArray<FNeedArray>& NeedArrays, 
-								   const TArray<FQuestPage>& Pages,
-								   const TArray<FQuestAction>& Actions,
+bool UGameEventsService::UpdateRow(const FQuestData& QuestData,
 								   FGameEventConext& EventContext) {
-	for (const FNeedArray& needs : NeedArrays) {
+	for (const FNeedArray& needs : QuestData.Requirements) {
 		if (CheckNeedArray(needs.Needs, EventContext)) {
 			UE_LOG_SERVICE(Log, "Event '%s' Complete needs", *EventContext.EventName);
-			for (auto act : Actions) {
-				DoAction(act, EventContext);
+			FEventActionConext CurrentActionContext = {};
+			for (auto act : QuestData.Actions) {
+				DoAction(act, EventContext, CurrentActionContext);
 			}
-			DoAction(DeselectAllAction, EventContext);
-			ShowPages(Pages, EventContext);
+			ShowPages(QuestData.Pages, EventContext);
 			return true;
 		}
 	}
@@ -236,7 +221,7 @@ bool UGameEventsService::UpdateRow(const TArray<FNeedArray>& NeedArrays,
 }
 
 void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext){
-	gameState->OnShowPages.Broadcast(Pages);
+	gameState->OnShowPages.Broadcast(Pages, EventContext);
 }
 
 
@@ -247,13 +232,6 @@ const FTRGameEvent& UGameEventsService::GetEventData(FString name) {
 void UGameEventsService::SetGameState(AGameStateDefault* gs) {
 	gameState = gs;
 
-	DeselectAllAction.ActionType = EQuestActionType::Deselect;
-	DeselectAllAction.SelectionType = EActionSelectionType::All;
-
-	FConfig conf;
-	conf.FloatValue = 30.f;
-	gameState->GetConfig(EConfig::NewEventDelay, conf);
-
 	gameState->GetWorld()->GetTimerManager().SetTimer(
 		updateTaskTimer,
 		this,
@@ -262,62 +240,15 @@ void UGameEventsService::SetGameState(AGameStateDefault* gs) {
 		true,
 		UpdateDelay
 	);
-	gameState->GetWorld()->GetTimerManager().SetTimer(
-		newEventTimer,
-		this,
-		&UGameEventsService::CheckStartEvents,
-		conf.FloatValue,
-		true,
-		conf.FloatValue
-	);
 }
 
 void UGameEventsService::Update() {
-	for (int i = CurrentEvents.Num() - 1; i >= 0; i--) {
-		FGameEventConext& context = CurrentEvents[i];
-		const FTRGameEvent& row = GetEventData(context.EventName);
-		context.CurrentTime += UpdateDelay;
-		if (UpdateRow(row.SuccessNeeds, row.SuccessPages, row.SuccessActions, context)){
-			if (row.CompleteOnSuccess) {
-				CompletedEvents.Add(context.EventName);
-			}
-			CurrentEvents.RemoveAt(i);
-			/*if (ProcessEvents.Contains())
-				ProcessEvents.Remove(context.EventName);*/
-		}
-		if (UpdateRow(row.FailNeeds, row.FailPages, row.FailActions, context)){
-			if (row.CompleteOnFail) {
-				CompletedEvents.Add(context.EventName);
-			}
-			CurrentEvents.RemoveAt(i);
-			/*if (ProcessEvents.Contains(context.EventName))
-				ProcessEvents.Remove(context.EventName);*/
+	for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
+		FGameEventConext& Context = iter.Value().Context;
+		TArray<FQuestData>& QuestDatas = iter.Value().QuestData;
+
+		for (const FQuestData& data : QuestData) {
+			UpdateRow(data, Context);
 		}
 	}
-}
-
-void UGameEventsService::CheckStartEvents() {
-	UE_LOG_SERVICE(Log, "CheckStartEvents");
-	TArray<FString> EnabledEvents;
-	for(auto it : gameState->DT_GameEvents->GetRowMap()) {
-		FTRGameEvent* row = (FTRGameEvent*)it.Value;
-		if (IsEventCompleted(it.Key.ToString())
-			|| IsEventProcessed(it.Key.ToString())) {
-			continue;
-		}
-		if (CheckNeedArray(row->Requirements, NoneContext)) {
-			EnabledEvents.Add(it.Key.ToString());
-		}
-	}
-	if (EnabledEvents.Num() > 0) {
-		StartEvent(EnabledEvents[FMath::RandRange(0, EnabledEvents.Num() - 1)]);
-	}
-}
-
-bool UGameEventsService::IsEventCompleted(FString EventName) {
-	return CompletedEvents.Contains(EventName);
-}
-
-bool UGameEventsService::IsEventProcessed(FString EventName) {
-	return ProcessEvents.Contains(EventName);
 }

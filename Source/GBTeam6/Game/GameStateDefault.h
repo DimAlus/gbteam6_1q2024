@@ -20,7 +20,7 @@ class UGameObjectCore;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayStateChanging, bool, IsDay);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDayTimeChanging, float, DayPercents);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FOnAddSelectionWidget, float, TimeLimit, bool, IsObjectSelector, AActor*, SelectedObject, FVector, Location);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowPages, const TArray<FQuestPage>&, Pages);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShowPages, const TArray<FQuestPage>&, Pages, FGameEventConext&, EventContext);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGameOver);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryChanging, UGameObjectCore*, Core, FPrice, Price);
 

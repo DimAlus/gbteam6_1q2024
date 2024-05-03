@@ -21,23 +21,23 @@ friend class USaveService;
 private:
 	AGameStateDefault* gameState;
 
-	TSet<FString> CompletedEvents;
-	TSet<FString> ProcessEvents;
-	TArray<FGameEventConext> CurrentEvents;
-	FGameEventConext NoneContext{};
-	FQuestAction DeselectAllAction{};
+	struct FGameEvent {
+		TArray<FQuestData> QuestDatas{};
+		FGameEventConext Context;
+	}
+
+	TMap<FString, FGameEvent> Events;
+
 
 	float UpdateDelay = 1.f;
 	FTimerHandle updateTaskTimer;
-	FTimerHandle newEventTimer;
 private:
-	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext);
-	void StartEvent(FString EventName);
+	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
 
 	bool CheckNeed(const FNeed& need, FGameEventConext& EventContext);
 	bool CheckNeedArray(const TArray<FNeed>& needs, FGameEventConext& EventContext);
@@ -49,8 +49,4 @@ public:
 
 	void SetGameState(AGameStateDefault* gs);
 	void Update();
-	void CheckStartEvents();
-	
-	bool IsEventCompleted(FString EventName);
-	bool IsEventProcessed(FString EventName);
 };

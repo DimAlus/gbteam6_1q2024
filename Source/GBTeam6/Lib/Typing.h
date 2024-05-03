@@ -358,32 +358,47 @@ struct FQuestAction {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ESocialTag SocialTag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "TSet<EQuestActionType>(EQuestActionType::Select, EQuestActionType::Deselect).Contains(ActionType)", EditConditionHides))
 	EActionSelectionType SelectionType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "TSet<EQuestActionType>(EQuestActionType::Select, EQuestActionType::Deselect).Contains(ActionType)", EditConditionHides))
 	FIntVector SpawnSelectionRange;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::FindLocation", EditConditionHides))
 	EActionFindLocationType FindLocationType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::FindLocation", EditConditionHides))
 	int SpawnActorIndex;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::FindLocation", EditConditionHides))
 	TArray<FVector> RandomLocation;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::SpawnActors", EditConditionHides))
 	TSubclassOf<AActor> SpawnClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::SpawnActors", EditConditionHides))
 	int SpawnCount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::ChangeInventory", EditConditionHides))
 	bool ApplyForAll;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ActionType == EQuestActionType::ChangeInventory", EditConditionHides))
 	FPrice InventoryChanging;
+};
+
+
+USTRUCT(BlueprintType)
+struct FQuestPageButton {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText ButtonText{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int NextPageIndex{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> SettedTags{};
 };
 
 
@@ -412,41 +427,36 @@ struct FQuestPage {
 
 
 USTRUCT(BlueprintType)
+struct FQuestData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FNeedArray> Requirements{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestPage> Pages{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestAction> Actions{};
+};
+
+
+USTRUCT(BlueprintType)
 struct FTRGameEvent : public FTableRowBase {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CompleteOnSuccess{};
+	TArray<FQuestData> QuestData{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CompleteOnFail{};
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FNeed> Requirements{};
+USTRUCT()
+struct FEventActionConext {
+	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FQuestPage> StartPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FQuestAction> StartActions{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FNeedArray> SuccessNeeds{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FQuestPage> SuccessPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FQuestAction> SuccessActions{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FNeedArray> FailNeeds{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FQuestPage> FailPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FQuestAction> FailActions{};
+	FVector SelectedLocation{};
+	TArray<UGameObjectCore*> SelectedObjects{};
+	TArray<UGameObjectCore*> SpawnedObjects{};
 };
 
 
@@ -454,13 +464,16 @@ USTRUCT()
 struct FGameEventConext {
 	GENERATED_BODY()
 
-	FString EventName{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString EventName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<FString> Tags;
 
-	TArray<UGameObjectCore*> SelectedObjects{};
-	TArray<UGameObjectCore*> SpawnedObjects{};
-	FVector SelectedLocation{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentTime{};
 };
+
 
 USTRUCT(BlueprintType)
 struct FGameEventConextSave {
