@@ -269,7 +269,7 @@ bool UGeneratorStandardComponent::HasConstraintByResultActors(const FGenerator& 
 		if (prc.Resource == EResource::Actor) {
 			USocialService* social = GetGameState()->GetSocialService();
 			int cnt = social->GetObjectsByTag(ESocialTag::Forestling).Num() + prc.Count;
-			int max = 5 + social->GetObjectsByTag(ESocialTag::ForestlingHouse).Num() * 5;
+			int max = 99 + social->GetObjectsByTag(ESocialTag::ForestlingHouse).Num() * 5;
 			if (cnt > max)
 				return true;
 		}
