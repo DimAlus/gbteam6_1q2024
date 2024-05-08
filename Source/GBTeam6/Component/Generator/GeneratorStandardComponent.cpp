@@ -154,6 +154,11 @@ TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
 	return needs;
 }
 
+bool UGeneratorStandardComponent::GetIsBuilded()
+{
+	return IsBuilded;
+}
+
 
 TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
 	return GetGameState()->GetResourcesByStacks(GetNeedsMap(steps));

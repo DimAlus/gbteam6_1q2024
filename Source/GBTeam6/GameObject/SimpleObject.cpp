@@ -68,9 +68,9 @@ void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)
 void ASimpleObject::OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes) {
 }
 
-
+//ToDo remove
 void ASimpleObject::OnDeathBehaviour() {
-	K2_DestroyActor();
+	//K2_DestroyActor();
 }
 
 UGameObjectCore* ASimpleObject::GetCore_Implementation() {

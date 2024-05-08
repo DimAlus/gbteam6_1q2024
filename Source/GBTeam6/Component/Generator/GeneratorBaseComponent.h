@@ -32,6 +32,8 @@ public:
 	FOnResourceGenerated OnResourceGenerated;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetIsBuilded() {return false;};
 
 	UFUNCTION(BlueprintCallable)
 	virtual TArray<FPrice> GetNeeds(int steps);

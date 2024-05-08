@@ -82,6 +82,7 @@ private:
 	TMap<EResource, int> _getNeeds(int steps);
 public:
 
+	virtual bool GetIsBuilded() override;
 	virtual TArray<FPrice> GetNeeds(int steps) override;
 	virtual TArray<FPrice> GetOvers(int steps) override;
 	virtual TMap<EResource, int> GetNeedsMap(int steps) override;
