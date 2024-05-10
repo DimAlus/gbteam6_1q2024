@@ -148,7 +148,7 @@ void AGameStateDefault::SendMessageBeginPlay()
 	if (auto ms = GetMessageService()) {
 		TSet<EMessageTag> tag{};
 		auto MapName = GetWorld()->GetMapName();
-		MapName == TEXT("StartMap") ? tag = {EMessageTag::GLBGameStart} : tag = {EMessageTag::GLBEnterPlayMap};
+		MapName.Contains("StartMap") ? tag = {EMessageTag::GLBGameStart} : tag = {EMessageTag::GLBEnterPlayMap};
 		ms->Send(tag, nullptr);
 	}
 }
@@ -156,10 +156,13 @@ void AGameStateDefault::SendMessageBeginPlay()
 
 void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
 {
-	if (auto ms = GetMessageService()) {
-		TSet<EMessageTag> tag{};
-		IsDay == true ? tag = {EMessageTag::GLBDay} : tag = {EMessageTag::GLBNight};
-		ms->Send(tag, nullptr);
+	auto MapName = GetWorld()->GetMapName();
+	if (MapName.Contains("MapLand")) {
+		if (auto ms = GetMessageService()) {
+			TSet<EMessageTag> tag{};
+			IsDay == true ? tag = {EMessageTag::GLBDay} : tag = {EMessageTag::GLBNight};
+			ms->Send(tag, nullptr);
+		}
 	}
 }
 

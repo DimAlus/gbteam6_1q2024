@@ -172,7 +172,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicMainMenu);
 		MusicAudioComponent->Play();
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBEnterPlayMap))
 	{
@@ -182,7 +182,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
 		MusicAudioComponent->Play();
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBDay))
 	{
@@ -192,7 +192,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
 		MusicAudioComponent->Play();
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
 
 	if (MusicSound.MusicPeacefulNight && tags.Contains(EMessageTag::GLBNight))
 	{
@@ -202,7 +202,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeacefulNight);
 		MusicAudioComponent->Play();
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
 	
 	
 	//System sounds
@@ -211,18 +211,18 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 	{
 		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.PressButton);
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> PressButton sound is not valid!"), *GetNameSafe(this));
 
 	if (SystemSound.TestSoundEffect && tags.Contains(EMessageTag::UIESliderEffectVolume))
 	{
 		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundEffect);
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> TestSoundEffect sound is not valid!"), *GetNameSafe(this));
 
 	if (SystemSound.TestSoundVoice && tags.Contains(EMessageTag::UIESliderVoiceVolume))
 	{
 		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundVoice);
 	}
-	else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
+	//else UE_LOG(LgService, Error, TEXT("<%s> TestSoundVoice sound is not valid!"), *GetNameSafe(this));
 	
 }
