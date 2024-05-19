@@ -9,7 +9,7 @@ FString USaveConfig::GetSlotName(FString playerName, FString slotName, FString l
 
 const TSet<EConfig>& USaveConfig::ConfigIgnore() {
     static TSet<EConfig> ignores = {
-        EConfig::TileSize
+        EConfig::FV_TileSize
     };
     return ignores;
 }

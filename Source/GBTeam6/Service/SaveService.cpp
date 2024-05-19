@@ -26,52 +26,6 @@
 #include "./GameEventsService.h"
 
 
-//TArray<FString> GetAllSaveGameSlotNames()
-//{
-//	//////////////////////////////////////////////////////////////////////////////
-//	class FFindSavesVisitor : public IPlatformFile::FDirectoryVisitor
-//	{
-//	public:
-//		FFindSavesVisitor() {}
-//
-//		virtual bool Visit(const TCHAR* FilenameOrDirectory, bool bIsDirectory)
-//		{
-//			if (!bIsDirectory)
-//			{
-//				FString FullFilePath(FilenameOrDirectory);
-//				if (FPaths::GetExtension(FullFilePath) == TEXT("sav"))
-//				{
-//					FString CleanFilename = FPaths::GetBaseFilename(FullFilePath);
-//					CleanFilename = CleanFilename.Replace(TEXT(".sav"), TEXT(""));
-//					SavesFound.Add(CleanFilename);
-//				}
-//			}
-//			return true;
-//		}
-//		TArray<FString> SavesFound;
-//	};
-//	//////////////////////////////////////////////////////////////////////////////
-//
-//	TArray<FString> Saves;
-//	const FString SavesFolder = FPaths::GameSavedDir() + TEXT("SaveGames");
-//
-//	if (!SavesFolder.IsEmpty())
-//	{
-//		FFindSavesVisitor Visitor;
-//		FPlatformFileManager::Get().GetPlatformFile().IterateDirectory(*SavesFolder, Visitor);
-//		Saves = Visitor.SavesFound;
-//	}
-//
-//	return Saves;
-//}
-//
-
-
-
-
-
-
-
 
 USaveDefault* USaveService::CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
 	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::CreateSaveGameObject(saveClass));
@@ -207,7 +161,7 @@ void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* sav
 	saver->IsDay = gameState->IsDay();
 	saver->CurrentDayTime = gameState->GetCurrentDayTime();
 	saver->PlayerResources = gameState->PlayerResources;
-	saver->CompletedEvents = gameState->GetGameEventsService()->CompletedEvents;
+	/*saver->CompletedEvents = gameState->GetGameEventsService()->CompletedEvents;
 	saver->ProcessEvents = gameState->GetGameEventsService()->ProcessEvents;
 	for (int i = 0; i < gameState->GetGameEventsService()->CurrentEvents.Num(); i++) {
 		FGameEventConextSave sv;
@@ -215,14 +169,14 @@ void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* sav
 		sv.EventName = gameState->GetGameEventsService()->CurrentEvents[i].EventName;
 		sv.SelectedLocation = gameState->GetGameEventsService()->CurrentEvents[i].SelectedLocation;
 		saver->CurrentEvents.Add(sv);
-	}
+	}*/
 }
 
 void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* saver) {
 	gameState->PlayerResources = saver->PlayerResources;
 	gameState->CurrentDayTime = saver->CurrentDayTime;
 	gameState->CurrentIsDay = saver->IsDay;
-	gameState->GetGameEventsService()->CompletedEvents = saver->CompletedEvents;
+	/*gameState->GetGameEventsService()->CompletedEvents = saver->CompletedEvents;
 	gameState->GetGameEventsService()->ProcessEvents = saver->ProcessEvents;
 	for (int i = 0; i < saver->CurrentEvents.Num(); i++) {
 		FGameEventConext sv;
@@ -230,7 +184,7 @@ void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* sav
 		sv.EventName = saver->CurrentEvents[i].EventName;
 		sv.SelectedLocation = saver->CurrentEvents[i].SelectedLocation;
 		gameState->GetGameEventsService()->CurrentEvents.Add(sv);
-	}
+	}*/
 }
 
 

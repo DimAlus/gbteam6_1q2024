@@ -20,20 +20,20 @@
 
 void AGameStateDefault::LoadConfig() {
 	Configs = {
-		{ EConfig::TileSize, {} }
+		{ EConfig::FV_TileSize, {} }
 	};
-	Configs[EConfig::TileSize].VectorValue = { 100.f, 100.f, 1.f };
+	Configs[EConfig::FV_TileSize].VectorValue = { 100.f, 100.f, 1.f };
 
 	if (DT_Config) {
 		FString context;
 		TArray<FTRConfig*> data;
 		DT_Config->GetAllRows(context, data);
 		for (FTRConfig* row : data) {
-			if (!USaveConfig::ConfigIgnore().Contains(row->Config)) {
-				if (Configs.Contains(row->Config))
-					Configs[row->Config] = row->Value;
+			if (!USaveConfig::ConfigIgnore().Contains(row->Value.ConfigType)) {
+				if (Configs.Contains(row->Value.ConfigType))
+					Configs[row->Value.ConfigType] = row->Value;
 				else
-					Configs.Add(row->Config, row->Value);
+					Configs.Add(row->Value.ConfigType, row->Value);
 			}
 		}
 	}
@@ -167,9 +167,9 @@ void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
 void AGameStateDefault::DayChangingLoop(){
 	CurrentDayTime += DayChangingDelay;
 	FConfig conf;
-	GetConfig(EConfig::DayTime, conf);
+	GetConfig(EConfig::F_DayTime, conf);
 	float dayLength = conf.FloatValue;
-	GetConfig(EConfig::DayPeriod, conf);
+	GetConfig(EConfig::FV_DayPeriod, conf);
 	FVector dayPeriod = conf.VectorValue;
 
 	if (CurrentDayTime > dayLength) {
@@ -206,7 +206,7 @@ void AGameStateDefault::BeginPlay() {
 	GetSaveService()->LoadConfigPublic(this);
 
 	FConfig conf;
-	GetConfig(EConfig::StartGameTime, conf);
+	GetConfig(EConfig::F_StartGameTime, conf);
 	CurrentDayTime = conf.FloatValue;
 	GetWorld()->GetTimerManager().SetTimer(
 		DayChangingTimer,
@@ -253,16 +253,16 @@ bool AGameStateDefault::CheckNeed(const FNeed& need) {
 	{
 	case ENeedType::Resource:
 		cnt = GetResourceCount(need.Resource);
-		cnt2 = std::clamp(cnt, need.ResourceConstrains.X, need.ResourceConstrains.Y);
+		cnt2 = std::clamp(cnt, need.Constrains.X, need.Constrains.Y);
 		return cnt == cnt2;
 
 	case ENeedType::SocialTag:
 		cnt = GetSocialService()->GetObjectsByTag(need.SocialTag).Num();
-		cnt2 = std::clamp(cnt, need.SocialTagConstrains.X, need.SocialTagConstrains.Y);
+		cnt2 = std::clamp(cnt, need.Constrains.X, need.Constrains.Y);
 		return cnt == cnt2;
 
 	case ENeedType::Quest:
-		return GetGameEventsService()->IsEventCompleted(need.QuestName);
+		return false;// GetGameEventsService()->IsEventCompleted(need.QuestName);
 		
 	default:
 		return true;

@@ -175,7 +175,7 @@ void UTaskManagerService::SetGameState(AGameStateDefault* ownerGameState) {
 	gameState = ownerGameState;
 	FConfig conf;
 	conf.FloatValue = 1.f;
-	gameState->GetConfig(EConfig::WorkerStackMultiplyer, conf);
+	gameState->GetConfig(EConfig::F_WorkerStackMultiplyer, conf);
 	WorkerStackMultiplyer = conf.FloatValue;
 }
 
