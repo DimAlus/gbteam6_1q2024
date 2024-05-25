@@ -158,33 +158,16 @@ void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) 
 
 /// Saving Loading Progress
 void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* saver) {
-	saver->IsDay = gameState->IsDay();
-	saver->CurrentDayTime = gameState->GetCurrentDayTime();
-	saver->PlayerResources = gameState->PlayerResources;
-	/*saver->CompletedEvents = gameState->GetGameEventsService()->CompletedEvents;
-	saver->ProcessEvents = gameState->GetGameEventsService()->ProcessEvents;
-	for (int i = 0; i < gameState->GetGameEventsService()->CurrentEvents.Num(); i++) {
-		FGameEventConextSave sv;
-		sv.CurrentTime = gameState->GetGameEventsService()->CurrentEvents[i].CurrentTime;
-		sv.EventName = gameState->GetGameEventsService()->CurrentEvents[i].EventName;
-		sv.SelectedLocation = gameState->GetGameEventsService()->CurrentEvents[i].SelectedLocation;
-		saver->CurrentEvents.Add(sv);
-	}*/
+	for (auto ptr : this->ProgressSavers) {
+		Cast<ICanSaveInterface>(ptr)->Save(saver->GameProgressSaveData);
+		//ptr->Save(saver->GameProgressSaveData);
+	}
 }
 
 void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* saver) {
-	gameState->PlayerResources = saver->PlayerResources;
-	gameState->CurrentDayTime = saver->CurrentDayTime;
-	gameState->CurrentIsDay = saver->IsDay;
-	/*gameState->GetGameEventsService()->CompletedEvents = saver->CompletedEvents;
-	gameState->GetGameEventsService()->ProcessEvents = saver->ProcessEvents;
-	for (int i = 0; i < saver->CurrentEvents.Num(); i++) {
-		FGameEventConext sv;
-		sv.CurrentTime = saver->CurrentEvents[i].CurrentTime;
-		sv.EventName = saver->CurrentEvents[i].EventName;
-		sv.SelectedLocation = saver->CurrentEvents[i].SelectedLocation;
-		gameState->GetGameEventsService()->CurrentEvents.Add(sv);
-	}*/
+	for (auto ptr : this->ProgressSavers) {
+		Cast<ICanSaveInterface>(ptr)->Load(saver->GameProgressSaveData);
+	}
 }
 
 
@@ -420,4 +403,14 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);
 	}
+}
+
+void USaveService::AddSaveProgressOwner(ICanSaveInterface* saver) {
+	//ProgressSavers.Add(Cast<UCanSaveInterface>(saver->_getUObject()));
+	ProgressSavers.Add(saver);
+}
+
+void USaveService::RemoveSaveProgressOwner(ICanSaveInterface* saver) {
+	//ProgressSavers.Remove(Cast<UCanSaveInterface>(saver->_getUObject()));
+	ProgressSavers.Remove(saver);
 }

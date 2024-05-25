@@ -6,7 +6,22 @@
 #include "GBTeam6/Interface/GameObjectInterface.h"
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Service/SocialService.h"
+#include "GBTeam6/Service/SaveService.h"
 #include "GameEventsService.h"
+
+void UGameEventsService::Save(FGameProgressSaveData& data) {
+	for (auto evt : this->Events) {
+		data.EventsData.Context.Add(evt.Value.Context);
+	}
+}
+
+void UGameEventsService::Load(FGameProgressSaveData& data) {
+	for (auto ctx : data.EventsData.Context) {
+		if (this->Events.Contains(ctx.EventName)) {
+			this->Events[ctx.EventName].Context = ctx;
+		}
+	}
+}
 
 void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	switch (Action.ActionType)
@@ -212,7 +227,7 @@ bool UGameEventsService::CheckNeed(const FNeed& need, FGameEventConext& EventCon
 			&& EventContext.Timers[need.Name].Time > need.Time;
 	}
 	else if (need.NeedType == ENeedType::Tag) {
-		return EventContext.Tags.Contains(need.Name);
+		return EventContext.Tags.Contains(need.Name) == need.Exists;
 	}
 	return gameState->CheckNeed(need);
 }
@@ -226,16 +241,18 @@ bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventCo
 	return true;
 }
 
-bool UGameEventsService::UpdateRow(const FQuestData& QuestData,
+bool UGameEventsService::UpdateRow(const FString& QuestName,
+								   const FQuestData& QuestData,
 								   FGameEventConext& EventContext) {
-	for (auto timer : EventContext.Timers) {
-		if (!timer.Value.IsPaused)
-			timer.Value.Time += UpdateDelay;
+	for (auto iter : EventContext.Timers) {
+		FGameEventTimer& timer = EventContext.Timers[iter.Key];
+		if (!timer.IsPaused)
+			timer.Time += UpdateDelay;
 	}
 
 	for (const FNeedArray& needs : QuestData.Requirements) {
 		if (CheckNeedArray(needs.Needs, EventContext)) {
-			UE_LOG_SERVICE(Log, "Event '%s' Complete needs", *EventContext.EventName);
+			UE_LOG_SERVICE(Log, "Event '%s'.'%s' Complete needs", *EventContext.EventName, *QuestName);
 			FEventActionConext CurrentActionContext = {};
 			for (auto act : QuestData.Actions) {
 				DoAction(act, EventContext, CurrentActionContext);
@@ -252,10 +269,6 @@ void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventCo
 }
 
 
-const FTRGameEvent& UGameEventsService::GetEventData(FString name) {
-	return *gameState->DT_GameEvents->FindRow<FTRGameEvent>(FName(name), "");
-}
-
 void UGameEventsService::SetGameState(AGameStateDefault* gs) {
 	gameState = gs;
 
@@ -267,15 +280,33 @@ void UGameEventsService::SetGameState(AGameStateDefault* gs) {
 		true,
 		UpdateDelay
 	);
+
+	gs->GetSaveService()->AddSaveProgressOwner(this);
+	LoadEvents();
 }
+
+
+void UGameEventsService::LoadEvents() {
+	this->Events.Empty();
+	for (auto iter : gameState->DT_GameEvents->GetRowMap()) {
+		FName RowName = iter.Key;
+		FTRGameEvent* evtdata = (FTRGameEvent*)iter.Value;
+
+		FGameEvent evt;
+		evt.QuestDatas = evtdata->QuestData;
+		evt.Context.EventName = RowName.ToString();
+		this->Events.Add(RowName.ToString(), evt);
+	}
+}
+
 
 void UGameEventsService::Update() {
 	for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
 		FGameEventConext& Context = iter.Value().Context;
-		TArray<FQuestData>& QuestDatas = iter.Value().QuestDatas;
+		TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
 
-		for (const FQuestData& data : QuestDatas) {
-			UpdateRow(data, Context);
+		for (auto data : QuestDatas) {
+			UpdateRow(data.Key, data.Value, Context);
 		}
 	}
 }

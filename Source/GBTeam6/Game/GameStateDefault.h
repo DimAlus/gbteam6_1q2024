@@ -4,6 +4,7 @@
 #include "GameFramework/GameStateBase.h"
 
 #include "../Lib/Lib.h"
+#include "../Interface/CanSaveInterface.h"
 
 #include "GameStateDefault.generated.h"
 
@@ -29,7 +30,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInventoryChanging, UGameObjectCo
  * 
  */
 UCLASS()
-class GBTEAM6_API AGameStateDefault : public AGameStateBase
+class GBTEAM6_API AGameStateDefault : public AGameStateBase, public ICanSaveInterface
 {
 	GENERATED_BODY()
 friend class USaveService;
@@ -37,6 +38,9 @@ friend class USaveService;
 public:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void Save(FGameProgressSaveData& data) override;
+	virtual void Load(FGameProgressSaveData& data) override;
 
 public:
 

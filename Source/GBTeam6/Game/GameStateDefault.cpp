@@ -203,6 +203,8 @@ void AGameStateDefault::BeginPlay() {
 	LoadSizeStacks();
 	InitializeServices();
 
+	SaveService->AddSaveProgressOwner(this);
+
 	GetSaveService()->LoadConfigPublic(this);
 
 	FConfig conf;
@@ -224,6 +226,18 @@ void AGameStateDefault::BeginPlay() {
 void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
 	ClearServices();
 	Super::EndPlay(EndPlayReason);
+}
+
+void AGameStateDefault::Save(FGameProgressSaveData& data) {
+	data.GameStateData.PlayerResources = this->PlayerResources;
+	data.GameStateData.CurrentDayTime = this->CurrentDayTime;
+	data.GameStateData.IsDay = this->CurrentIsDay;
+}
+
+void AGameStateDefault::Load(FGameProgressSaveData& data) {
+	this->PlayerResources = data.GameStateData.PlayerResources;
+	this->CurrentDayTime = data.GameStateData.CurrentDayTime;
+	this->CurrentIsDay = data.GameStateData.IsDay;
 }
 
 bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {

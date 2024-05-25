@@ -14,6 +14,9 @@ class GBTEAM6_API USavingStructures : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()	
 };
 
+/***********************
+*	GAME OBJECTS
+************************/
 
 USTRUCT(BlueprintType)
 struct FActorSaveData {
@@ -97,7 +100,7 @@ public:
 	int CountStacks{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<EResource, int> Resources;
+	TMap<EResource, int> Resources{};
 };
 
 USTRUCT(BlueprintType)
@@ -134,4 +137,47 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialSaveData SocialData{};
+};
+
+
+/***********************
+*	GAME PROGRESS
+************************/
+
+
+USTRUCT(BlueprintType)
+struct FGameStateSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDay{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CurrentDayTime{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<EResource, int> PlayerResources{};
+};
+
+USTRUCT(BlueprintType)
+struct FEventsSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameEventConext> Context{};
+
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FGameProgressSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameStateSaveData GameStateData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEventsSaveData EventsData{};
+
 };

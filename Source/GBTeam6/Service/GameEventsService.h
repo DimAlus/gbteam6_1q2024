@@ -4,6 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "../Lib/Lib.h"
+#include "../Interface/CanSaveInterface.h"
 
 #include "GameEventsService.generated.h"
 
@@ -13,16 +14,19 @@ class USaveService;
  * 
  */
 UCLASS()
-class GBTEAM6_API UGameEventsService : public UObject
+class GBTEAM6_API UGameEventsService : public UObject, public ICanSaveInterface
 {
 	GENERATED_BODY()
 
-friend class USaveService;
+public:
+	virtual void Save(FGameProgressSaveData& data) override;
+	virtual void Load(FGameProgressSaveData& data) override;
+
 private:
 	AGameStateDefault* gameState;
 
 	struct FGameEvent {
-		TArray<FQuestData> QuestDatas{};
+		TMap<FString, FQuestData> QuestDatas{};
 		FGameEventConext Context;
 	};
 
@@ -43,12 +47,12 @@ private:
 
 	bool CheckNeed(const FNeed& need, FGameEventConext& EventContext);
 	bool CheckNeedArray(const TArray<FNeed>& needs, FGameEventConext& EventContext);
-	bool UpdateRow(const FQuestData& QuestData, FGameEventConext& EventContext);
+	bool UpdateRow(const FString& QuestName, const FQuestData& QuestData, FGameEventConext& EventContext);
 	void ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext);
 
-	const FTRGameEvent& GetEventData(FString name);
 public:
 
 	void SetGameState(AGameStateDefault* gs);
+	void LoadEvents();
 	void Update();
 };

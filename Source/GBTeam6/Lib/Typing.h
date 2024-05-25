@@ -349,9 +349,14 @@ struct FNeed {
 	FString ActionName{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
-		"NeedType == ENeedType::Quest || NeedType == ENeedType::Tag",
+		"NeedType == ENeedType::Quest || NeedType == ENeedType::Tag || NeedType == ENeedType::Time",
 		EditConditionHides))
 	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Tag",
+		EditConditionHides))
+	bool Exists{ true };
 };
 
 
@@ -400,43 +405,43 @@ struct FQuestAction {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Spawned",
 		EditConditionHides))
-	int SpawnActorIndex;
+	int SpawnActorIndex{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Random",
 		EditConditionHides))
-	TArray<FVector> RandomLocation;
+	TArray<FVector> RandomLocation{};
 
 
 	/** Select */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::Select",
 		EditConditionHides))
-	bool Deselect;
+	bool Deselect{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::Select",
 		EditConditionHides))
-	EActionSelectionType SelectionType;
+	EActionSelectionType SelectionType{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::SpawnedRange",
 		EditConditionHides))
-	FIntVector SpawnSelectionRange;
+	FIntVector SpawnSelectionRange{};
 
 
 	/** Other */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::Tag || ActionType == EQuestActionType::Timer",
 		EditConditionHides))
-	FString Name;
+	FString Name{};
 
 
 	/** Tags */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ActionType == EQuestActionType::Tag",
 		EditConditionHides))
-	bool AddTag;
+	bool AddTag{ true };
 
 
 	/** Timer */
@@ -524,7 +529,7 @@ struct FTRGameEvent : public FTableRowBase {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FQuestData> QuestData{};
+	TMap<FString, FQuestData> QuestData{};
 
 };
 
