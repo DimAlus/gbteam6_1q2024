@@ -47,6 +47,9 @@ void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& 
 	case EQuestActionType::Timer:
 		ActionTimer(Action, EventContext, ActionContext);
 		break;
+	case EQuestActionType::RestartQuest:
+		ActionRestartQuest(Action, EventContext, ActionContext);
+		break;
 	case EQuestActionType::GameOver:
 		gameState->OnGameOver.Broadcast();
 		break;
@@ -215,8 +218,15 @@ void UGameEventsService::ActionTimer(const FQuestAction& Action, FGameEventConex
 		EventContext.Timers.Add({ Action.Name, {} });
 	}
 	EventContext.Timers[Action.Name].IsPaused = Action.PauseTimer;
-	if (Action.TimerValue >= 0) {
+	if (Action.TimerValue > -0.1f) {
 		EventContext.Timers[Action.Name].Time = Action.TimerValue;
+	}
+}
+
+
+void UGameEventsService::ActionRestartQuest(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
+	if (EventContext.Tags.Contains(GetQuestOnceName(Action.Name))) {
+		EventContext.Tags.Remove(GetQuestOnceName(Action.Name));
 	}
 }
 
@@ -244,11 +254,6 @@ bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventCo
 bool UGameEventsService::UpdateRow(const FString& QuestName,
 								   const FQuestData& QuestData,
 								   FGameEventConext& EventContext) {
-	for (auto iter : EventContext.Timers) {
-		FGameEventTimer& timer = EventContext.Timers[iter.Key];
-		if (!timer.IsPaused)
-			timer.Time += UpdateDelay;
-	}
 
 	for (const FNeedArray& needs : QuestData.Requirements) {
 		if (CheckNeedArray(needs.Needs, EventContext)) {
@@ -287,6 +292,13 @@ void UGameEventsService::SetGameState(AGameStateDefault* gs) {
 
 
 void UGameEventsService::LoadEvents() {
+	FNeed onceNeed;
+	onceNeed.NeedType = ENeedType::Tag;
+	onceNeed.Exists = false;
+	FQuestAction onceAction;
+	onceAction.ActionType = EQuestActionType::Tag;
+	onceAction.AddTag = true;
+
 	this->Events.Empty();
 	for (auto iter : gameState->DT_GameEvents->GetRowMap()) {
 		FName RowName = iter.Key;
@@ -295,6 +307,21 @@ void UGameEventsService::LoadEvents() {
 		FGameEvent evt;
 		evt.QuestDatas = evtdata->QuestData;
 		evt.Context.EventName = RowName.ToString();
+
+		for (auto iterQ : evt.QuestDatas) {
+			if (iterQ.Value.StartOnce) {
+				onceNeed.Name = onceAction.Name = GetQuestOnceName(iterQ.Key);
+
+				FQuestData& qd = evt.QuestDatas[iterQ.Key];
+				if (qd.Requirements.Num() == 0) {
+					qd.Requirements.Add({});
+				}
+				for (int i = 0; i < qd.Requirements.Num(); i++) {
+					qd.Requirements[i].Needs.Add(onceNeed);
+				}
+				qd.Actions.Add(onceAction);
+			}
+		}
 		this->Events.Add(RowName.ToString(), evt);
 	}
 }
@@ -304,6 +331,12 @@ void UGameEventsService::Update() {
 	for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
 		FGameEventConext& Context = iter.Value().Context;
 		TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
+
+		for (auto iterT : Context.Timers) {
+			FGameEventTimer& timer = Context.Timers[iterT.Key];
+			if (!timer.IsPaused)
+				timer.Time += UpdateDelay;
+		}
 
 		for (auto data : QuestDatas) {
 			UpdateRow(data.Key, data.Value, Context);
