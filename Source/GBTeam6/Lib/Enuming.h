@@ -46,26 +46,26 @@ enum class EGameComponentType : uint8 {
 
 UENUM(BlueprintType)
 enum class EConfig : uint8 {
-	TileSize			UMETA(Hidden, DisplayName = "FV Tile Size"),
+	FV_TileSize			UMETA(Hidden, DisplayName = "FV Tile Size"),
 
 	/** Settings */
 	/** Sound Values */
-	SoundValue = 10		UMETA(DisplayName = "F  Sound Value"),
-	MusicValue			UMETA(DisplayName = "F  Music Value"),
-	EffectValue			UMETA(DisplayName = "F  Effect Value"),
-	VoiceValue			UMETA(DisplayName = "F  Voice Value"),
+	F_SoundValue = 10		UMETA(DisplayName = "F  Sound Value"),
+	F_MusicValue			UMETA(DisplayName = "F  Music Value"),
+	F_EffectValue			UMETA(DisplayName = "F  Effect Value"),
+	F_VoiceValue			UMETA(DisplayName = "F  Voice Value"),
 
 	/** Interface Size */
 
 	/** Gameplay */
-	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
-	DayPeriod			UMETA(DisplayName = "FV Day Period"),
-	StartGameTime		UMETA(DisplayName = "F  Day Start Time"),
-	WorkDelay			UMETA(DisplayName = "F  Work Delay"),
+	F_DayTime = 100			UMETA(DisplayName = "F  Day Time"),
+	FV_DayPeriod			UMETA(DisplayName = "FV Day Period"),
+	F_StartGameTime			UMETA(DisplayName = "F  Day Start Time"),
+	F_WorkDelay				UMETA(DisplayName = "F  Work Delay"),
 
-	NewEventDelay		UMETA(DisplayName = "F  New Event Delay"),
+	F_NewEventDelay			UMETA(DisplayName = "F  New Event Delay"),
 
-	WorkerStackMultiplyer	UMETA(DisplayName = "F Worker Stack Multiplyer")
+	F_WorkerStackMultiplyer	UMETA(DisplayName = "F  Worker Stack Multiplyer")
 };
 
 UENUM(BlueprintType)
@@ -221,19 +221,24 @@ enum class ENeedType : uint8 {
 	Resource		UMETA(DisplayName = "Resource"),
 	SocialTag		UMETA(DisplayName = "SocialTag"),
 	Time			UMETA(DisplayName = "Time"),
-	Quest			UMETA(DisplayName = "Quest")
+	Quest			UMETA(Hidden, DisplayName = "Quest"),
+	Tag				UMETA(DisplayName = "Tag")
 };
 
 
 UENUM(BlueprintType)
 enum class EQuestActionType : uint8 {
-	SpawnActors			UMETA(DisplayName = "SpawnActors"),
-	ChangeInventory		UMETA(DisplayName = "ChangeInventory"),
-	AddSelectionWidget	UMETA(DisplayName = "AddSelectionWidget"),
-	FindLocation		UMETA(DisplayName = "FindLocation"),
+	SpawnActors			UMETA(DisplayName = "Spawn Actors"),
+	Inventory			UMETA(DisplayName = "Change Inventory"),
+	FindLocation		UMETA(DisplayName = "Find Location"),
+	Widget				UMETA(DisplayName = "Add Selection Widget"),
+
 	Select				UMETA(DisplayName = "Select"),
-	Deselect			UMETA(DisplayName = "Deselect"),
-	GameOver			UMETA(DisplayName = "GameOver")
+	Tag					UMETA(DisplayName = "Tag"),
+	Timer				UMETA(DisplayName = "Timer"),
+
+	GameOver			UMETA(DisplayName = "Game Over")
+
 };
 
 

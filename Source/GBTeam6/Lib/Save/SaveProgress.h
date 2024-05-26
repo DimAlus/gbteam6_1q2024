@@ -23,13 +23,8 @@ public:
 public:
 
     UPROPERTY(VisibleAnywhere)
-	bool IsDay;
+	FGameProgressSaveData GameProgressSaveData;
 	
-    UPROPERTY(VisibleAnywhere)
-	float CurrentDayTime;
-
-    UPROPERTY(VisibleAnywhere)
-	TMap<EResource, int> PlayerResources;
 
 	UPROPERTY(VisibleAnywhere)
 	TSet<FString> CompletedEvents;

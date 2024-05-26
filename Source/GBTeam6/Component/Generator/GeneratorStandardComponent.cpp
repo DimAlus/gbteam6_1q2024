@@ -81,7 +81,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	}
 
 	FConfig workDelay;
-	if (gameState->GetConfig(EConfig::WorkDelay, workDelay)) {
+	if (gameState->GetConfig(EConfig::F_WorkDelay, workDelay)) {
 		this->TimerDelay = workDelay.FloatValue;
 	}
 }

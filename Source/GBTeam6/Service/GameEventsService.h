@@ -4,6 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "../Lib/Lib.h"
+#include "../Interface/CanSaveInterface.h"
 
 #include "GameEventsService.generated.h"
 
@@ -13,44 +14,45 @@ class USaveService;
  * 
  */
 UCLASS()
-class GBTEAM6_API UGameEventsService : public UObject
+class GBTEAM6_API UGameEventsService : public UObject, public ICanSaveInterface
 {
 	GENERATED_BODY()
 
-friend class USaveService;
+public:
+	virtual void Save(FGameProgressSaveData& data) override;
+	virtual void Load(FGameProgressSaveData& data) override;
+
 private:
 	AGameStateDefault* gameState;
 
-	TSet<FString> CompletedEvents;
-	TSet<FString> ProcessEvents;
-	TArray<FGameEventConext> CurrentEvents;
-	FGameEventConext NoneContext{};
-	FQuestAction DeselectAllAction{};
+	struct FGameEvent {
+		TMap<FString, FQuestData> QuestDatas{};
+		FGameEventConext Context;
+	};
+
+	TMap<FString, FGameEvent> Events;
+
 
 	float UpdateDelay = 1.f;
 	FTimerHandle updateTaskTimer;
-	FTimerHandle newEventTimer;
 private:
-	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionSelection(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext);
-	void ActionAddWidget(const FQuestAction& Action, FGameEventConext& EventContext);
-	void StartEvent(FString EventName);
+	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionInventory(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionFindLocation(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionWidget(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionSelect(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionTag(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
+	void ActionTimer(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
 
 	bool CheckNeed(const FNeed& need, FGameEventConext& EventContext);
 	bool CheckNeedArray(const TArray<FNeed>& needs, FGameEventConext& EventContext);
-	bool UpdateRow(const TArray<FNeedArray>& NeedArrays, const TArray<FQuestPage>& Pages, const TArray<FQuestAction>& Actions, FGameEventConext& EventContext);
+	bool UpdateRow(const FString& QuestName, const FQuestData& QuestData, FGameEventConext& EventContext);
 	void ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext);
 
-	const FTRGameEvent& GetEventData(FString name);
 public:
 
 	void SetGameState(AGameStateDefault* gs);
+	void LoadEvents();
 	void Update();
-	void CheckStartEvents();
-	
-	bool IsEventCompleted(FString EventName);
-	bool IsEventProcessed(FString EventName);
 };

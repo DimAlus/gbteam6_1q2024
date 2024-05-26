@@ -16,6 +16,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 #define UE_LOG_SERVICE(LogType, Message, ...) \
 	UE_LOG(LgService, LogType, TEXT("<%s>: %s"), *GetNameSafe(this), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
 
+#define LG_VECTOR(v) v.X, v.Y, v.Z
+
 class UGameObjectCore;
 
 FString GetLevelName(ULevel* level);
@@ -104,36 +106,37 @@ struct FTRTileType : public FTableRowBase {
 };
 
 
-
 USTRUCT(BlueprintType)
 struct FConfig {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool BoolValue = 0;
+	EConfig ConfigType{ EConfig::F_SoundValue };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
+	bool BoolValue{false};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
 	int IntValue = 0;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = 
+		"ConfigType == EConfig::F_SoundValue || ConfigType == EConfig::F_MusicValue || ConfigType == EConfig::F_EffectValue || ConfigType == EConfig::F_VoiceValue || ConfigType == EConfig::F_DayTime || ConfigType == EConfig::F_StartGameTime || ConfigType == EConfig::F_WorkDelay || ConfigType == EConfig::F_NewEventDelay || ConfigType == EConfig::F_WorkerStackMultiplyer", 
+		EditConditionHides))
 	float FloatValue = 0.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
 	FString StringValue{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ConfigType == EConfig::FV_DayPeriod", EditConditionHides))
 	FVector VectorValue{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
 	FIntVector IntVectorValue{};
 };
 
 USTRUCT(BlueprintType)
 struct FTRConfig : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EConfig Config;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FConfig Value;
@@ -177,10 +180,14 @@ struct FPrice {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int Count{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"Resource == EResource::Actor",
+		EditConditionHides))
 	TSubclassOf<AActor> ActorClass{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"Resource == EResource::SocialTag",
+		EditConditionHides))
 	TSet<ESocialTag> SocialTags;
 };
 
@@ -328,23 +335,40 @@ struct FNeed {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ENeedType NeedType{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::SocialTag",
+		EditConditionHides))
 	ESocialTag SocialTag{ ESocialTag::None };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SocialTag)
-	FIntVector SocialTagConstrains{ 0, 10000, 0 };
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Resource",
+		EditConditionHides))
 	EResource Resource{ EResource::None };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Resource)
-	FIntVector ResourceConstrains{ 0, 10000, 0 };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::SocialTag || NeedType == ENeedType::Resource",
+		EditConditionHides))
+	FIntVector Constrains{ 0, 10000, 0 };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Time)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Time",
+		EditConditionHides))
 	float Time{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Quest)
-	FString QuestName{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Tag && false",
+		EditConditionHides))
+	FString ActionName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Quest || NeedType == ENeedType::Tag || NeedType == ENeedType::Time",
+		EditConditionHides))
+	FString Name{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"NeedType == ENeedType::Tag",
+		EditConditionHides))
+	bool Exists{ true };
 };
 
 
@@ -364,38 +388,112 @@ struct FQuestAction {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EQuestActionType ActionType{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountConstraint;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/** Spawn Actors */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::SpawnActors",
+		EditConditionHides))
+	TSubclassOf<AActor> SpawnClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::SpawnActors",
+		EditConditionHides))
+	int SpawnCount{ 1 };
+
+
+	/** ChangeInventory */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Inventory",
+		EditConditionHides))
+	FPrice InventoryChanging{};
+
+
+	/** FindLocation */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::FindLocation",
+		EditConditionHides))
+	EActionFindLocationType FindLocationType{ EActionFindLocationType::Random };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Spawned",
+		EditConditionHides))
+	int SpawnActorIndex{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Random",
+		EditConditionHides))
+	TArray<FVector> RandomLocation{};
+
+
+	/** Select */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Select",
+		EditConditionHides))
+	bool Deselect{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Select",
+		EditConditionHides))
+	EActionSelectionType SelectionType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::SpawnedRange",
+		EditConditionHides))
+	FIntVector SpawnSelectionRange{};
+
+
+	/** Other */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Tag || ActionType == EQuestActionType::Timer",
+		EditConditionHides))
+	FString Name{};
+
+
+	/** Tags */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Tag",
+		EditConditionHides))
+	bool AddTag{ true };
+
+
+	/** Timer */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Timer",
+		EditConditionHides))
+	bool PauseTimer{ false };
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ActionType == EQuestActionType::Timer",
+		EditConditionHides))
+	float TimerValue{ -1 };
+
+
+	/** Other */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = 
+		"(ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Spawned) || (ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::BySocialTag)",
+		EditConditionHides))
 	ESocialTag SocialTag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
-	EActionSelectionType SelectionType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"(ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::BySocialTag) || (ActionType == EQuestActionType::Inventory)",
+		EditConditionHides))
+	int CountConstraint{ 0 };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Selection)
-	FIntVector SpawnSelectionRange;
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
-	EActionFindLocationType FindLocationType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
-	int SpawnActorIndex;
+USTRUCT(BlueprintType)
+struct FQuestPageButton {
+	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FindLocation)
-	TArray<FVector> RandomLocation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText ButtonText{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
-	TSubclassOf<AActor> SpawnClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int NextPageIndex{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Spawn)
-	int SpawnCount;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
-	bool ApplyForAll;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Inventory)
-	FPrice InventoryChanging;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> SettedTags{};
 };
 
 
@@ -424,55 +522,67 @@ struct FQuestPage {
 
 
 USTRUCT(BlueprintType)
+struct FQuestData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FNeedArray> Requirements{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestPage> Pages{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	TArray<FQuestAction> Actions{};
+};
+
+
+USTRUCT(BlueprintType)
 struct FTRGameEvent : public FTableRowBase {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CompleteOnSuccess{};
+	TMap<FString, FQuestData> QuestData{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CompleteOnFail{};
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FNeed> Requirements{};
+USTRUCT()
+struct FEventActionConext {
+	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FQuestPage> StartPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = StartEvent)
-	TArray<FQuestAction> StartActions{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FNeedArray> SuccessNeeds{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FQuestPage> SuccessPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
-	TArray<FQuestAction> SuccessActions{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FNeedArray> FailNeeds{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FQuestPage> FailPages{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
-	TArray<FQuestAction> FailActions{};
+	FVector SelectedLocation{};
+	TArray<UGameObjectCore*> SelectedObjects{};
+	TArray<UGameObjectCore*> SpawnedObjects{};
 };
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
+struct FGameEventTimer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsPaused{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Time{ 0.f };
+};
+
+USTRUCT(BlueprintType)
 struct FGameEventConext {
 	GENERATED_BODY()
 
-	FString EventName{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString EventName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<FString> Tags;
 
-	TArray<UGameObjectCore*> SelectedObjects{};
-	TArray<UGameObjectCore*> SpawnedObjects{};
-	FVector SelectedLocation{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentTime{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<FString, FGameEventTimer> Timers{};
 };
+
 
 USTRUCT(BlueprintType)
 struct FGameEventConextSave {
@@ -487,3 +597,13 @@ struct FGameEventConextSave {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FailEvent)
 	float CurrentTime{};
 };
+
+
+
+//#undef CONFIG_FILTER
+//#undef CONFIG_FILTER_B
+//#undef CONFIG_FILTER_I
+//#undef CONFIG_FILTER_F
+//#undef CONFIG_FILTER_S
+//#undef CONFIG_FILTER_IV
+//#undef CONFIG_FILTER_FV

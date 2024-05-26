@@ -4,6 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "../Lib/Lib.h"
+#include "../Interface/CanSaveInterface.h"
 
 #include "SaveService.generated.h"
 
@@ -22,6 +23,10 @@ class USaveProgress;
 UCLASS()
 class GBTEAM6_API USaveService : public UObject {
 	GENERATED_BODY()
+
+private:
+	UPROPERTY()
+	TArray<ICanSaveInterface*> ProgressSavers;
 
 private:
 
@@ -60,5 +65,9 @@ private:
 	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);
 
 	void InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData);
+
+public:
+	void AddSaveProgressOwner(ICanSaveInterface* saver);
+	void RemoveSaveProgressOwner(ICanSaveInterface* saver);
 
 };
