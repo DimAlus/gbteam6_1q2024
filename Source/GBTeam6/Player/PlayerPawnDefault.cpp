@@ -220,8 +220,13 @@ void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		//AddMovementInput(ForwardDirection, MovementVector.Y);
+		//AddMovementInput(RightDirection, MovementVector.X);;
+		auto TargetLocation = GetActorLocation();
+		auto ForwardVector = ForwardDirection*MovementVector.Y;
+		auto RightVector = RightDirection*MovementVector.X;
+		TargetLocation += (ForwardVector + RightVector)*100;
+		SetActorLocation(TargetLocation);
 	}
 }
 
@@ -335,6 +340,6 @@ void APlayerPawnDefault::SetGameSpeedLower(const FInputActionValue& Value)
 void APlayerPawnDefault::SetGameSpeed(float TimeDilation)
 {
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
-	if (TimeDilation > 0.f)
+	if (TimeDilation >= 0.0001f)
 		CustomTimeDilation = 1/TimeDilation;
 }
