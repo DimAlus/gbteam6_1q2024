@@ -432,7 +432,7 @@ struct FQuestAction {
 
 	/** Other */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
-		"ActionType == EQuestActionType::Tag || ActionType == EQuestActionType::Timer",
+		"ActionType == EQuestActionType::Tag || ActionType == EQuestActionType::Timer || ActionType == EQuestActionType::RestartQuest",
 		EditConditionHides))
 	FString Name{};
 
@@ -512,6 +512,9 @@ struct FQuestPage {
 USTRUCT(BlueprintType)
 struct FQuestData {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	bool StartOnce{ true };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	TArray<FNeedArray> Requirements{};

@@ -235,6 +235,7 @@ enum class EQuestActionType : uint8 {
 	Select				UMETA(DisplayName = "Select"),
 	Tag					UMETA(DisplayName = "Tag"),
 	Timer				UMETA(DisplayName = "Timer"),
+	RestartQuest		UMETA(DisplayName = "Restart Quest"),
 
 	GameOver			UMETA(DisplayName = "Game Over")
 

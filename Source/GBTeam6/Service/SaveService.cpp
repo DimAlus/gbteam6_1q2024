@@ -159,14 +159,18 @@ void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) 
 /// Saving Loading Progress
 void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
-		Cast<ICanSaveInterface>(ptr)->Save(saver->GameProgressSaveData);
-		//ptr->Save(saver->GameProgressSaveData);
+		if (IsValid(ptr->_getUObject())) {
+			ptr->Save(saver->GameProgressSaveData);
+		}
+		
 	}
 }
 
 void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
-		Cast<ICanSaveInterface>(ptr)->Load(saver->GameProgressSaveData);
+		if (IsValid(ptr->_getUObject())) {
+			ptr->Load(saver->GameProgressSaveData);
+		}
 	}
 }
 
@@ -406,11 +410,9 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 }
 
 void USaveService::AddSaveProgressOwner(ICanSaveInterface* saver) {
-	//ProgressSavers.Add(Cast<UCanSaveInterface>(saver->_getUObject()));
 	ProgressSavers.Add(saver);
 }
 
 void USaveService::RemoveSaveProgressOwner(ICanSaveInterface* saver) {
-	//ProgressSavers.Remove(Cast<UCanSaveInterface>(saver->_getUObject()));
 	ProgressSavers.Remove(saver);
 }
