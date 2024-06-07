@@ -194,14 +194,14 @@ public:
 	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(), 
 		NULL, 
-		TEXT("/Game/Enviroment/Material/M_TileEnabled")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(),
 		NULL,
-		TEXT("/Game/Enviroment/Material/M_TileDisabled")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
 	));
 };
 
