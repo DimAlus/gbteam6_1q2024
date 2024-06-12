@@ -131,6 +131,8 @@ enum class ESocialTag : uint8 {
 	StumpAltar			UMETA(DisplayName = "StumpAltar"),
 
 	EnergyGenerator		UMETA(DisplayName = "EnergyGenerator"),
+	Barricade			UMETA(DisplayName = "Barricade"),
+	Tower				UMETA(DisplayName = "Tower"),
 	BerryGrove			UMETA(DisplayName = "BerryGrove"),
 	WoodGrove			UMETA(DisplayName = "WoodGrove"),
 	HolyGrove			UMETA(DisplayName = "HolyGrove"),

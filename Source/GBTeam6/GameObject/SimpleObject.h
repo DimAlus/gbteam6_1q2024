@@ -30,7 +30,7 @@ protected:
 	USceneComponent* SceneBase;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UBoxComponent* Collision;
+	UBoxComponent* ObjectSelectCollision;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ObjectMesh;

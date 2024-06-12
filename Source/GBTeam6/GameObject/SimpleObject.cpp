@@ -12,14 +12,15 @@ ASimpleObject::ASimpleObject() {
 	SceneBase = CreateDefaultSubobject<USceneComponent>(TEXT("BaseSceneComponent"));
 	SetRootComponent(SceneBase);
 	
-	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
-	Collision->SetupAttachment(SceneBase);
-	Collision->bDynamicObstacle = true;
-	Collision->SetCollisionProfileName("GameObject");
+	ObjectSelectCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
+	ObjectSelectCollision->SetupAttachment(SceneBase);
+	ObjectSelectCollision->SetCanEverAffectNavigation(false);
+	ObjectSelectCollision->SetCollisionProfileName("GameObject");
 	
 	ObjectMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObjectMesh"));
+	ObjectMesh->SetCanEverAffectNavigation(true);
 	ObjectMesh->SetupAttachment(SceneBase);
-	ObjectMesh->SetCollisionProfileName("NoCollision");
+	ObjectMesh->SetCollisionProfileName("GameObject");
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
 	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
@@ -45,7 +46,7 @@ void ASimpleObject::BeginPlay() {
 
 	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Collision,
-		Collision
+		ObjectSelectCollision
 	);
 	this->GameObjectCore->InitDataByName(ObjectName);
 
