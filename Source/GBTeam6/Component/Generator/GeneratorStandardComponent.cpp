@@ -52,7 +52,7 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			}
 
 			if (thread.Power >= info.Barter.WorkSize) {
-				thread.SavePower[thread.GeneratorName] = thread.Power - info.Barter.WorkSize;
+				thread.SavePower.Add(thread.GeneratorName, thread.Power - info.Barter.WorkSize);
 				thread.Power = 0;
 				ApplyWork(thread.GeneratorName);
 				thread.GeneratorName = "";
@@ -85,6 +85,8 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 			this->QueuesPassive[info.ThreadName].Add(iter.Key);
 		}
 	}
+
+	TouchAllGenerators();
 
 }
 
@@ -121,6 +123,7 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 void UGeneratorStandardComponent::TouchThread(const FString& ThreadName) {
 	if (!this->Threads.Contains(ThreadName)) {
 		this->Threads.Add(ThreadName, {});
+		this->CurrentThreadGenerators.Add(ThreadName, {});
 		this->QueuesPriority.Add(ThreadName, {});
 		this->QueuesTasks.Add(ThreadName, {});
 		this->QueuesPassive.Add(ThreadName, {});
@@ -131,6 +134,46 @@ void UGeneratorStandardComponent::TouchThread(const FString& ThreadName) {
 	}
 }
 
+
+void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
+	FGeneratorElementInfo& info = this->Generators[generatorName];
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+	bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
+
+	if (atLevel){
+		this->CurrentThreadGenerators[info.ThreadName].AddUnique(generatorName);
+	}
+	else {
+		this->CurrentThreadGenerators[info.ThreadName].RemoveSingle(generatorName);
+	}
+
+	if (atLevel && info.PassiveWork) {
+		this->QueuesPassive[info.ThreadName].AddUnique(generatorName);
+	}
+	else {
+		this->QueuesPassive[info.ThreadName].RemoveSingle(generatorName);
+	}
+
+	if (atLevel && info.CountTasks > 0) {
+		this->QueuesTasks[info.ThreadName].AddUnique(generatorName);
+		if (info.Priority) {
+			this->QueuesPriority[info.ThreadName].AddUnique(generatorName);
+		}
+	}
+	else {
+		this->QueuesTasks[info.ThreadName].RemoveSingle(generatorName);
+		this->QueuesPriority[info.ThreadName].RemoveSingle(generatorName);
+	}
+}
+
+
+void UGeneratorStandardComponent::TouchAllGenerators() {
+	TArray<FString> keys;
+	this->Generators.GetKeys(keys);
+	for (const FString& key : keys) {
+		this->TouchGenerator(key);
+	}
+}
 
 
 bool UGeneratorStandardComponent::HasAllSocialTags(const FString& name) {
@@ -186,8 +229,7 @@ void UGeneratorStandardComponent::StartWork(const FString& threadName, const FSt
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		inventory->Pop(this->Generators[generatorName].Barter.Price);
 	}
-
-	context.CountTasks = std::max(0, context.CountTasks - 1);
+	RemoveTask(generatorName);
 
 	OnGenerationBegin.Broadcast(this->Generators[generatorName]);
 }
@@ -260,7 +302,8 @@ void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FP
 			}
 		}
 		else if (res.Resource == EResource::Self) {
-			// Level Up
+			this.Level++;
+			TouchAllGenerators();
 		}
 	}
 }
@@ -309,83 +352,70 @@ float UGeneratorStandardComponent::GetWorkPower() {
 TMap<EResource, int> UGeneratorStandardComponent::GetNeeds() {
 	return CurrentNeeds;
 }
-// GetOvers to Inventory; OnDead to inventory
 
-void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
-	UE_LOG_COMPONENT(Log, "Set Generator selection <%d>: <%d>", index, isSelected ? 1 : 0);
-	if (index >= GetCurrentGenerics().Num()) {
-		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationSelection! Index %d out of range!", index);
+
+void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
+	UE_LOG_COMPONENT(Log, "Set Generator Passive Work <%s>: %d", *generatorName, isPassive ? 1 : 0);
+	if (!this->Generators.Contains(generatorName)) {
+		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationPassiveWork! %s out of map!", *generatorName);
 		return;
 	}
-	GetCurrentGenerics()[index].Selected = isSelected;
+	this->GeneratorsContext[generatorName].PassiveWork = isPriority;
 }
 
-void UGeneratorStandardComponent::ChangeGenerationLimit(int index, int newLimit) {
-	UE_LOG_COMPONENT(Log, "Set Generator limit <%d>: <%d>", index, newLimit);
-	if (index >= GetCurrentGenerics().Num()) {
-		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationLimit! Index %d out of range!", index);
+
+void UGeneratorStandardComponent::ChangeGenerationPriority(const FString& generatorName, bool isPriority) {
+	UE_LOG_COMPONENT(Log, "Set Generator Priority <%s>: %d", *generatorName, isPriority ? 1 : 0);
+	if (!this->Generators.Contains(generatorName)) {
+		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationPriority! %s out of map!", *generatorName);
 		return;
 	}
-	GetCurrentGenerics()[index].Limit = newLimit;
+	this->GeneratorsContext[generatorName].Priority = isPriority;
 }
 
-FGenerator UGeneratorStandardComponent::GetCurrentGenerator() {
-	if (!IsWorked || GetIsDestruction()) {
-		return FGenerator();
-	}
-	return GetCurrentGenerics()[WorkIndex];
+
+TArray<FString> UGeneratorStandardComponent::GetGenerators(FString threadName) {
+	if (CurrentThreadGenerators.Contains(threadName))
+		return CurrentThreadGenerators[threadName];
+	return {};
 }
 
-TArray<FGenerator> UGeneratorStandardComponent::GetGenerators() {
-	if (GetIsDestruction()) return {};
-	return GetCurrentGenerics();
-}
-
-TArray<FPassiveGenerator> UGeneratorStandardComponent::GetPassiveGenerators() {
-	return PassiveGenerators;
-}
 
 float UGeneratorStandardComponent::GetTime() {
 	return CurrentDelay;
 }
 
+
 float UGeneratorStandardComponent::GetTimePercents() {
 	return CurrentDelay / GetCurrentGenerics()[WorkIndex].Barter.Time;
 }
 
-bool UGeneratorStandardComponent::IsWorking() {
-	if (GetIsDestruction()) return false;
-	return IsWorked;
+
+void UGeneratorStandardComponent::AddTask(FString generatorName) {
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+	context.CountTasks++;
+	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
+	ResetCurrentNeeds();
+	TouchGenerator(generatorName);
 }
 
-TArray<FGenerator> UGeneratorStandardComponent::GetTaskStack() {
-	TArray<FGenerator> result;
-	if (GetIsDestruction()) {
-		return result;
-	}
-	for (int i : TaskStack) {
-		result.Add(GetCurrentGenerics()[i]);
-	}
-	return result;
+void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+	context.CountTasks = std::max(0, context.CountTasks - 1);
+	UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
+	ResetCurrentNeeds();
+	TouchGenerator(generatorName);
 }
 
-void UGeneratorStandardComponent::AddToTaskStack(int index) {
-	UE_LOG_COMPONENT(Log, "Add task to stack <%d>", index);
-	TaskStack.Add(index);
-	OnTaskStackChanging.Broadcast();
-}
-
-void UGeneratorStandardComponent::RemoveFromStack(int index) {
-	UE_LOG_COMPONENT(Log, "Remove task <%d> from stack (%d)", TaskStack[index], index);
-	TaskStack.RemoveAt(index);
-	OnTaskStackChanging.Broadcast();
-}
-
-void UGeneratorStandardComponent::CancelTask() {
-	if (IsWorked) {
-		CancelWork(GetCurrentGenerics()[WorkIndex]);
-		IsWorked = false;
-		WorkIndex++;
+void UGeneratorStandardComponent::CancelTask(FString generatorName) {
+	FGeneratorElementInfo& info = this->Generators[generatorName];
+	UE_LOG_COMPONENT(Log, "Cancel Task <%s> from <%s>", *generatorName, *info.ThreadName);
+	FGeneratorThread& thread = this->Threads[info.ThreadName];
+	if (thread.GeneratorName == generatorName) {
+		CancelWork(generatorName);
+		thread.SavePower.Add(thread.GeneratorName, thread.Power);
+		thread.Power = 0;
+		thread.GeneratorName = FString();
 	}
 }
 

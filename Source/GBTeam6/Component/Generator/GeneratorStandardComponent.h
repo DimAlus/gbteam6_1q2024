@@ -32,6 +32,7 @@ private:
 	TMap<FString, FGeneratorContext> GeneratorsContext;
 
 	TMap<FString, FGeneratorThread> Threads;
+	TMap<FString, TArray<FString>> CurrentThreadGenerators;
 	TMap<FString, TArray<FString>> QueuesPriority;
 	TMap<FString, TArray<FString>> QueuesTasks;
 	TMap<FString, TArray<FString>> QueuesPassive;
@@ -50,6 +51,8 @@ private:
 
 	UInventoryBaseComponent* GetInventory();
 	void TouchThread(const FString& ThreadName);
+	void TouchGenerator(const FString& generatorName);
+	void TouchAllGenerators();
 	bool HasAllSocialTags(const FString& name);
 	bool HasConstraintByResultActors(const FString& name);
 	bool HasConstraintByInventory(const FString& name);
@@ -70,20 +73,16 @@ public:
 
 	virtual TMap<EResource, int> GetNeeds() override;
 	
-	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
-	virtual void ChangeGenerationLimit(int index, int newLimit) override;
+	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) override;
+	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;
 
-	virtual FGenerator GetCurrentGenerator() override;
-	virtual TArray<FGenerator> GetGenerators() override;
-	virtual TArray<FPassiveGenerator> GetPassiveGenerators() override;
+	virtual TArray<FString> GetGenerators(FString threadName) override;
 	virtual float GetTime() override;
 	virtual float GetTimePercents() override;
-	virtual bool IsWorking() override;
 
-	virtual TArray<FGenerator> GetTaskStack() override;
-	virtual void AddToTaskStack(int index) override;
-	virtual void RemoveFromStack(int index) override;
-	virtual void CancelTask() override;
+	virtual void AddTask(FString generatorName) override;
+	virtual void RemoveTask(FString generatorName) override;
+	virtual void CancelTask(FString generatorName) override;
 
 
 	virtual void SetIsDestruction(bool isDestroy) override;
