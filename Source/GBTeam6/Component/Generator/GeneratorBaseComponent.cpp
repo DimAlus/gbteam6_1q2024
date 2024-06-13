@@ -14,19 +14,15 @@ void UGeneratorBaseComponent::SaveComponent(FGeneratorSaveData& saveData) {
 void UGeneratorBaseComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 }
 
-TArray<FPrice> UGeneratorBaseComponent::GetNeeds(int steps) {
-	return {};
+float UGeneratorBaseComponent::GetWorkPower() {
+	return 0.0f;
 }
 
-TArray<FPrice> UGeneratorBaseComponent::GetOvers(int steps) {
-	return {};
-}
-
-TMap<EResource, int> UGeneratorBaseComponent::GetNeedsMap(int steps) {
+TMap<EResource, int> UGeneratorBaseComponent::GetNeeds() {
 	return TMap<EResource, int>();
 }
 
-TMap<EResource, int> UGeneratorBaseComponent::GetOversMap(int steps) {
+TMap<EResource, int> UGeneratorBaseComponent::GetOvers() {
 	return TMap<EResource, int>();
 }
 
@@ -37,10 +33,6 @@ void UGeneratorBaseComponent::ChangeGenerationSelection(int index, bool isSelect
 }
 
 void UGeneratorBaseComponent::ChangeGenerationLimit(int index, int newLimit) {
-}
-
-FGenerator UGeneratorBaseComponent::GetCurrentGenerator() {
-	return FGenerator();
 }
 
 TArray<FGenerator> UGeneratorBaseComponent::GetGenerators() {

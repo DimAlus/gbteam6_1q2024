@@ -11,219 +11,98 @@
 #include "GeneratorStandardComponent.h"
 
 UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
+	PrimaryComponentTick.bCanEverTick = true;
 }
+
 
 void UGeneratorStandardComponent::BeginPlay() {
 	Super::BeginPlay();
-	CreateTimer();
-	if (auto gameObject = Cast<IGameObjectInterface>(GetOwner())) {
-		if (auto mapping = Cast<UMappingBaseComponent>(
-			gameObject->GetCore_Implementation()/*(GetOwner())*/->GetComponent(EGameComponentType::Mapping)
-		)) {
+	if (auto core = GetCore()) {
+		if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
 		}
 	}
-	AGameStateDefault* gameState = GetGameState();
 }
+
+
+void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	TArray<FString> keys;
+	this->Threads.GetKeys(keys);
+	for (const auto& name : keys) {
+		FGeneratorThread& thread = this->Threads[name];
+		if (thread.GeneratorName != "") {
+			FGeneratorElementInfo& info = this->Generators[thread.GeneratorName];
+
+			/** Add power for thread */
+			thread.Power += info.AutoGenPower;
+			thread.Power += this->WorkPower;
+			for (int i = thread.AttachedCores.Num() - 1; i >= 0; i--) {
+				UGameObjectCore* core = thread.AttachedCores[i];
+
+				if (IsValid(core)) {
+					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
+						thread.Power += gen->GetWorkPower() * info.WorkMultiplier;
+					}
+				}
+				else {
+					thread.AttachedCores.Remove(core);
+				}
+			}
+
+			if (thread.Power >= info.Barter.WorkSize) {
+				thread.SavePower[thread.GeneratorName] = thread.Power - info.Barter.WorkSize;
+				thread.Power = 0;
+				ApplyWork(thread.GeneratorName);
+				thread.GeneratorName = "";
+			}
+		}
+
+		if (thread.GeneratorName == "") {
+			this->FindWork(name);
+		}
+	}
+}
+
 
 void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
-	Generics.Reset();
-	for (int i = 0; i < initializer.BarterTypes.Num(); i++) {
-		FGenerator gen;
-		gen.Barter = initializer.BarterTypes[i];
-		gen.Selected = initializer.BarterTypes[i].DefaultSelection;
-		if (gen.Barter.Result.Num() == 0) {
-			FPrice prc{};
-			prc.Resource = EResource::None;
-			gen.Barter.Result.Add(prc);
+
+	this->WorkPower = initializer.WorkPower;
+
+	this->Generators = initializer.Generators;
+	for (auto iter : this->Generators) {
+		const FGeneratorElementInfo& info = iter.Value;
+		FGeneratorContext context;
+
+		this->TouchThread(info.ThreadName);
+
+		context.PassiveWork = info.IsSelected;
+		this->GeneratorsContext.Add(iter.Key, context);
+
+		if (info.IsSelected) {
+			this->QueuesPassive[info.ThreadName].Add(iter.Key);
 		}
-		
-		Generics.Add(gen);
-	}
-	BuildingGenerics.Reset();
-	BuildingGenerics.Add(FGenerator());
-	BuildingGenerics[0].Selected = initializer.BuildSelectedDefault;
-	BuildingGenerics[0].Limit = 1;
-	BuildingGenerics[0].Barter.Price = initializer.BuildPrice;
-	BuildingGenerics[0].Barter.Time = initializer.BuildTime;
-	FPrice res{};
-	res.Resource = EResource::Self;
-	BuildingGenerics[0].Barter.Result = { res };
-	CurrentGenerics = &BuildingGenerics;
-	IsBuilded = !initializer.NeedBuilding;
-	if (IsBuilded) {
-		CurrentGenerics = &Generics;
 	}
 
-	ShowPassiveGeneratorWork = initializer.ShowPassiveGeneratorWork;
-	ShowPassiveGeneratorWorkIgnore = initializer.ShowPassiveGeneratorWorkIgnore;
-	PassiveGenerators = initializer.PassiveGeneration;
-	for (int i = 0; i < PassiveGenerators.Num(); i++) {
-		PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
-	}
-	if (PassiveGenerators.Num() > 0) {
-		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
-	}
-
-
-	if (auto health = Cast<UHealthBaseComponent>(
-			GetCore()->GetComponent(EGameComponentType::Health)
-		)) {
-		health->OnDeath.AddDynamic(this, &UGeneratorStandardComponent::OnOwnerDeath);
-	}
-
-
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-	if (!IsValid(gameState)) {
-		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-		return;
-	}
-
-	FConfig workDelay;
-	if (gameState->GetConfig(EConfig::F_WorkDelay, workDelay)) {
-		this->TimerDelay = workDelay.FloatValue;
-	}
 }
+
 
 void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
-	saveData.Generics = Generics;
-	saveData.IsWorked = GetWorld()->GetTimerManager().IsTimerPaused(generatorTimer);
-	saveData.WorkIndex = WorkIndex;
-	saveData.WorkTime = CurrentDelay;
-	saveData.IsBuilded = IsBuilded;
-	saveData.TaskStack = TaskStack;
-	saveData.PassiveGeneration = PassiveGenerators;
+	saveData.GeneratorsContext = GeneratorsContext;
 	saveData.IsDestructed = IsDestructed;
 }
 
+
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
-	Generics = saveData.Generics;
-	WorkIndex = saveData.WorkIndex;
-	CurrentDelay = saveData.WorkTime;
-	IsBuilded = saveData.IsBuilded;
-	CurrentGenerics = IsBuilded ? &Generics : &BuildingGenerics;
-	TaskStack = saveData.TaskStack;
-	SetWorkEnabled(saveData.IsWorked);
-	PassiveGenerators = saveData.PassiveGeneration;
+	GeneratorsContext = saveData.GeneratorsContext;
 	IsDestructed = saveData.IsDestructed;
-	if (PassiveGenerators.Num() > 0) {
-		GetWorld()->GetTimerManager().UnPauseTimer(passiveGeneratorTimer);
-	}
 }
 
 
-TMap<EResource, int> UGeneratorStandardComponent::_getNeeds(int steps){
-	TMap<EResource, int> needs;
-	if (!IsBuilded) {
-		steps = 1;
-	}
-	UInventoryBaseComponent* inventory = GetInventory();
-	for (int i = 0, j = -GetCurrentGenerics().Num(); j < TaskStack.Num(); i++, j++) {
-		if (j == 0) steps = 1;
-		FGenerator& gen = j < 0 
-						? GetCurrentGenerics()[i]
-						: GetCurrentGenerics()[TaskStack[j]];
-		if (gen.Selected || j >= 0) {
-			for (const FPrice& price : gen.Barter.Price) {
-				if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource))
-					continue;
-				if (!needs.Contains(price.Resource)) {
-					needs.Add(price.Resource, price.Count * steps - inventory->GetResourceCount(price.Resource));
-				}
-				else {
-					needs[price.Resource] += price.Count * steps;
-				}
-			}
-		}
-	}
-	for (const FPassiveGenerator& gen : PassiveGenerators) {
-		if (UInventoryBaseComponent::GetIgnoreResources().Contains(gen.Resource.Resource))
-			continue;
-		if (gen.Resource.Count < 0) {
-			if (!needs.Contains(gen.Resource.Resource)) {
-				needs.Add(gen.Resource.Resource, -gen.Resource.Count - inventory->GetResourceCount(gen.Resource.Resource));
-			}
-			else {
-				needs[gen.Resource.Resource] -= gen.Resource.Count;
-			}
-		}
-	}
-	return needs;
-}
-
-
-TArray<FPrice> UGeneratorStandardComponent::GetNeeds(int steps) {
-	return GetGameState()->GetResourcesByStacks(GetNeedsMap(steps));
-}
-
-
-TArray<FPrice> UGeneratorStandardComponent::GetOvers(int steps) {
-	return GetGameState()->GetResourcesByStacks(GetOversMap(steps));
-}
-
-TMap<EResource, int> UGeneratorStandardComponent::GetNeedsMap(int steps) {
-	if (GetIsDestruction()) {
-		return {};
-	}
-	return _getNeeds(steps);
-}
-
-TMap<EResource, int> UGeneratorStandardComponent::GetOversMap(int steps) {
-	if (GetIsDestruction()) {
-		return GetInventory()->GetAllResources();
-	}
-	TMap<EResource, int> needs = _getNeeds(steps);
-	UInventoryBaseComponent* inventory = GetInventory();
-	if (!inventory) {
-		return needs;
-	}
-	const TMap<EResource, int>& resources = GetInventory()->GetAllResources();
-	TMap<EResource, int> result;
-	for (auto res : resources) {
-		if (UInventoryBaseComponent::GetIgnoreResources().Contains(res.Key))
-			continue;
-		if (needs.Contains(res.Key) && needs[res.Key] > 0) {
-			result.Add(res.Key, res.Value - needs[res.Key]);
-		}
-		else {
-			result.Add(res.Key, res.Value);
-		}
-	}
-	for (const FPassiveGenerator& gen : PassiveGenerators) {
-		if (UInventoryBaseComponent::GetIgnoreResources().Contains(gen.Resource.Resource))
-			continue;
-		if (gen.Resource.Count < 0) {
-			if (result.Contains(gen.Resource.Resource)) {
-				result[gen.Resource.Resource] += gen.Resource.Count;
-			}
-		}
-	}
-	return result;
-}
-
-
-TArray<FGenerator>& UGeneratorStandardComponent::GetCurrentGenerics() {
-	return *CurrentGenerics;
-}
-
-void UGeneratorStandardComponent::DayStateChanging(bool IsDay) {
-
-}
-
-void UGeneratorStandardComponent::OnOwnerDeath() {
-	if (GetInventory()->GetAllResources().Num() > 0) {
-		if (auto health = Cast<UHealthBaseComponent>(
-				GetCore()->GetComponent(EGameComponentType::Health)
-			)) {
-			health->NotDestroyNow();
-			IsDead = false;
-			this->SetIsDestruction(true);
-		}
-	}
-}
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 	UGameObjectCore* core = GetCore();
@@ -238,8 +117,25 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 	return inventory;
 }
 
-bool UGeneratorStandardComponent::HasAllSocialTags(const FGenerator& generator) {
-	for (const FPrice& prc : generator.Barter.Price) {
+
+void UGeneratorStandardComponent::TouchThread(const FString& ThreadName) {
+	if (!this->Threads.Contains(ThreadName)) {
+		this->Threads.Add(ThreadName, {});
+		this->QueuesPriority.Add(ThreadName, {});
+		this->QueuesTasks.Add(ThreadName, {});
+		this->QueuesPassive.Add(ThreadName, {});
+
+		this->Threads[ThreadName].PriorityIterator = { this->QueuesPriority[ThreadName] };
+		this->Threads[ThreadName].TasksIterator = { this->QueuesTasks[ThreadName] };
+		this->Threads[ThreadName].PassiveIterator = { this->QueuesPassive[ThreadName] };
+	}
+}
+
+
+
+bool UGeneratorStandardComponent::HasAllSocialTags(const FString& name) {
+	const FGeneratorElementInfo& info = this->Generators[name];
+	for (const FPrice& prc : info.Barter.Price) {
 		if (prc.Resource == EResource::SocialTag) {
 			int cnt = prc.Count;
 			for (UGameObjectCore* core : AttachedCores) {
@@ -259,216 +155,102 @@ bool UGeneratorStandardComponent::HasAllSocialTags(const FGenerator& generator) 
 	return true;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByResultActors(const FGenerator& generator) {
-	for (const FPrice& prc : generator.Barter.Result) {
-		if (prc.Resource == EResource::Actor) {
-			USocialService* social = GetGameState()->GetSocialService();
-			int cnt = social->GetObjectsByTag(ESocialTag::Forestling).Num() + prc.Count;
-			int max = 5 + social->GetObjectsByTag(ESocialTag::ForestlingHouse).Num() * 5;
-			if (cnt > max)
-				return true;
-		}
+bool UGeneratorStandardComponent::HasConstraintByResultActors(const FString& name) {
+	return false;
+}
+
+bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& name) {
+	const FGeneratorElementInfo& info = this->Generators[name];
+	if (UInventoryBaseComponent* inventory = GetInventory()) {
+		return !(inventory->CanPop(info.Barter.Price)
+			  && inventory->CanPush(info.Barter.Result));
 	}
 	return false;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByInventory(const FGenerator& generator) {
+
+bool UGeneratorStandardComponent::CanGenerate(const FString& name) {
+	return HasAllSocialTags(name)
+		&& !HasConstraintByResultActors(name)
+		&& !HasConstraintByInventory(name);
+}
+
+
+void UGeneratorStandardComponent::StartWork(const FString& threadName, const FString& generatorName) {
+	UE_LOG_COMPONENT(Log, "Started work by <%s>: <%s>", *threadName, *generatorName);
+	FGeneratorThread& thread = this->Threads[threadName];
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+
+	thread.GeneratorName = generatorName;
+	thread.Power = thread.SavePower.Contains(generatorName) ? thread.SavePower[generatorName] : 0;
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		return !(inventory->CanPop(generator.Barter.Price)
-			  && inventory->CanPush(generator.Barter.Result));
+		inventory->Pop(this->Generators[generatorName].Barter.Price);
 	}
+
+	context.CountTasks = std::max(0, context.CountTasks - 1);
+
+	OnGenerationBegin.Broadcast(this->Generators[generatorName]);
+}
+
+
+FString UGeneratorStandardComponent::FindWorkByIterator(FCycledIterator<FString> iterator) {
+	FString* genSave = iterator.Next();
+	if (genSave) {
+		FString* genName = genSave;
+		do {
+			if (CanGenerate(*genName)) {
+				return *genName;
+			}
+			genName = iterator.Next();
+		} while (genName != genSave);
+	}
+	iterator.Prev();
+	return FString();
+}
+
+
+bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
+	FGeneratorThread& thread = this->Threads[threadName];
+	
+	for (auto iterator : { thread.PriorityIterator, thread.TasksIterator, thread.PassiveIterator }) {
+		FString generatorName = FindWorkByIterator(iterator);
+		if (!generatorName.IsEmpty()) {
+			StartWork(threadName, generatorName);
+			return true;
+		}
+	}
+
 	return false;
 }
 
-bool UGeneratorStandardComponent::CanGenerate(int index) {
-	if (!HasAllSocialTags(GetCurrentGenerics()[index])) {
-		return false;
-	}
-	if (HasConstraintByResultActors(GetCurrentGenerics()[index])) {
-		return false;
-	}
-	if (HasConstraintByInventory(GetCurrentGenerics()[index])) {
-		return false;
-	}
-	return true;
-}
 
+void UGeneratorStandardComponent::ApplyWork(const FString& generatorName) {
+	UE_LOG_COMPONENT(Log, "Work Applied <%s>", *generatorName);
+	const FGeneratorElementInfo& info = this->Generators[generatorName];
+	OnGeneratorSuccess.Broadcast(info);
 
-bool UGeneratorStandardComponent::IsGeneratorEnabled(int index) {
-	return GetCurrentGenerics()[index].Selected && CanGenerate(index);
-}
-
-void UGeneratorStandardComponent::StartWork(int index) {
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		UE_LOG_COMPONENT(Log, "Started work <%d>", index);
-		WorkIndex = index;
-		CurrentDelay = GetCurrentGenerics()[index].Barter.Time;
-		inventory->Pop(GetCurrentGenerics()[index].Barter.Price);
+		inventory->Push(info.Barter.Result);
+		ApplyNotInventoriableResources(info.Barter.Result);
+
+		OnResourceGenerated.Broadcast(info.Barter.Result);
+		GetGameState()->GetMessageService()->Send(
+			{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MSuccess },
+			Cast<UGameObjectCore>(GetOwner())
+		);
 	}
 }
 
-bool UGeneratorStandardComponent::FindWork() {
+
+void UGeneratorStandardComponent::CancelWork(const FString& generatorName) {
+	UE_LOG_COMPONENT(Log, "Work Canceled <%s>", *generatorName);
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		if (TaskStack.Num() > 0
-			&& CanGenerate(TaskStack[0])) {
-			StartWork(TaskStack[0]);
-			RemoveFromStack(0);
-			IsWorked = true;
-			OnGenerationBegin.Broadcast(GetCurrentGenerics()[WorkIndex]);
-			return IsWorked;
-		}
-		for (int i = 0; i < GetCurrentGenerics().Num(); i++) {
-			int index = (i + WorkIndex) % GetCurrentGenerics().Num();
-			if (IsGeneratorEnabled(index)) {
-				StartWork(index);
-				IsWorked = true;
-				OnGenerationBegin.Broadcast(GetCurrentGenerics()[WorkIndex]);
-				return IsWorked;
-			}
-		}
-	}
-	return IsWorked = false;
-}
-
-void UGeneratorStandardComponent::ApplyWork() {
-	UE_LOG_COMPONENT(Log, "Work Applyed <%d>", WorkIndex);
-	IsWorked = false;
-	Generate(GetCurrentGenerics()[WorkIndex]);
-	WorkIndex++;
-}
-
-void UGeneratorStandardComponent::CancelWork(const FGenerator& generator) {
-	UE_LOG_COMPONENT(Log, "Work Canceled <%d>", WorkIndex);
-	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		inventory->Push(generator.Barter.Price);
+		inventory->Push(this->Generators[generatorName].Barter.Price);
 	}
 }
 
-void UGeneratorStandardComponent::Generate(const FGenerator& generator) {
-	OnGeneratorSuccess.Broadcast(generator);
-	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		if (inventory->Push(generator.Barter.Result)) {
-			SpawnActors(generator.Barter.Result);
 
-			OnResourceGenerated.Broadcast(generator.Barter.Result);
-			GetGameState()->GetMessageService()->Send(
-				{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MSuccess },
-				Cast<UGameObjectCore>(GetOwner())
-			);
-		}
-		else {
-			GetGameState()->GetMessageService()->Send(
-				{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MFailed },
-				Cast<UGameObjectCore>(GetOwner())
-			);
-		}
-	}
-}
-
-void UGeneratorStandardComponent::WorkLoop() {
-	if (GetIsDestruction()) {
-		if (IsDead)
-			return;
-		for (auto res : GetInventory()->GetAllResources()) {
-			if (res.Value > 0)
-				return;
-		}
-
-		if (auto health = Cast<UHealthBaseComponent>(
-			GetCore()->GetComponent(EGameComponentType::Health)
-		)) {
-			health->PleaseDead();
-			IsDead = true;
-		}
-		else {
-			GetOwner()->Destroy();
-		}
-		
-		return;
-	}
-	if (IsWorked) {
-		if ((CurrentDelay -= TimerDelay) < 0) {
-			ApplyWork();
-		}
-	}
-	if (!IsWorked) {
-		FindWork();
-	}
-}
-
-void UGeneratorStandardComponent::PassiveWorkLoop() {
-	if (GetIsDestruction() || !IsBuilded){
-		return;
-	}
-	bool isDay = true;//GetGameState()->IsDay();
-	UInventoryBaseComponent* inventory = GetInventory();
-	if (IsBuilded && inventory) {
-		TArray<FPrice> prs;
-		prs.Add({});
-		for (int i = 0; i < PassiveGenerators.Num(); i++) {
-			if (isDay || PassiveGenerators[i].WorkAtNight) {
-				if ((PassiveGenerators[i].CurrentTime -= TimerPassiveDelay) < 0){
-					prs[0] = PassiveGenerators[i].Resource;
-					prs[0].Count = abs(prs[0].Count);
-					if (PassiveGenerators[i].Resource.Count > 0 
-						? inventory->CanPush(prs)
-						: inventory->CanPop(prs)) {
-						if (PassiveGenerators[i].Resource.Count > 0)
-							inventory->Push(prs);
-						else
-							inventory->Pop(prs);
-
-						PassiveGenerators[i].CurrentTime = PassiveGenerators[i].Time;
-						OnPassiveGeneratorSuccess.Broadcast(
-							PassiveGenerators[i].Resource.Resource, 
-							PassiveGenerators[i].CurrentTime
-						);
-						if (ShowPassiveGeneratorWork && !ShowPassiveGeneratorWorkIgnore.Contains(PassiveGenerators[i].Resource.Resource)) {
-							AGameStateDefault* gameState = GetGameState();
-							UGameObjectCore* core = GetCore();
-							gameState->OnShowInventoryChanging.Broadcast(core, PassiveGenerators[i].Resource);
-							
-							
-						}
-					}
-					else {
-						OnPassiveGeneratorFailed.Broadcast(
-							PassiveGenerators[i].Resource.Resource, 
-							PassiveGenerators[i].CurrentTime
-						);
-					}
-				}
-			}
-		}
-	}
-}
-
-void UGeneratorStandardComponent::CreateTimer() {
-	GetWorld()->GetTimerManager().SetTimer(
-		generatorTimer,
-		this,
-		&UGeneratorStandardComponent::WorkLoop,
-		TimerDelay,
-		true,
-		TimerDelay
-	);
-	GetWorld()->GetTimerManager().PauseTimer(generatorTimer);
-
-
-	GetWorld()->GetTimerManager().SetTimer(
-		passiveGeneratorTimer,
-		this,
-		&UGeneratorStandardComponent::PassiveWorkLoop,
-		TimerPassiveDelay,
-		true,
-		TimerPassiveDelay
-	);
-	// GetWorld()->GetTimerManager().PauseTimer(passiveGeneratorTimer);
-
-	GetGameState()->OnDayStateChanging.AddDynamic(this, &UGeneratorStandardComponent::DayStateChanging);
-}
-
-void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
+void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FPrice>& resources) {
 	FVector loc = GetOwner()->GetActorLocation() + FVector(0, 0, 100);
 	FRotator rot;
 	for (const FPrice& res : resources) {
@@ -478,28 +260,56 @@ void UGeneratorStandardComponent::SpawnActors(const TArray<FPrice>& resources) {
 			}
 		}
 		else if (res.Resource == EResource::Self) {
-			IsBuilded = true;
-			CurrentGenerics = &Generics;
-			TaskStack.Empty();
-			OnTaskStackChanging.Broadcast();
-			OnGeneratorsChanging.Broadcast();
+			// Level Up
 		}
 	}
 }
 
-void UGeneratorStandardComponent::SetWorkEnabled(bool isEnabled) {
-	UE_LOG_COMPONENT(Log, "Set Work enabled <%d>", isEnabled ? 1 : 0);
-	if (isEnabled) {
-		GetWorld()->GetTimerManager().UnPauseTimer(generatorTimer);
+
+TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
+	TMap<EResource, int> needs;
+
+	TArray<FString> keys;
+	this->GeneratorsContext.GetKeys(keys);
+	for (const FString& generatorName : keys) {
+		const FGeneratorElementInfo& info = this->Generators[generatorName];
+		const FGeneratorContext& context = this->GeneratorsContext[generatorName];
+
+		if (this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel)) {
+			int count = context.CountTasks;
+			if (count == 0 && context.PassiveWork) {
+				count = steps;
+			}
+			if (count > 0) {
+				for (const FPrice& price : info.Barter.Price) {
+					if (!needs.Contains(price.Resource)) {
+						needs.Add(price.Resource, price.Count * steps);
+					}
+					else {
+						needs[price.Resource] += price.Count * steps;
+					}
+				}
+			}
+		}
 	}
-	else {
-		GetWorld()->GetTimerManager().PauseTimer(generatorTimer);
-	}
+	return needs;
 }
 
-void UGeneratorStandardComponent::OnChangeDay(bool IsDay) {
-	// SetWorkEnabled(IsDay);
+
+void UGeneratorStandardComponent::ResetCurrentNeeds() {
+	this->CurrentNeeds = this->CalculateNeeds(1);
 }
+
+
+float UGeneratorStandardComponent::GetWorkPower() {
+	return this->WorkPower;
+}
+
+
+TMap<EResource, int> UGeneratorStandardComponent::GetNeeds() {
+	return CurrentNeeds;
+}
+// GetOvers to Inventory; OnDead to inventory
 
 void UGeneratorStandardComponent::ChangeGenerationSelection(int index, bool isSelected) {
 	UE_LOG_COMPONENT(Log, "Set Generator selection <%d>: <%d>", index, isSelected ? 1 : 0);

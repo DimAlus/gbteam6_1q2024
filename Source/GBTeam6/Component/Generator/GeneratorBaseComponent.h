@@ -12,7 +12,7 @@ class UGameObjectCore;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGeneratorSuccess, const FGenerator&, Generator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGeneratorSuccess, const FGeneratorElementInfo&, Generator);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPassiveGenerator, EResource, Resource, float, Time);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -34,16 +34,11 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetNeeds(int steps);
+	virtual float GetWorkPower();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetOvers(int steps);
+	virtual TMap<EResource, int> GetNeeds();
 
-	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResource, int> GetNeedsMap(int steps);
-
-	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResource, int> GetOversMap(int steps);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual void SetWorkEnabled(bool isEnabled);

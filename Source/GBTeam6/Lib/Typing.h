@@ -29,6 +29,22 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 };
 
 
+template<typename T>
+class FCycledIterator {
+	TArray<T>& Iterable;
+	int iter;
+
+public:
+	FCycledIterator(TArray<T>& iterable);
+
+	void operator =(const FCycledIterator& copy);
+
+	T* Next();
+	T* Prev();
+};
+
+
+
 USTRUCT(BlueprintType)
 struct FPlayerInputAction {
 	GENERATED_BODY()
@@ -190,42 +206,73 @@ struct FBarter {
 	TArray<FPrice> Result{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Time{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool DefaultSelection = true;
+	float WorkSize{};
 };
 
 USTRUCT(BlueprintType)
-struct FGenerator {
+struct FGeneratorElementInfo {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FBarter Barter{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int Limit = 100;
+	bool IsSelected{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool Selected = true;
+	int MinLevel{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int MaxLevel{ 1000 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString ThreadName{ "WORK" };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AutoGenPower{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float WorkMultiplier{ 1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowResult{ true };
+};
+
+
+USTRUCT()
+struct FGeneratorThread {
+	GENERATED_BODY()
+private:
+	static TArray<FString> EmptyArray;
+
+public:
+	FString GeneratorName{};
+
+	FCycledIterator<FString> PriorityIterator{ EmptyArray };
+	FCycledIterator<FString> TasksIterator{ EmptyArray };
+	FCycledIterator<FString> PassiveIterator{ EmptyArray };
+
+	float Power;
+
+	TMap<FString, float> SavePower;
+
+	TArray<UGameObjectCore*> AttachedCores;
 };
 
 USTRUCT(BlueprintType)
-struct FPassiveGenerator {
+struct FGeneratorContext {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FPrice Resource{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool PassiveWork{ false };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool WorkAtNight;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Priority{ false };
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Time{};
-
-	UPROPERTY()
-	float CurrentTime{};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CountTasks = 0;
 };
+
 
 USTRUCT(BlueprintType)
 struct FGameTask {
@@ -589,12 +636,3 @@ struct FGameEventConextSave {
 	float CurrentTime{};
 };
 
-
-
-//#undef CONFIG_FILTER
-//#undef CONFIG_FILTER_B
-//#undef CONFIG_FILTER_I
-//#undef CONFIG_FILTER_F
-//#undef CONFIG_FILTER_S
-//#undef CONFIG_FILTER_IV
-//#undef CONFIG_FILTER_FV

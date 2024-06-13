@@ -60,33 +60,17 @@ struct FHealthComponentInitData {
 /// <summary>
 /// Generator Initializing
 /// </summary>
+
+
 USTRUCT(BlueprintType)
 struct FGeneratorComponentInitializer {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FBarter> BarterTypes{};
+	TMap<FString, FGeneratorElementInfo> Generators{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPassiveGenerator> PassiveGeneration{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPrice> BuildPrice{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool BuildSelectedDefault{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool NeedBuilding{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float BuildTime{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool ShowPassiveGeneratorWork{ false };
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSet<EResource> ShowPassiveGeneratorWorkIgnore{};
+	float WorkPower{};
 };
 
 

@@ -19,6 +19,8 @@ public:
 	UGeneratorStandardComponent();
 
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 
 	virtual void Initialize(const FGeneratorComponentInitializer& initializer) override;
 
@@ -26,70 +28,48 @@ public:
 	virtual void LoadComponent(const FGeneratorSaveData& saveData) override;
 
 private:
-	TArray<FGenerator> Generics;
+	TMap<FString, FGeneratorElementInfo> Generators;
+	TMap<FString, FGeneratorContext> GeneratorsContext;
 
-	FTimerHandle generatorTimer;
-	float TimerDelay = 0.5f;
+	TMap<FString, FGeneratorThread> Threads;
+	TMap<FString, TArray<FString>> QueuesPriority;
+	TMap<FString, TArray<FString>> QueuesTasks;
+	TMap<FString, TArray<FString>> QueuesPassive;
 
-	int WorkIndex = 0;
-	float CurrentDelay;
-	bool IsWorked = false;
-
-	TArray<int> TaskStack;
-
-	bool IsBuilded = false;
-	TArray<FGenerator> BuildingGenerics;
-
-
-	FTimerHandle passiveGeneratorTimer;
-	float TimerPassiveDelay = 0.1f;
-
-	TArray<FPassiveGenerator> PassiveGenerators;
-	bool ShowPassiveGeneratorWork;
-	TSet<EResource> ShowPassiveGeneratorWorkIgnore;
+	float WorkPower;
 
 	bool IsDestructed = false;
 	bool IsDead = false;
 
 	TSet<UGameObjectCore*> AttachedCores;
+
+	int Level = 0;
+
+	TMap<EResource, int> CurrentNeeds;
 private:
-	TArray<FGenerator>* CurrentGenerics;
-	TArray<FGenerator>& GetCurrentGenerics();
-
-	UFUNCTION()
-	void DayStateChanging(bool IsDay);
-
-	UFUNCTION()
-	void OnOwnerDeath();
 
 	UInventoryBaseComponent* GetInventory();
-	bool HasAllSocialTags(const FGenerator& generator);
-	bool HasConstraintByResultActors(const FGenerator& generator);
-	bool HasConstraintByInventory(const FGenerator& generator);
-	bool CanGenerate(int index);
-	bool IsGeneratorEnabled(int index);
-	void StartWork(int index);
-	bool FindWork();
-	void ApplyWork();
-	void CancelWork(const FGenerator& generator);
-	void Generate(const FGenerator& generator);
-	void WorkLoop();
+	void TouchThread(const FString& ThreadName);
+	bool HasAllSocialTags(const FString& name);
+	bool HasConstraintByResultActors(const FString& name);
+	bool HasConstraintByInventory(const FString& name);
+	bool CanGenerate(const FString& name);
+	void StartWork(const FString& threadName, const FString& generatorName);
+	FString FindWorkByIterator(FCycledIterator<FString> iterator);
+	bool FindWork(const FString& threadName);
+	void ApplyWork(const FString& generatorName);
+	void CancelWork(const FString& generatorName);
 	void PassiveWorkLoop();
-	void CreateTimer();
 
-	void SpawnActors(const TArray<FPrice>& resources);
+	void ApplyNotInventoriableResources(const TArray<FPrice>& resources);
 
-	TMap<EResource, int> _getNeeds(int steps);
+	TMap<EResource, int> CalculateNeeds(int steps);
+	void ResetCurrentNeeds();
 public:
+	virtual float GetWorkPower() override;
 
-	virtual TArray<FPrice> GetNeeds(int steps) override;
-	virtual TArray<FPrice> GetOvers(int steps) override;
-	virtual TMap<EResource, int> GetNeedsMap(int steps) override;
-	virtual TMap<EResource, int> GetOversMap(int steps) override;
+	virtual TMap<EResource, int> GetNeeds() override;
 	
-	virtual void SetWorkEnabled(bool isEnabled) override;
-	UFUNCTION()
-	void OnChangeDay(bool IsDay);
 	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
 	virtual void ChangeGenerationLimit(int index, int newLimit) override;
 
