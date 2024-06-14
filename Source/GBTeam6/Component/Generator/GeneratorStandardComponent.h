@@ -50,19 +50,24 @@ private:
 private:
 
 	UInventoryBaseComponent* GetInventory();
+
+	FORCEINLINE float GetLevel() const { return IsDestructed ? -666 : Level; };
+
 	void TouchThread(const FString& ThreadName);
 	void TouchGenerator(const FString& generatorName);
 	void TouchAllGenerators();
+
 	bool HasAllSocialTags(const FString& name);
 	bool HasConstraintByResultActors(const FString& name);
 	bool HasConstraintByInventory(const FString& name);
 	bool CanGenerate(const FString& name);
+
 	void StartWork(const FString& threadName, const FString& generatorName);
 	FString FindWorkByIterator(FCycledIterator<FString> iterator);
 	bool FindWork(const FString& threadName);
+
 	void ApplyWork(const FString& generatorName);
 	void CancelWork(const FString& generatorName);
-	void PassiveWorkLoop();
 
 	void ApplyNotInventoriableResources(const TArray<FPrice>& resources);
 
@@ -77,8 +82,14 @@ public:
 	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;
 
 	virtual TArray<FString> GetGenerators(FString threadName) override;
-	virtual float GetTime() override;
-	virtual float GetTimePercents() override;
+	virtual float GetPower(FString threadName) override;
+	virtual float GetPowerPercents(FString threadName) override;
+
+	virtual const FGeneratorThread& GetThread(FString threadName) override;
+	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName) override;
+	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName) override;
+	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName) override;
+	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName) override;
 
 	virtual void AddTask(FString generatorName) override;
 	virtual void RemoveTask(FString generatorName) override;

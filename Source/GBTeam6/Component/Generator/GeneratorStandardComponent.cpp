@@ -147,16 +147,16 @@ void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 		this->CurrentThreadGenerators[info.ThreadName].RemoveSingle(generatorName);
 	}
 
-	if (atLevel && info.PassiveWork) {
+	if (atLevel && context.PassiveWork) {
 		this->QueuesPassive[info.ThreadName].AddUnique(generatorName);
 	}
 	else {
 		this->QueuesPassive[info.ThreadName].RemoveSingle(generatorName);
 	}
 
-	if (atLevel && info.CountTasks > 0) {
+	if (atLevel && context.CountTasks > 0) {
 		this->QueuesTasks[info.ThreadName].AddUnique(generatorName);
-		if (info.Priority) {
+		if (context.Priority) {
 			this->QueuesPriority[info.ThreadName].AddUnique(generatorName);
 		}
 	}
@@ -302,7 +302,7 @@ void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FP
 			}
 		}
 		else if (res.Resource == EResource::Self) {
-			this.Level++;
+			this->Level++;
 			TouchAllGenerators();
 		}
 	}
@@ -360,7 +360,7 @@ void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& gen
 		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationPassiveWork! %s out of map!", *generatorName);
 		return;
 	}
-	this->GeneratorsContext[generatorName].PassiveWork = isPriority;
+	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
 }
 
 
@@ -381,13 +381,73 @@ TArray<FString> UGeneratorStandardComponent::GetGenerators(FString threadName) {
 }
 
 
-float UGeneratorStandardComponent::GetTime() {
-	return CurrentDelay;
+float UGeneratorStandardComponent::GetPower(FString threadName) {
+	if (this->Threads.Contains(threadName)) {
+		return this->Threads[threadName].Power;
+	}
+	return 0;
 }
 
 
-float UGeneratorStandardComponent::GetTimePercents() {
-	return CurrentDelay / GetCurrentGenerics()[WorkIndex].Barter.Time;
+float UGeneratorStandardComponent::GetPowerPercents(FString threadName) {
+	if (this->Threads.Contains(threadName)) {
+		FString& generatorName = this->Threads[threadName].GeneratorName;
+		if (!generatorName.IsEmpty()) {
+			return this->Threads[threadName].Power / this->Generators[generatorName].Barter.WorkSize;
+		}
+	}
+	return 0;
+}
+
+
+const FGeneratorThread& UGeneratorStandardComponent::GetThread(FString threadName) {
+	static FGeneratorThread EmptyThread;
+	if (this->Threads.Contains(threadName)) {
+		return this->Threads[threadName];
+	}
+	return EmptyThread;
+}
+
+
+const FGeneratorElementInfo& UGeneratorStandardComponent::GetCurrentGenerator(FString threadName) {
+	static FGeneratorElementInfo EmptyGenerator;
+	if (this->Threads.Contains(threadName)) {
+		FString& generatorName = this->Threads[threadName].GeneratorName;
+		if (!generatorName.IsEmpty()) {
+			return this->Generators[generatorName];
+		}
+	}
+	return EmptyGenerator;
+}
+
+
+const FGeneratorContext& UGeneratorStandardComponent::GetCurrentGeneratorContext(FString threadName) {
+	static FGeneratorContext EmptyContext;
+	if (this->Threads.Contains(threadName)) {
+		FString& generatorName = this->Threads[threadName].GeneratorName;
+		if (!generatorName.IsEmpty()) {
+			return this->GeneratorsContext[generatorName];
+		}
+	}
+	return EmptyContext;
+}
+
+
+const FGeneratorElementInfo& UGeneratorStandardComponent::GetGenerator(FString generatorName) {
+	static FGeneratorElementInfo EmptyGenerator;
+	if (this->Generators.Contains(generatorName)) {
+		return this->Generators[generatorName];
+	}
+	return EmptyGenerator;
+}
+
+
+const FGeneratorContext& UGeneratorStandardComponent::GetGeneratorContext(FString generatorName) {
+	static FGeneratorContext EmptyContext;
+	if (this->GeneratorsContext.Contains(generatorName)) {
+		return this->GeneratorsContext[generatorName];
+	}
+	return EmptyContext;
 }
 
 
@@ -421,7 +481,7 @@ void UGeneratorStandardComponent::CancelTask(FString generatorName) {
 
 void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
 	IsDestructed = isDestroy;
-	this->SetWorkEnabled(true);
+	TouchAllGenerators();
 }
 
 bool UGeneratorStandardComponent::GetIsDestruction() { 
