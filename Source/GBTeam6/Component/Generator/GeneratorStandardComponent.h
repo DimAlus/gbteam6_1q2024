@@ -32,7 +32,9 @@ private:
 	TMap<FString, FGeneratorContext> GeneratorsContext;
 
 	TMap<FString, FGeneratorThread> Threads;
+	TMap<FString, FGeneratorThreadIterators> ThreadsIterators;
 	TMap<FString, TArray<FString>> CurrentThreadGenerators;
+	TMap<FString, TMap<ESocialTag, int>> CurrentThreadNeedSocialTags;
 	TMap<FString, TArray<FString>> QueuesPriority;
 	TMap<FString, TArray<FString>> QueuesTasks;
 	TMap<FString, TArray<FString>> QueuesPassive;
@@ -42,7 +44,12 @@ private:
 	bool IsDestructed = false;
 	bool IsDead = false;
 
-	TSet<UGameObjectCore*> AttachedCores;
+	TArray<UGameObjectCore*> CoresAttached;
+	TArray<UGameObjectCore*> CoresReady;
+	TArray<UGameObjectCore*> CoresReserved;
+
+	TSet<ESocialTag> CurrentSocialTagNeeds;
+	bool IsActualCurrentSocialTagNeeds = false;
 
 	int Level = 0;
 
@@ -53,17 +60,19 @@ private:
 
 	FORCEINLINE float GetLevel() const { return IsDestructed ? -666 : Level; };
 
-	void TouchThread(const FString& ThreadName);
+	void TouchThread(const FString& threadName);
 	void TouchGenerator(const FString& generatorName);
 	void TouchAllGenerators();
 
-	bool HasAllSocialTags(const FString& name);
-	bool HasConstraintByResultActors(const FString& name);
-	bool HasConstraintByInventory(const FString& name);
-	bool CanGenerate(const FString& name);
+	bool HasAllSocialTags(const FString& generatorName);
+	bool HasConstraintByResultActors(const FString& generatorName);
+	bool HasConstraintByInventory(const FString& generatorName);
+	bool CanGenerate(const FString& generatorName);
 
+	bool HireWorkers(const FString& generatorName);
+	void DismissWorkers(const FString& threadName);
 	void StartWork(const FString& threadName, const FString& generatorName);
-	FString FindWorkByIterator(FCycledIterator<FString> iterator);
+	FString FindWorkByIterator(UStringCycledIterator& iterator);
 	bool FindWork(const FString& threadName);
 
 	void ApplyWork(const FString& generatorName);
@@ -73,6 +82,8 @@ private:
 
 	TMap<EResource, int> CalculateNeeds(int steps);
 	void ResetCurrentNeeds();
+
+	void SetIsSetedAtMap(bool isBuilded);
 public:
 	virtual float GetWorkPower() override;
 
@@ -85,11 +96,11 @@ public:
 	virtual float GetPower(FString threadName) override;
 	virtual float GetPowerPercents(FString threadName) override;
 
-	virtual const FGeneratorThread& GetThread(FString threadName) override;
-	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName) override;
-	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName) override;
-	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName) override;
-	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName) override;
+	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists) override;
+	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists) override;
+	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName, bool& exists) override;
+	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName, bool& exists) override;
+	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName, bool& exists) override;
 
 	virtual void AddTask(FString generatorName) override;
 	virtual void RemoveTask(FString generatorName) override;
@@ -101,7 +112,10 @@ public:
 
 	virtual void AttachCore(UGameObjectCore* Core) override;
 	virtual void DetachCore(UGameObjectCore* Core) override;
+	virtual void SetReadyCore(UGameObjectCore* Core) override;
+
+	TSet<ESocialTag> CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores);
 	virtual TSet<ESocialTag> GetNeededSocialTags() override;
-	virtual TSet<ESocialTag> GetUsedSocialTags() override;
+	virtual bool GetNeedMe(UGameObjectCore* core) override;
 
 };

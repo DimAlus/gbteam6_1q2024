@@ -29,18 +29,20 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 };
 
 
-template<typename T>
-class FCycledIterator {
-	TArray<T>& Iterable;
+class UStringCycledIterator {
+private:
+	TArray<FString> EmptyArray;
+	TArray<FString>& Iterable = EmptyArray;
 	int iter;
 
 public:
-	FCycledIterator(TArray<T>& iterable);
+	UStringCycledIterator(TArray<FString>& iterable);
+	UStringCycledIterator();
 
-	void operator =(const FCycledIterator& copy);
+	void operator =(const UStringCycledIterator& copy);
 
-	T* Next();
-	T* Prev();
+	FString* Next();
+	FString* Prev();
 };
 
 
@@ -220,7 +222,7 @@ struct FGeneratorElementInfo {
 	bool IsSelected{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int MinLevel{ 0 };
+	int MinLevel{ 1 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int MaxLevel{ 1000 };
@@ -239,25 +241,40 @@ struct FGeneratorElementInfo {
 };
 
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FGeneratorThread {
 	GENERATED_BODY()
-private:
-	static TArray<FString> EmptyArray;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString GeneratorName{};
 
-	FCycledIterator<FString> PriorityIterator{ EmptyArray };
-	FCycledIterator<FString> TasksIterator{ EmptyArray };
-	FCycledIterator<FString> PassiveIterator{ EmptyArray };
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float Power;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FString, float> SavePower;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<UGameObjectCore*> AttachedCores;
 };
+
+
+USTRUCT()
+struct FGeneratorThreadIterators {
+	GENERATED_BODY()
+
+public:
+
+	UStringCycledIterator PriorityIterator;
+	UStringCycledIterator TasksIterator;
+	UStringCycledIterator PassiveIterator;
+	FGeneratorThreadIterators(UStringCycledIterator priorityIterator,
+							  UStringCycledIterator tasksIterator,
+						      UStringCycledIterator passiveIterator);
+	FGeneratorThreadIterators();
+};
+
 
 USTRUCT(BlueprintType)
 struct FGeneratorContext {

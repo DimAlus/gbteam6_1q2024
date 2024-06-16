@@ -1,5 +1,6 @@
 #include "./InventoryStandardComponent.h"
 #include "../../Game/GameStateDefault.h"
+#include "../../Interface/GameObjectCore.h"
 #include "../Generator/GeneratorBaseComponent.h"
 #include "InventoryStandardComponent.h"
 
@@ -234,7 +235,7 @@ const TMap<EResource, int>& UInventoryStandardComponent::GetAllResources() {
 
 TMap<EResource, int> UInventoryStandardComponent::GetOverage() { 
 	TMap<EResource, int> result;
-	if (auto genrator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
 		TMap<EResource, int> needs = generator->GetNeeds();
 
 		for (auto iter : Resources) {

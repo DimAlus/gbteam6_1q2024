@@ -19,7 +19,7 @@ void UGeneratorStandardComponent::BeginPlay() {
 	Super::BeginPlay();
 	if (auto core = GetCore()) {
 		if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
-			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetWorkEnabled);
+			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
 		}
 	}
 }
@@ -120,17 +120,19 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 }
 
 
-void UGeneratorStandardComponent::TouchThread(const FString& ThreadName) {
-	if (!this->Threads.Contains(ThreadName)) {
-		this->Threads.Add(ThreadName, {});
-		this->CurrentThreadGenerators.Add(ThreadName, {});
-		this->QueuesPriority.Add(ThreadName, {});
-		this->QueuesTasks.Add(ThreadName, {});
-		this->QueuesPassive.Add(ThreadName, {});
+void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
+	if (!this->Threads.Contains(threadName)) {
+		this->Threads.Add(threadName, {});
+		this->CurrentThreadGenerators.Add(threadName, {});
+		this->QueuesPriority.Add(threadName, {});
+		this->QueuesTasks.Add(threadName, {});
+		this->QueuesPassive.Add(threadName, {});
 
-		this->Threads[ThreadName].PriorityIterator = { this->QueuesPriority[ThreadName] };
-		this->Threads[ThreadName].TasksIterator = { this->QueuesTasks[ThreadName] };
-		this->Threads[ThreadName].PassiveIterator = { this->QueuesPassive[ThreadName] };
+		/*this->ThreadsIterators.Add(threadName, FGeneratorThreadIterators(
+			{ this->QueuesPriority[threadName] },
+			{ this->QueuesTasks[threadName] },
+			{ this->QueuesPassive[threadName] }
+		));*/
 	}
 }
 
@@ -176,12 +178,12 @@ void UGeneratorStandardComponent::TouchAllGenerators() {
 }
 
 
-bool UGeneratorStandardComponent::HasAllSocialTags(const FString& name) {
-	const FGeneratorElementInfo& info = this->Generators[name];
+bool UGeneratorStandardComponent::HasAllSocialTags(const FString& generatorName) {
+	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	for (const FPrice& prc : info.Barter.Price) {
 		if (prc.Resource == EResource::SocialTag) {
 			int cnt = prc.Count;
-			for (UGameObjectCore* core : AttachedCores) {
+			for (UGameObjectCore* core : CoresReady) {
 				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
 						cnt--;
@@ -198,12 +200,12 @@ bool UGeneratorStandardComponent::HasAllSocialTags(const FString& name) {
 	return true;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByResultActors(const FString& name) {
+bool UGeneratorStandardComponent::HasConstraintByResultActors(const FString& generatorName) {
 	return false;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& name) {
-	const FGeneratorElementInfo& info = this->Generators[name];
+bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& generatorName) {
+	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		return !(inventory->CanPop(info.Barter.Price)
 			  && inventory->CanPush(info.Barter.Result));
@@ -212,10 +214,56 @@ bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& name) 
 }
 
 
-bool UGeneratorStandardComponent::CanGenerate(const FString& name) {
-	return HasAllSocialTags(name)
-		&& !HasConstraintByResultActors(name)
-		&& !HasConstraintByInventory(name);
+bool UGeneratorStandardComponent::CanGenerate(const FString& generatorName) {
+	return HasAllSocialTags(generatorName)
+		&& !HasConstraintByResultActors(generatorName)
+		&& !HasConstraintByInventory(generatorName);
+}
+
+
+bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
+	const FGeneratorElementInfo& info = this->Generators[generatorName];
+	FGeneratorThread& thread = this->Threads[info.ThreadName];
+
+	TArray<UGameObjectCore*> cores;
+	for (const FPrice& prc : info.Barter.Price) {
+		if (prc.Resource == EResource::SocialTag) {
+			int cnt = prc.Count;
+			for (UGameObjectCore* core : CoresReady) {
+				if (cnt <= 0)
+					break;
+				if (cores.Contains(core)) {
+					continue;
+				}
+				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+						cores.AddUnique(core);
+					}
+				}
+			}
+			if (cnt > 0) {
+				return false;
+			}
+		}
+	}
+	if (cores.Num() > 0) {
+		for (const auto& core : cores) {
+			this->CoresReady.Remove(core);
+			this->CoresReserved.Add(core);
+			thread.AttachedCores.Add(core);
+		}
+	}
+	return true;
+}
+
+
+void UGeneratorStandardComponent::DismissWorkers(const FString& threadName) {
+	for (const auto& core : this->Threads[threadName].AttachedCores) {
+		if (this->CoresReserved.Contains(core)) {
+			this->CoresReserved.Remove(core);
+			this->CoresReady.Add(core);
+		}
+	}
 }
 
 
@@ -229,13 +277,14 @@ void UGeneratorStandardComponent::StartWork(const FString& threadName, const FSt
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		inventory->Pop(this->Generators[generatorName].Barter.Price);
 	}
+	HireWorkers(generatorName);
 	RemoveTask(generatorName);
 
 	OnGenerationBegin.Broadcast(this->Generators[generatorName]);
 }
 
 
-FString UGeneratorStandardComponent::FindWorkByIterator(FCycledIterator<FString> iterator) {
+FString UGeneratorStandardComponent::FindWorkByIterator(UStringCycledIterator& iterator) {
 	FString* genSave = iterator.Next();
 	if (genSave) {
 		FString* genName = genSave;
@@ -252,9 +301,9 @@ FString UGeneratorStandardComponent::FindWorkByIterator(FCycledIterator<FString>
 
 
 bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
-	FGeneratorThread& thread = this->Threads[threadName];
+	FGeneratorThreadIterators& threadIterators = this->ThreadsIterators[threadName];
 	
-	for (auto iterator : { thread.PriorityIterator, thread.TasksIterator, thread.PassiveIterator }) {
+	for (auto iterator : { threadIterators.PriorityIterator, threadIterators.TasksIterator, threadIterators.PassiveIterator }) {
 		FString generatorName = FindWorkByIterator(iterator);
 		if (!generatorName.IsEmpty()) {
 			StartWork(threadName, generatorName);
@@ -269,6 +318,7 @@ bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
 void UGeneratorStandardComponent::ApplyWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Applied <%s>", *generatorName);
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
+	DismissWorkers(info.ThreadName);
 	OnGeneratorSuccess.Broadcast(info);
 
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
@@ -325,6 +375,9 @@ TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
 			}
 			if (count > 0) {
 				for (const FPrice& price : info.Barter.Price) {
+					if (!UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
+						continue;
+					}
 					if (!needs.Contains(price.Resource)) {
 						needs.Add(price.Resource, price.Count * steps);
 					}
@@ -335,12 +388,22 @@ TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
 			}
 		}
 	}
+	IsActualCurrentSocialTagNeeds = false;
 	return needs;
 }
 
 
 void UGeneratorStandardComponent::ResetCurrentNeeds() {
 	this->CurrentNeeds = this->CalculateNeeds(1);
+}
+
+
+void UGeneratorStandardComponent::SetIsSetedAtMap(bool isBuilded) {
+	if (this->Level == 0) {
+		if (isBuilded) {
+			this->Level = 1;
+		}
+	}
 }
 
 
@@ -361,6 +424,8 @@ void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& gen
 		return;
 	}
 	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
+	this->TouchGenerator(generatorName);
+	IsActualCurrentSocialTagNeeds = false;
 }
 
 
@@ -400,53 +465,63 @@ float UGeneratorStandardComponent::GetPowerPercents(FString threadName) {
 }
 
 
-const FGeneratorThread& UGeneratorStandardComponent::GetThread(FString threadName) {
+const FGeneratorThread& UGeneratorStandardComponent::GetThread(FString threadName, bool& exists) {
 	static FGeneratorThread EmptyThread;
 	if (this->Threads.Contains(threadName)) {
+		exists = true;
 		return this->Threads[threadName];
 	}
+	exists = false;
 	return EmptyThread;
 }
 
 
-const FGeneratorElementInfo& UGeneratorStandardComponent::GetCurrentGenerator(FString threadName) {
+const FGeneratorElementInfo& UGeneratorStandardComponent::GetCurrentGenerator(FString threadName, bool& exists) {
 	static FGeneratorElementInfo EmptyGenerator;
 	if (this->Threads.Contains(threadName)) {
 		FString& generatorName = this->Threads[threadName].GeneratorName;
 		if (!generatorName.IsEmpty()) {
+			exists = true;
 			return this->Generators[generatorName];
 		}
 	}
+	exists = false;
 	return EmptyGenerator;
 }
 
 
-const FGeneratorContext& UGeneratorStandardComponent::GetCurrentGeneratorContext(FString threadName) {
+const FGeneratorContext& UGeneratorStandardComponent::GetCurrentGeneratorContext(FString threadName, bool& exists) {
 	static FGeneratorContext EmptyContext;
 	if (this->Threads.Contains(threadName)) {
 		FString& generatorName = this->Threads[threadName].GeneratorName;
 		if (!generatorName.IsEmpty()) {
+			exists = true;
 			return this->GeneratorsContext[generatorName];
 		}
 	}
+	exists = false;
 	return EmptyContext;
 }
 
 
-const FGeneratorElementInfo& UGeneratorStandardComponent::GetGenerator(FString generatorName) {
+const FGeneratorElementInfo& UGeneratorStandardComponent::GetGenerator(FString generatorName, bool& exists) {
 	static FGeneratorElementInfo EmptyGenerator;
 	if (this->Generators.Contains(generatorName)) {
+		exists = true;
 		return this->Generators[generatorName];
 	}
+	exists = false;
 	return EmptyGenerator;
 }
 
 
-const FGeneratorContext& UGeneratorStandardComponent::GetGeneratorContext(FString generatorName) {
+const FGeneratorContext& UGeneratorStandardComponent::GetGeneratorContext(FString generatorName, bool& exists) {
 	static FGeneratorContext EmptyContext;
 	if (this->GeneratorsContext.Contains(generatorName)) {
+		exists = true;
 		return this->GeneratorsContext[generatorName];
 	}
+	exists = false;
 	return EmptyContext;
 }
 
@@ -457,7 +532,9 @@ void UGeneratorStandardComponent::AddTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
+	IsActualCurrentSocialTagNeeds = false;
 }
+
 
 void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
@@ -465,13 +542,16 @@ void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
+	IsActualCurrentSocialTagNeeds = false;
 }
+
 
 void UGeneratorStandardComponent::CancelTask(FString generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	UE_LOG_COMPONENT(Log, "Cancel Task <%s> from <%s>", *generatorName, *info.ThreadName);
 	FGeneratorThread& thread = this->Threads[info.ThreadName];
 	if (thread.GeneratorName == generatorName) {
+		DismissWorkers(info.ThreadName);
 		CancelWork(generatorName);
 		thread.SavePower.Add(thread.GeneratorName, thread.Power);
 		thread.Power = 0;
@@ -479,101 +559,98 @@ void UGeneratorStandardComponent::CancelTask(FString generatorName) {
 	}
 }
 
+
 void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
 	IsDestructed = isDestroy;
 	TouchAllGenerators();
 }
 
+
 bool UGeneratorStandardComponent::GetIsDestruction() { 
 	return IsDestructed; 
 }
 
+
 void UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
-	AttachedCores.Add(Core);
+	CoresAttached.Add(Core);
+	IsActualCurrentSocialTagNeeds = false;
 }
+
 
 void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
-	if (IsWorked)
-	{
-		auto CurrentGenerator = GetGenerators()[WorkIndex];
+	if (CoresReserved.Contains(Core)) {
+		for (auto thread : this->Threads) {
+			if (thread.Value.AttachedCores.Contains(Core)) {
+				CancelTask(thread.Value.GeneratorName);
+			}
+		}
+	}
+	CoresReady.Remove(Core);
+	CoresAttached.Remove(Core);
+	IsActualCurrentSocialTagNeeds = false;
+}
 
-		if (auto Social = Cast<USocialBaseComponent>(Core->GetComponent(EGameComponentType::Social)))
-		{
-			for (auto Price : CurrentGenerator.Barter.Price) {
-				if (Price.Resource == EResource::SocialTag)
-				{
-					if (Price.SocialTags.Intersect(TSet<ESocialTag>(Social->GetSocialTags())).Num() > 0) {
-						CancelTask();
-					}
+
+void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
+	if (CoresAttached.Contains(Core)
+		&& !CoresReserved.Contains(Core)) {
+		CoresReady.AddUnique(Core);
+	}
+}
+
+
+TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores) {
+	TSet<ESocialTag> result;
+
+	TMap<ESocialTag, int> needs;
+	for (const auto& needsST : this->CurrentThreadNeedSocialTags) {
+		for (const auto& need : needsST.Value) {
+			if (needs.Contains(need.Key)) {
+				needs[need.Key] += need.Value;
+			}
+			else {
+				needs.Add(need);
+			}
+		}
+	}
+
+	for (const auto& core : attachedCores) {
+		if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+			const auto& tags = social->GetSocialTags();
+			for (const ESocialTag& tag : tags) {
+				if (needs.Contains(tag)) {
+					needs[tag]--;
+					break;
 				}
 			}
 		}
-		
-
 	}
 
-	AttachedCores.Remove(Core);
+	for (const auto& need : needs) {
+		if (need.Value > 0) {
+			result.Add(need.Key);
+		}
+	}
+	return result;
 }
+
 
 TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
-	TSet<ESocialTag> result;
-	int StackIndex = TaskStack.Num() > 0 ? TaskStack[0] : -1;
-	const TArray<FGenerator>& gens = GetCurrentGenerics();
-	for (int i = 0; i < gens.Num(); i++) {
-		auto gen = gens[i];
-		if (!(i == WorkIndex && IsWorked))
-		{
-			if (!(gen.Selected || StackIndex == i)
-				|| HasConstraintByResultActors(gen)
-				|| HasConstraintByInventory(gen)) {
-				continue;
-			}
-		}
-		for (const FPrice& prc : gen.Barter.Price) {
-			if (prc.Resource != EResource::SocialTag) {
-				continue;
-			}
-			int cnt = prc.Count;
-			for (auto core : AttachedCores) {
-				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
-						cnt--;
-					}
-				}
-				if (cnt <= 0)
-					break;
-			}
-			if (cnt > 0) {
-				result.Append(prc.SocialTags);
-			}
-		}
+	if (!IsActualCurrentSocialTagNeeds) {
+		CurrentSocialTagNeeds = this->CalculateNeededSocalTags(this->CoresAttached);
 	}
-	return result;
+	return CurrentSocialTagNeeds;
 }
 
-TSet<ESocialTag> UGeneratorStandardComponent::GetUsedSocialTags() {
-	TSet<ESocialTag> result;
-	int StackIndex = TaskStack.Num() > 0 ? TaskStack[0] : -1;
-	const TArray<FGenerator>& gens = GetCurrentGenerics();
-	for (int i = 0; i < gens.Num(); i++) {
-		auto gen = gens[i];
-		if (!(i == WorkIndex && IsWorked))
-		{
-			if (!(gen.Selected || StackIndex == i)
-				|| HasConstraintByResultActors(gen)
-				|| HasConstraintByInventory(gen)) {
-				continue;
-				}
-		}
-		for (const FPrice& prc : gen.Barter.Price) {
-			if (prc.Resource != EResource::SocialTag) {
-				continue;
-			}
-			int cnt = prc.Count;
-			if (cnt > 0) {
-				result.Append(prc.SocialTags);
-			}
+
+bool UGeneratorStandardComponent::GetNeedMe(UGameObjectCore* core) {
+	if (this->CoresReserved.Contains(core)) {
+		return true;
+	}
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		if (this->GetNeededSocialTags().Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+			return true;
 		}
 	}
-	return result;
+	return false;
 }

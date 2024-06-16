@@ -24,9 +24,9 @@ TMap<EResource, TArray<ClientNeeds>> UTaskManagerService::GetOversByCores(const 
 		}
 		TMap<EResource, int>& reserve = ReserverResources[core];
 
-		auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator));
-		if (generator) {
-			TMap<EResource, int> overs = generator->GetOversMap(1);
+		auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory));
+		if (inventory) {
+			TMap<EResource, int> overs = inventory->GetOverage();
 			for (auto over : overs) {
 				int reserv = reserve.Contains(over.Key) ? reserve[over.Key] : 0;
 				if (over.Value + reserv > 0) {
@@ -52,7 +52,7 @@ TArray<FGameTask> UTaskManagerService::FindTasksByOvers(TSet<UGameObjectCore*> C
 
 		auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator));
 		if (generator) {
-			TMap<EResource, int> needs = generator->GetNeedsMap(5);
+			TMap<EResource, int> needs = generator->GetNeeds();
 			for (auto need : needs) {
 				if (Overs.Contains(need.Key)) {
 					int reserv = reserve.Contains(need.Key) ? reserve[need.Key] : 0;

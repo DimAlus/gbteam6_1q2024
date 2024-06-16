@@ -92,10 +92,13 @@ void UGeneratorBaseComponent::AttachCore(UGameObjectCore* Core) {
 void UGeneratorBaseComponent::DetachCore(UGameObjectCore* Core) {
 }
 
+void UGeneratorBaseComponent::SetReadyCore(UGameObjectCore* Core) {
+}
+
 TSet<ESocialTag> UGeneratorBaseComponent::GetNeededSocialTags() {
 	return TSet<ESocialTag>();
 }
 
-TSet<ESocialTag> UGeneratorBaseComponent::GetUsedSocialTags() {
-	return TSet<ESocialTag>();
+bool UGeneratorBaseComponent::GetNeedMe(UGameObjectCore* core) {
+	return false;
 }

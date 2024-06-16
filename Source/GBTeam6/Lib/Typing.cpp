@@ -30,8 +30,7 @@ FString GetLevelName(ULevel* level) {
 }
 
 
-template<typename T>
-inline T* FCycledIterator<T>::Next() {
+FString* UStringCycledIterator::Next() {
     if (this->Iterable.Num() == 0) {
         return nullptr;
     }
@@ -41,8 +40,7 @@ inline T* FCycledIterator<T>::Next() {
     return &this->Iterable[this->iter++];
 }
 
-template<typename T>
-T* FCycledIterator<T>::Prev() {
+FString* UStringCycledIterator::Prev() {
     if (this->Iterable.Num() == 0) {
         return nullptr;
     }
@@ -51,13 +49,28 @@ T* FCycledIterator<T>::Prev() {
     return &this->Iterable[this->iter]; 
 }
 
-template<typename T>
-FCycledIterator<T>::FCycledIterator(TArray<T>& iterable) {
+UStringCycledIterator::UStringCycledIterator(TArray<FString>& iterable) {
     this->Iterable = iterable;
 }
 
-template<typename T>
-void FCycledIterator<T>::operator=(const FCycledIterator& copy) {
+UStringCycledIterator::UStringCycledIterator() {
+}
+
+void UStringCycledIterator::operator=(const UStringCycledIterator& copy) {
     this->Iterable = copy.Iterable;
     this->iter = copy.iter;
+}
+
+FGeneratorThreadIterators::FGeneratorThreadIterators(
+    UStringCycledIterator priorityIterator,
+    UStringCycledIterator tasksIterator,
+    UStringCycledIterator passiveIterator
+) : PriorityIterator(priorityIterator), TasksIterator(tasksIterator), PassiveIterator(passiveIterator) {
+}
+
+FGeneratorThreadIterators::FGeneratorThreadIterators() {
+    static UStringCycledIterator EmptyIterator;
+    PriorityIterator = EmptyIterator;
+    TasksIterator = EmptyIterator;
+    PassiveIterator = EmptyIterator;
 }

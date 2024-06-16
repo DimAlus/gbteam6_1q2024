@@ -27,8 +27,18 @@ public:
 	virtual void SaveComponent(FGeneratorSaveData& saveData);
 	virtual void LoadComponent(const FGeneratorSaveData& saveData);
 
+
 	UPROPERTY(BlueprintAssignable)
-	FOnResourceGenerated OnResourceGenerated;
+	FPriceListSignature OnResourceGenerated;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGeneratorsChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeberatorInfoSignature OnGeneratorSuccess;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeberatorInfoSignature OnGenerationBegin;
 
 public:
 
@@ -96,19 +106,12 @@ public:
 	virtual void DetachCore(UGameObjectCore* Core);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SetReadyCore(UGameObjectCore* Core);
+
+	UFUNCTION(BlueprintCallable)
 	virtual TSet<ESocialTag> GetNeededSocialTags();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TSet<ESocialTag> GetUsedSocialTags();
+	virtual bool GetNeedMe(UGameObjectCore* core);
 
-
-
-	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnGeneratorsChanging;
-
-	UPROPERTY(BlueprintAssignable)
-	FGeberatorInfoSignature OnGeneratorSuccess;
-
-	UPROPERTY(BlueprintAssignable)
-	FGeberatorInfoSignature OnGenerationBegin;
 };
