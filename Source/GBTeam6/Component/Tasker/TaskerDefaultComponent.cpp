@@ -1,28 +1,29 @@
-#include "./TaskerStandardComponent.h"
+#include "./TaskerDefaultComponent.h"
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Generator/GeneratorBaseComponent.h"
+#include "../../Interface/GameObjectCore.h"
 #include "TaskerDefaultComponent.h"
 
 
 
-void UTaskerStandardComponent::Initialize(const FTaskerComponentInitializer& initializer) {
+void UTaskerDefaultComponent::Initialize(const FTaskerComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 }
 
 
-void UTaskerStandardComponent::SaveComponent(FTaskerSaveData& saveData) {
+void UTaskerDefaultComponent::SaveComponent(FTaskerSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 }
 
 
-void UTaskerStandardComponent::LoadComponent(const FTaskerSaveData& saveData) {
+void UTaskerDefaultComponent::LoadComponent(const FTaskerSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 }
 
 
-TMap<EResurce, int> UTaskerDefaultComponent::GetRequests() { 
-	TMap<EResurce, int> result;
-	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EComponentType::Generator))) {
+TMap<EResource, int> UTaskerDefaultComponent::GetRequests() { 
+	TMap<EResource, int> result;
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
 		for (const auto& need : generator->GetNeeds()) {
 			EResource res = need.Key;
 			int count = need.Value;
@@ -38,9 +39,9 @@ TMap<EResurce, int> UTaskerDefaultComponent::GetRequests() {
 }
 
 
-TMap<EResurce, int> UTaskerDefaultComponent::GetOffers() { 
-	TMap<EResurce, int> result;
-	if (auto inventory = Cast<UInventoryBaseComponent>(GetCore()->GetComponent(EComponentType::Inventory))) {
+TMap<EResource, int> UTaskerDefaultComponent::GetOffers() { 
+	TMap<EResource, int> result;
+	if (auto inventory = Cast<UInventoryBaseComponent>(GetCore()->GetComponent(EGameComponentType::Inventory))) {
 		for (const auto& over : inventory->GetOverage()) {
 			EResource res = over.Key;
 			int count = over.Value;
@@ -104,11 +105,11 @@ bool UTaskerDefaultComponent::ApplyTask() {
 	}
 	
 	TArray<FPrice> prc{{}};
-	prc.Resource = task.Resource;
-	prc.Count = std::abs(task.Count);
-	if (inventorySrc.CanPop(prc)) {
-		inventorySrc.Pop(prc);
-		inventoryDest.Push(prc);
+	prc[0].Resource = task.Resource;
+	prc[0].Count = std::abs(task.Count);
+	if (inventorySrc->CanPop(prc)) {
+		inventorySrc->Pop(prc);
+		inventoryDest->Push(prc);
 	}
 	else {
 		UE_LOG_COMPONENT(Warning, "Resource can't be moving between inventories!");

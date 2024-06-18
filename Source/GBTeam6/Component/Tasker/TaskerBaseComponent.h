@@ -28,10 +28,10 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResurce, int> GetRequests();
+	virtual TMap<EResource, int> GetRequests();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResurce, int> GetOffers();
+	virtual TMap<EResource, int> GetOffers();
 
 
 	UFUNCTION(BlueprintCallable)

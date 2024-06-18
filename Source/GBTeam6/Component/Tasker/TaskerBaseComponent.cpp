@@ -14,10 +14,33 @@ void UTaskerBaseComponent::SaveComponent(FTaskerSaveData& saveData) {
 void UTaskerBaseComponent::LoadComponent(const FTaskerSaveData& saveData) {
 }
 
-TMap<EResurce, int> UTaskerBaseComponent::GetRequests() { 
+TMap<EResource, int> UTaskerBaseComponent::GetRequests() { 
 	return {}; 
 }
 
-TMap<EResurce, int> UTaskerBaseComponent::GetOffers() { 
+TMap<EResource, int> UTaskerBaseComponent::GetOffers() { 
 	return {}; 
+}
+
+bool UTaskerBaseComponent::FindTask() {
+	return false;
+}
+
+const FGameTask& UTaskerBaseComponent::GetCurrentTask(bool& exists) {
+	static FGameTask EmptyTask;
+	exists = false;
+	return EmptyTask;
+}
+
+bool UTaskerBaseComponent::ApplyTask() {
+	return false;
+}
+
+void UTaskerBaseComponent::CancleTask() {
+}
+
+void UTaskerBaseComponent::AddExpecting(UGameObjectCore* core, const FGameTask& task) {
+}
+
+void UTaskerBaseComponent::RemoveExpecting(UGameObjectCore* core, const FGameTask& task) {
 }

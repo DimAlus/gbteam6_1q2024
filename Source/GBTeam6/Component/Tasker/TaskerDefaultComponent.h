@@ -26,8 +26,8 @@ private:
 
 public:
 
-	virtual TMap<EResurce, int> GetRequests() override;
-	virtual TMap<EResurce, int> GetOffers() override;
+	virtual TMap<EResource, int> GetRequests() override;
+	virtual TMap<EResource, int> GetOffers() override;
 
 	virtual bool FindTask() override;
 	virtual const FGameTask& GetCurrentTask(bool& exists) override;

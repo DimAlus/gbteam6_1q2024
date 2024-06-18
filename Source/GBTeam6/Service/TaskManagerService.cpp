@@ -11,7 +11,7 @@
 TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetNeedsByCores(TSet<UGameObjectCore*> cores) {
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> result;
 	for (auto core : cores) {
-		if (auto tasker = Cast<UTaskerBaseComponent>(GetCore()->GetComponent(EComponentType::Tasker))) {
+		if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
 			for (auto need : tasker->GetRequests()) {
 				if (!result.Contains(need.Key)) {
 					result.Add(need.Key, {});
@@ -27,7 +27,7 @@ TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetNe
 TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetOversByCores(TSet<UGameObjectCore*> cores) {
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> result;
 	for (auto core : cores) {
-		if (auto tasker = Cast<UTaskerBaseComponent>(GetCore()->GetComponent(EComponentType::Tasker))) {
+		if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
 			for (auto need : tasker->GetOffers()) {
 				if (!result.Contains(need.Key)) {
 					result.Add(need.Key, {});
@@ -58,9 +58,9 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 		sources = { findData.Performer };
 	}
 	else {
-		sources = social->GetObjectsByTags(Sources, SourcesIgnores);
+		sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
 	}
-	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(Destinations, DestinationsIgnores);
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
 
 	auto OverMap = GetOversByCores(sources);
 
