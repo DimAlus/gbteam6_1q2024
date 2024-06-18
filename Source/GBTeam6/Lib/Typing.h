@@ -296,23 +296,42 @@ struct FGameTask {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* TaskPerformer {nullptr};
+	UGameObjectCore* Core{nullptr};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EResource ResType {};
+	EResource Resource{ EResource::Self };
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int ResAmount = 0;
-	
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* From {};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* To {};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool ResourceGettedFromSource{};
+	int Count{0};
 };
+
+
+USTRUCT(BlueprintType)
+struct FGameTaskFindData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UGameObjectCore* Performer{nullptr};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> Sources;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> Destinations;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> SourcesIgnores;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> DestinationsIgnores;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool FromPerformer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CheckNeeds;
+};
+
 
 USTRUCT(BlueprintType)
 struct FObjectSound {
@@ -339,6 +358,7 @@ struct FObjectSound {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Footsteps{};
 };
+
 
 USTRUCT(BlueprintType)
 struct FSystemSound : public FTableRowBase {

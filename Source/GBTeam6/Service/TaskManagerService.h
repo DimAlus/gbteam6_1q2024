@@ -30,38 +30,13 @@ private:
 	float WorkerStackMultiplyer;
 
 private:
-	TMap<EResource, TArray<ClientNeeds>> GetOversByCores(const TSet<UGameObjectCore*>& CoresWithOvers);
-	TArray<FGameTask> FindTasksByOvers(TSet<UGameObjectCore*> CoresWithNeeds, TMap<EResource, TArray<ClientNeeds>>& Overs);
-	bool FindTask(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
-	bool FindTaskToStorage(FGameTask& gameTask, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
-	void ReserveResouce(UGameObjectCore* core, EResource resource, int count);
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetNeedsByCores(TSet<UGameObjectCore*> cores);
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetOversByCores(TSet<UGameObjectCore*> cores);
 public:
 
 	void SetGameState(AGameStateDefault* ownerGameState);
 
-	UFUNCTION(BlueprintCallable)
-	bool GetTask(UGameObjectCore* TaskPerformer);
-
-	UFUNCTION(BlueprintCallable)
-	bool GetTaskForReceiver(UGameObjectCore* TaskReceiver);
-
-	UFUNCTION(BlueprintCallable)
-	bool GetTaskByTagsToStorage(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
-
-	UFUNCTION(BlueprintCallable)
-	bool GetTaskByTags(UGameObjectCore* TaskPerformer, TSet<ESocialTag> Sources, TSet<ESocialTag> Destinations, TSet<ESocialTag> SourcesIgnores, TSet<ESocialTag> DestinationsIgnores);
-
-	UFUNCTION(BlueprintCallable)
-	const FGameTask& GetTaskByPerformer(UGameObjectCore* TaskPerformer);
-
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE bool HasTask(UGameObjectCore* TaskPerformer) const { return CurrentTasks.Contains(TaskPerformer); };
-
-	UFUNCTION(BlueprintCallable)
-	void ConfirmReceive(UGameObjectCore* TaskPerformer, bool Success);
-
-	UFUNCTION(BlueprintCallable)
-	void ConfirmDelivery(UGameObjectCore* TaskPerformer, bool Success);
+	TArray<FGameTask> FindTaskByTags(const FGameTaskFindData& findData);
 
 	
 };

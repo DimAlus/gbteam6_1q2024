@@ -9,6 +9,7 @@
 class UHealthBaseComponent;
 class UMappingBaseComponent;
 class UGeneratorBaseComponent;
+class UTaskerBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
 class UUIBaseComponent;
@@ -83,6 +84,32 @@ struct FGeneratorComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitializer ComponentInitializer{};
+
+};
+
+
+
+/***********************************************************************************/
+/// <summary>
+/// Tasker Initializing
+/// </summary>
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitializer {
+	GENERATED_BODY()
+};
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UTaskerBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitializer ComponentInitializer{};
 
 };
 
@@ -321,6 +348,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitData GeneratorComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitData TaskerComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventoryComponentInitData InventoryComponentInitData{};

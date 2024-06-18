@@ -17,6 +17,7 @@
 #include "../Component/Mapping/MappingBaseComponent.h"
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
+#include "../Component/Tasker/TaskerBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
 #include "PlatformFeatures.h"
 #include "GameFramework/SaveGame.h"
@@ -374,6 +375,9 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 				generator->SaveComponent(SaveData.GeneratorData);
 			}
+			if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+				tasker->SaveComponent(SaveData.TaskerData);
+			}
 			if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				social->SaveComponent(SaveData.SocialData);
 			}
@@ -403,6 +407,9 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	}
 	if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 		generator->LoadComponent(objectSaveData.GeneratorData);
+	}
+	if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+		tasker->LoadComponent(objectSaveData.TaskerData);
 	}
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);

@@ -75,6 +75,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FTaskerSaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FInventorySaveData {
 	GENERATED_BODY()
 public:
@@ -113,6 +120,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorSaveData GeneratorData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerSaveData TaskerData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventorySaveData InventoryData{};

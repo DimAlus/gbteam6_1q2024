@@ -37,6 +37,7 @@ enum class EGameComponentType : uint8 {
 	Movement	UMETA(DisplayName = "Movement"),
 	Mapping		UMETA(DisplayName = "Mapping"),
 	Generator	UMETA(DisplayName = "Generator"),
+	Tasker		UMETA(DisplayName = "Tasker"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
