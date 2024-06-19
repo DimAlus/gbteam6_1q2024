@@ -1,5 +1,7 @@
 #include "./InventoryStandardComponent.h"
 #include "../../Game/GameStateDefault.h"
+#include "../../Interface/GameObjectCore.h"
+#include "../Generator/GeneratorBaseComponent.h"
 #include "InventoryStandardComponent.h"
 
 
@@ -229,4 +231,22 @@ int UInventoryStandardComponent::GetMaxStacksCount() {
 
 const TMap<EResource, int>& UInventoryStandardComponent::GetAllResources() {
 	return Resources;
+}
+
+TMap<EResource, int> UInventoryStandardComponent::GetOverage() { 
+	TMap<EResource, int> result;
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		TMap<EResource, int> needs = generator->GetNeeds();
+
+		for (auto iter : Resources) {
+			int cnt = iter.Value;
+			if (needs.Contains(iter.Key)) {
+				cnt -= needs[iter.Key];
+			}
+			if (cnt > 0) {
+				result.Add(iter.Key, cnt);
+			}
+		}
+	}
+	return result; 
 }

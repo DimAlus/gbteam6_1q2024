@@ -57,3 +57,7 @@ const TMap<EResource, int>& UInventoryBaseComponent::GetAllResources() {
 	static TMap<EResource, int> result = {};
 	return result; 
 }
+
+TMap<EResource, int> UInventoryBaseComponent::GetOverage() { 
+	return TMap<EResource, int>(); 
+}

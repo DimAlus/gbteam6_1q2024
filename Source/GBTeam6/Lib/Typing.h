@@ -29,6 +29,24 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 };
 
 
+class UStringCycledIterator {
+private:
+	TArray<FString> EmptyArray;
+	TArray<FString>& Iterable = EmptyArray;
+	int iter;
+
+public:
+	UStringCycledIterator(TArray<FString>& iterable);
+	UStringCycledIterator();
+
+	void operator =(const UStringCycledIterator& copy);
+
+	FString* Next();
+	FString* Prev();
+};
+
+
+
 USTRUCT(BlueprintType)
 struct FPlayerInputAction {
 	GENERATED_BODY()
@@ -202,65 +220,130 @@ struct FBarter {
 	TArray<FPrice> Result{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Time{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool DefaultSelection = true;
+	float WorkSize{};
 };
 
 USTRUCT(BlueprintType)
-struct FGenerator {
+struct FGeneratorElementInfo {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FBarter Barter{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int Limit = 100;
+	bool IsSelected{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool Selected = true;
+	int MinLevel{ 1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int MaxLevel{ 1000 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString ThreadName{ "WORK" };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float AutoGenPower{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float WorkMultiplier{ 1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowResult{ true };
 };
+
 
 USTRUCT(BlueprintType)
-struct FPassiveGenerator {
+struct FGeneratorThread {
 	GENERATED_BODY()
 
+public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FPrice Resource{};
+	FString GeneratorName{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool WorkAtNight;
+	float Power;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Time{};
+	TMap<FString, float> SavePower;
 
-	UPROPERTY()
-	float CurrentTime{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<UGameObjectCore*> AttachedCores;
 };
+
+
+USTRUCT()
+struct FGeneratorThreadIterators {
+	GENERATED_BODY()
+
+public:
+
+	UStringCycledIterator PriorityIterator;
+	UStringCycledIterator TasksIterator;
+	UStringCycledIterator PassiveIterator;
+	FGeneratorThreadIterators(UStringCycledIterator priorityIterator,
+							  UStringCycledIterator tasksIterator,
+						      UStringCycledIterator passiveIterator);
+	FGeneratorThreadIterators();
+};
+
+
+USTRUCT(BlueprintType)
+struct FGeneratorContext {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool PassiveWork{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Priority{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CountTasks = 0;
+};
+
 
 USTRUCT(BlueprintType)
 struct FGameTask {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* TaskPerformer {nullptr};
+	UGameObjectCore* Core{nullptr};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EResource ResType {};
+	EResource Resource{ EResource::Self };
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int ResAmount = 0;
-	
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* From {};
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UGameObjectCore* To {};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool ResourceGettedFromSource{};
+	int Count{0};
 };
+
+
+USTRUCT(BlueprintType)
+struct FGameTaskFindData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UGameObjectCore* Performer{nullptr};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> Sources;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> Destinations;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> SourcesIgnores;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> DestinationsIgnores;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool FromPerformer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool CheckNeeds;
+};
+
 
 USTRUCT(BlueprintType)
 struct FObjectSound {
@@ -287,6 +370,7 @@ struct FObjectSound {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USoundBase* Footsteps{};
 };
+
 
 USTRUCT(BlueprintType)
 struct FSystemSound : public FTableRowBase {
@@ -601,12 +685,3 @@ struct FGameEventConextSave {
 	float CurrentTime{};
 };
 
-
-
-//#undef CONFIG_FILTER
-//#undef CONFIG_FILTER_B
-//#undef CONFIG_FILTER_I
-//#undef CONFIG_FILTER_F
-//#undef CONFIG_FILTER_S
-//#undef CONFIG_FILTER_IV
-//#undef CONFIG_FILTER_FV

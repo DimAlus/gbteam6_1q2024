@@ -10,10 +10,9 @@
 
 class UGameObjectCore;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTaskStackChanging);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnResourceGenerated, TArray<FPrice>, GeneratedResources);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGeneratorSuccess, const FGenerator&, Generator);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPassiveGenerator, EResource, Resource, float, Time);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTouchSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPriceListSignature, TArray<FPrice>, GeneratedResources);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGeberatorInfoSignature, const FGeneratorElementInfo&, Generator);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UGeneratorBaseComponent : public UBaseComponent {
@@ -28,63 +27,72 @@ public:
 	virtual void SaveComponent(FGeneratorSaveData& saveData);
 	virtual void LoadComponent(const FGeneratorSaveData& saveData);
 
+
 	UPROPERTY(BlueprintAssignable)
-	FOnResourceGenerated OnResourceGenerated;
+	FPriceListSignature OnResourceGenerated;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGeneratorsChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeberatorInfoSignature OnGeneratorSuccess;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeberatorInfoSignature OnGenerationBegin;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsBuilded() {return false;};
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetNeeds(int steps);
+	virtual float GetWorkPower();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetOvers(int steps);
+	virtual TMap<EResource, int> GetNeeds();
+
 
 	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResource, int> GetNeedsMap(int steps);
+	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive);
 
 	UFUNCTION(BlueprintCallable)
-	virtual TMap<EResource, int> GetOversMap(int steps);
-	
-	UFUNCTION(BlueprintCallable)
-	virtual void SetWorkEnabled(bool isEnabled);
+	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void ChangeGenerationSelection(int index, bool isSelected);
+	virtual TArray<FString> GetGenerators(FString threadName);
+
 
 	UFUNCTION(BlueprintCallable)
-	virtual void ChangeGenerationLimit(int index, int newLimit);
+	virtual float GetPower(FString threadName);
 
 	UFUNCTION(BlueprintCallable)
-	virtual FGenerator GetCurrentGenerator();
+	virtual float GetPowerPercents(FString threadName);
+
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FGenerator> GetGenerators();
+	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists);
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPassiveGenerator> GetPassiveGenerators();
+	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists);
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetTime();
+	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName, bool& exists);
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetTimePercents();
+	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName, bool& exists);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool IsWorking();
+	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName, bool& exists);
+
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FGenerator> GetTaskStack();
+	virtual void AddTask(FString generatorName);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void AddToTaskStack(int index);
+	virtual void RemoveTask(FString generatorName);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void RemoveFromStack(int index);
+	virtual void CancelTask(FString generatorName);
 
-	UFUNCTION(BlueprintCallable)
-	virtual void CancelTask();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetIsDestruction(bool isDestroy);
@@ -100,27 +108,12 @@ public:
 	virtual void DetachCore(UGameObjectCore* Core);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SetReadyCore(UGameObjectCore* Core);
+
+	UFUNCTION(BlueprintCallable)
 	virtual TSet<ESocialTag> GetNeededSocialTags();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TSet<ESocialTag> GetUsedSocialTags();
+	virtual bool GetNeedMe(UGameObjectCore* core);
 
-
-	UPROPERTY(BlueprintAssignable)
-	FOnTaskStackChanging OnTaskStackChanging;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnTaskStackChanging OnGeneratorsChanging;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnPassiveGenerator OnPassiveGeneratorFailed;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnPassiveGenerator OnPassiveGeneratorSuccess;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnGeneratorSuccess OnGeneratorSuccess;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnGeneratorSuccess OnGenerationBegin;
 };

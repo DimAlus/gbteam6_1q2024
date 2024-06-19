@@ -2,6 +2,7 @@
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
+#include "../Component/Tasker/TaskerBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
 #include "../Component/UI/UIBaseComponent.h"
 #include "../Component/Sound/SoundBaseComponent.h"
@@ -100,6 +101,14 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	);
 	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Generator, NewGeneratorComponent);
+
+	//Create Tasker component
+	UTaskerBaseComponent* NewTaskerComponent = NewObject<UTaskerBaseComponent>(
+		owner,
+		GetNvlClass(InitData.TaskerComponentInitData.ComponentClass, UTaskerBaseComponent::StaticClass())
+	);
+	NewTaskerComponent->Initialize(InitData.TaskerComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Tasker, NewTaskerComponent);
 
 	//Create Social component
 	USocialBaseComponent* NewSocialComponent = NewObject<USocialBaseComponent>(

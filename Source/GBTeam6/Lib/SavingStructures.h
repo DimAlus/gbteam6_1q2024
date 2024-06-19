@@ -67,28 +67,17 @@ struct FGeneratorSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FGenerator> Generics{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsWorked{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int WorkIndex{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WorkTime{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsBuilded{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<int> TaskStack{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPassiveGenerator> PassiveGeneration{};
+	TMap<FString, FGeneratorContext> GeneratorsContext{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool IsDestructed{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FTaskerSaveData {
+	GENERATED_BODY()
+public:
 };
 
 
@@ -131,6 +120,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorSaveData GeneratorData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerSaveData TaskerData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventorySaveData InventoryData{};
