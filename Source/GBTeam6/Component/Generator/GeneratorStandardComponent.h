@@ -93,8 +93,8 @@ public:
 	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;
 
 	virtual TArray<FString> GetGenerators(FString threadName) override;
-	virtual float GetPower(FString threadName) override;
-	virtual float GetPowerPercents(FString threadName) override;
+	virtual float GetProgress(FString threadName) override;
+	virtual float GetProgressPercents(FString threadName) override;
 
 	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists) override;
 	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists) override;

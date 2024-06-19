@@ -32,11 +32,11 @@ TArray<FString> UGeneratorBaseComponent::GetGenerators(FString threadName) {
 	return {};
 }
 
-float UGeneratorBaseComponent::GetPower(FString threadName) {
+float UGeneratorBaseComponent::GetProgress(FString threadName) {
 	return 0.0f;
 }
 
-float UGeneratorBaseComponent::GetPowerPercents(FString threadName) {
+float UGeneratorBaseComponent::GetProgressPercents(FString threadName) {
 	return 0.0f;
 }
 
