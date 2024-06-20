@@ -417,7 +417,7 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 }
 
 void USaveService::AddSaveProgressOwner(ICanSaveInterface* saver) {
-	ProgressSavers.Add(saver);
+	//ProgressSavers.Add(saver);
 }
 
 void USaveService::RemoveSaveProgressOwner(ICanSaveInterface* saver) {

@@ -78,6 +78,18 @@ public:
 	/** Command input action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* CommandAction {nullptr};
+	
+	/** Set game speed pause action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SetGameSpeedPauseAction {nullptr};
+
+	/** Set game speed higher action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SetGameSpeedHigherAction {nullptr};
+
+	/** Set game speed lower action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SetGameSpeedLowerAction {nullptr};
 };
 
 struct FTileInfo {

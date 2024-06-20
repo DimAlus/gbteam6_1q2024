@@ -7,13 +7,14 @@
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
 #include "../Interface/GameObjectCore.h"
+#include "Perception/AISightTargetInterface.h"
 #include "Components/BoxComponent.h"
 #include "SimpleObject.generated.h"
 
 class UMappingDefaultComponent;
 
 UCLASS()
-class GBTEAM6_API ASimpleObject : public AActor, public IGameObjectInterface
+class GBTEAM6_API ASimpleObject : public AActor, public IGameObjectInterface, public IAISightTargetInterface
 {
 	GENERATED_BODY()
 	
@@ -30,7 +31,7 @@ protected:
 	USceneComponent* SceneBase;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UBoxComponent* Collision;
+	UBoxComponent* ObjectSelectCollision;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ObjectMesh;
@@ -63,5 +64,15 @@ protected:
 
 public:
 	virtual UGameObjectCore* GetCore_Implementation() override;
+
+	virtual UAISense_Sight::EVisibilityResult CanBeSeenFrom(
+		const FCanBeSeenFromContext& Context,
+		FVector& OutSeenLocation,
+		int32& OutNumberOfLoSChecksPerformed,
+		int32& OutNumberOfAsyncLosCheckRequested,
+		float& OutSightStrength,
+		int32* UserData = nullptr,
+		const FOnPendingVisibilityQueryProcessedDelegate* Delegate = nullptr
+		) override;
 };
 

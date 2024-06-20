@@ -12,14 +12,15 @@ ASimpleObject::ASimpleObject() {
 	SceneBase = CreateDefaultSubobject<USceneComponent>(TEXT("BaseSceneComponent"));
 	SetRootComponent(SceneBase);
 	
-	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
-	Collision->SetupAttachment(SceneBase);
-	Collision->bDynamicObstacle = true;
-	Collision->SetCollisionProfileName("GameObject");
+	ObjectSelectCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CollisionBoxComponent"));
+	ObjectSelectCollision->SetupAttachment(SceneBase);
+	ObjectSelectCollision->SetCanEverAffectNavigation(false);
+	ObjectSelectCollision->SetCollisionProfileName("GameObject");
 	
 	ObjectMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ObjectMesh"));
+	ObjectMesh->SetCanEverAffectNavigation(true);
 	ObjectMesh->SetupAttachment(SceneBase);
-	ObjectMesh->SetCollisionProfileName("NoCollision");
+	ObjectMesh->SetCollisionProfileName("GameObject");
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
 	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
@@ -45,7 +46,7 @@ void ASimpleObject::BeginPlay() {
 
 	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Collision,
-		Collision
+		ObjectSelectCollision
 	);
 	this->GameObjectCore->InitDataByName(ObjectName);
 
@@ -68,11 +69,53 @@ void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)
 void ASimpleObject::OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes) {
 }
 
-
+//ToDo remove
 void ASimpleObject::OnDeathBehaviour() {
-	K2_DestroyActor();
+	//K2_DestroyActor();
 }
 
 UGameObjectCore* ASimpleObject::GetCore_Implementation() {
 	return GameObjectCore;
+}
+
+UAISense_Sight::EVisibilityResult ASimpleObject::CanBeSeenFrom(const FCanBeSeenFromContext& Context,
+	FVector& OutSeenLocation, int32& OutNumberOfLoSChecksPerformed, int32& OutNumberOfAsyncLosCheckRequested,
+	float& OutSightStrength, int32* UserData, const FOnPendingVisibilityQueryProcessedDelegate* Delegate)
+{
+	FName StimuliSourceSightSocketName = FName(TEXT("StimuliSourceSightSocket"));
+	FTransform StimuliSourceTransform(GetActorLocation());
+	
+	if(ObjectMesh->DoesSocketExist(StimuliSourceSightSocketName)) {
+		StimuliSourceTransform = ObjectMesh->GetSocketTransform(StimuliSourceSightSocketName);
+    }
+
+    // Perform a line trace from the NPC's head to the player's head
+    FHitResult HitResult;
+    FCollisionQueryParams CollisionParams;
+    CollisionParams.AddIgnoredActor(Context.IgnoreActor);
+
+    bool bHit = GetWorld()->LineTraceSingleByChannel(
+    			HitResult,
+    			Context.ObserverLocation,
+    			StimuliSourceTransform.GetLocation(),
+    			ECC_Visibility,//ECC_GameTraceChannel1,
+    			CollisionParams
+    			);
+	
+    if (bHit)
+    {
+        //DrawDebugLine(GetWorld(), Context.ObserverLocation, StimuliSourceTransform.GetLocation(), FColor::Green, false, 0.1f, 0, 1.0f);
+    	OutSeenLocation = StimuliSourceTransform.GetLocation();
+    	OutNumberOfLoSChecksPerformed = 1;
+    	OutNumberOfAsyncLosCheckRequested = 0;
+    	OutSightStrength = 1.0f;
+    	return UAISense_Sight::EVisibilityResult::Visible;
+    }
+
+    //DrawDebugLine(GetWorld(), Context.ObserverLocation, StimuliSourceTransform.GetLocation(), FColor::Red, false, 0.1f, 0, 1.0f);
+    OutNumberOfLoSChecksPerformed = 1;
+    OutNumberOfAsyncLosCheckRequested = 0;
+    OutSightStrength = 0.0f;
+    return UAISense_Sight::EVisibilityResult::NotVisible;
+
 }

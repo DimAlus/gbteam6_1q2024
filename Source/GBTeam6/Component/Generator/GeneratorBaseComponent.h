@@ -41,6 +41,8 @@ public:
 	FGeberatorInfoSignature OnGenerationBegin;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetIsBuilded() {return false;};
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetWorkPower();

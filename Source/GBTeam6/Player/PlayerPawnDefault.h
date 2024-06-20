@@ -80,7 +80,7 @@ protected:
 	FTimerHandle CameraZoomTimerHandle;
 
 	/** Values to write from select and command */
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	AActor* SelectedActor = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
@@ -132,6 +132,15 @@ protected:
 
 	/** Camera zoom tick function */
 	void CameraZoomTick();
+	
+	/** Change game speed input functions */
+	void SetGameSpeedPause(const FInputActionValue& Value);
+	void SetGameSpeedHigher(const FInputActionValue& Value);
+	void SetGameSpeedLower(const FInputActionValue& Value);
+
+	/** Change game speed main function */
+	void SetGameSpeed(float TimeDilation);
+	
 
 	
 public:	
