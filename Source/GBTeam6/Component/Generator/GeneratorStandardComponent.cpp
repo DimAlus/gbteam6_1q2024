@@ -128,11 +128,11 @@ void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
 		this->QueuesTasks.Add(threadName, {});
 		this->QueuesPassive.Add(threadName, {});
 
-		/*this->ThreadsIterators.Add(threadName, FGeneratorThreadIterators(
+		this->ThreadsIterators.Add(threadName, FGeneratorThreadIterators(
 			{ this->QueuesPriority[threadName] },
 			{ this->QueuesTasks[threadName] },
 			{ this->QueuesPassive[threadName] }
-		));*/
+		));
 	}
 }
 
