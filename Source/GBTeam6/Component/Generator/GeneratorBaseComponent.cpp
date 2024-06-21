@@ -14,66 +14,69 @@ void UGeneratorBaseComponent::SaveComponent(FGeneratorSaveData& saveData) {
 void UGeneratorBaseComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 }
 
-TArray<FPrice> UGeneratorBaseComponent::GetNeeds(int steps) {
-	return {};
-}
-
-TArray<FPrice> UGeneratorBaseComponent::GetOvers(int steps) {
-	return {};
-}
-
-TMap<EResource, int> UGeneratorBaseComponent::GetNeedsMap(int steps) {
-	return TMap<EResource, int>();
-}
-
-TMap<EResource, int> UGeneratorBaseComponent::GetOversMap(int steps) {
-	return TMap<EResource, int>();
-}
-
-void UGeneratorBaseComponent::SetWorkEnabled(bool isEnabled) {
-}
-
-void UGeneratorBaseComponent::ChangeGenerationSelection(int index, bool isSelected) {
-}
-
-void UGeneratorBaseComponent::ChangeGenerationLimit(int index, int newLimit) {
-}
-
-FGenerator UGeneratorBaseComponent::GetCurrentGenerator() {
-	return FGenerator();
-}
-
-TArray<FGenerator> UGeneratorBaseComponent::GetGenerators() {
-	return TArray<FGenerator>();
-}
-
-TArray<FPassiveGenerator> UGeneratorBaseComponent::GetPassiveGenerators() {
-	return TArray<FPassiveGenerator>();
-}
-
-float UGeneratorBaseComponent::GetTime() {
+float UGeneratorBaseComponent::GetWorkPower() {
 	return 0.0f;
 }
 
-float UGeneratorBaseComponent::GetTimePercents() {
+TMap<EResource, int> UGeneratorBaseComponent::GetNeeds() {
+	return TMap<EResource, int>();
+}
+
+void UGeneratorBaseComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
+}
+
+void UGeneratorBaseComponent::ChangeGenerationPriority(const FString& generatorName, bool isPriority) {
+}
+
+TArray<FString> UGeneratorBaseComponent::GetGenerators(FString threadName) {
+	return {};
+}
+
+float UGeneratorBaseComponent::GetProgress(FString threadName) {
 	return 0.0f;
 }
 
-bool UGeneratorBaseComponent::IsWorking() {
-	return false;
+float UGeneratorBaseComponent::GetProgressPercents(FString threadName) {
+	return 0.0f;
 }
 
-TArray<FGenerator> UGeneratorBaseComponent::GetTaskStack() {
-	return TArray<FGenerator>();
+const FGeneratorThread& UGeneratorBaseComponent::GetThread(FString threadName, bool& exists) {
+	static FGeneratorThread EmptyThread;
+	exists = false;
+	return EmptyThread;
 }
 
-void UGeneratorBaseComponent::AddToTaskStack(int index) {
+const FGeneratorElementInfo& UGeneratorBaseComponent::GetCurrentGenerator(FString threadName, bool& exists) {
+	static FGeneratorElementInfo EmptyGenerator;
+	exists = false;
+	return EmptyGenerator;
 }
 
-void UGeneratorBaseComponent::RemoveFromStack(int index) {
+const FGeneratorContext& UGeneratorBaseComponent::GetCurrentGeneratorContext(FString threadName, bool& exists) {
+	static FGeneratorContext EmptyContext;
+	exists = false;
+	return EmptyContext;
 }
 
-void UGeneratorBaseComponent::CancelTask() {
+const FGeneratorElementInfo& UGeneratorBaseComponent::GetGenerator(FString generatorName, bool& exists) {
+	static FGeneratorElementInfo EmptyGenerator;
+	exists = false;
+	return EmptyGenerator;
+}
+
+const FGeneratorContext& UGeneratorBaseComponent::GetGeneratorContext(FString generatorName, bool& exists) {
+	static FGeneratorContext EmptyContext;
+	exists = false;
+	return EmptyContext;
+}
+
+void UGeneratorBaseComponent::AddTask(FString generatorName) {
+}
+
+void UGeneratorBaseComponent::RemoveTask(FString generatorName) {
+}
+
+void UGeneratorBaseComponent::CancelTask(FString generatorName) {
 }
 
 void UGeneratorBaseComponent::SetIsDestruction(bool isDestroy) {
@@ -89,10 +92,13 @@ void UGeneratorBaseComponent::AttachCore(UGameObjectCore* Core) {
 void UGeneratorBaseComponent::DetachCore(UGameObjectCore* Core) {
 }
 
+void UGeneratorBaseComponent::SetReadyCore(UGameObjectCore* Core) {
+}
+
 TSet<ESocialTag> UGeneratorBaseComponent::GetNeededSocialTags() {
 	return TSet<ESocialTag>();
 }
 
-TSet<ESocialTag> UGeneratorBaseComponent::GetUsedSocialTags() {
-	return TSet<ESocialTag>();
+bool UGeneratorBaseComponent::GetNeedMe(UGameObjectCore* core) {
+	return false;
 }

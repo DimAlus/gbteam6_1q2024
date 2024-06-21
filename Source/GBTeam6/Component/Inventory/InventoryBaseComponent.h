@@ -52,6 +52,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual const TMap<EResource, int>& GetAllResources();
 
+	UFUNCTION(BlueprintCallable)
+	virtual TMap<EResource, int> GetOverage();
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FOnInventoryChange OnInventoryChange;

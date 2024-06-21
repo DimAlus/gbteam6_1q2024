@@ -51,4 +51,5 @@ public:
 	virtual int GetResourceCount(EResource resource) override;
 	virtual int GetMaxStacksCount() override;
 	virtual const TMap<EResource, int>& GetAllResources() override;
+	virtual TMap<EResource, int> GetOverage() override;
 };

@@ -37,6 +37,7 @@ enum class EGameComponentType : uint8 {
 	Movement	UMETA(DisplayName = "Movement"),
 	Mapping		UMETA(DisplayName = "Mapping"),
 	Generator	UMETA(DisplayName = "Generator"),
+	Tasker		UMETA(DisplayName = "Tasker"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
@@ -129,7 +130,10 @@ enum class ESocialTag : uint8 {
 	ReedThickets		UMETA(DisplayName = "ReedThickets"),
 	Cellar				UMETA(DisplayName = "Cellar"),
 	StumpAltar			UMETA(DisplayName = "StumpAltar"),
-	
+
+	EnergyGenerator		UMETA(DisplayName = "EnergyGenerator"),
+	Barricade			UMETA(DisplayName = "Barricade"),
+	Tower				UMETA(DisplayName = "Tower"),
 	BerryGrove			UMETA(DisplayName = "BerryGrove"),
 	WoodGrove			UMETA(DisplayName = "WoodGrove"),
 	HolyGrove			UMETA(DisplayName = "HolyGrove"),

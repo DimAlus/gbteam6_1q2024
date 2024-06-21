@@ -9,6 +9,7 @@
 class UHealthBaseComponent;
 class UMappingBaseComponent;
 class UGeneratorBaseComponent;
+class UTaskerBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
 class UUIBaseComponent;
@@ -60,33 +61,17 @@ struct FHealthComponentInitData {
 /// <summary>
 /// Generator Initializing
 /// </summary>
+
+
 USTRUCT(BlueprintType)
 struct FGeneratorComponentInitializer {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FBarter> BarterTypes{};
+	TMap<FString, FGeneratorElementInfo> Generators{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPassiveGenerator> PassiveGeneration{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPrice> BuildPrice{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool BuildSelectedDefault{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool NeedBuilding{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float BuildTime{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool ShowPassiveGeneratorWork{ false };
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TSet<EResource> ShowPassiveGeneratorWorkIgnore{};
+	float WorkPower{};
 };
 
 
@@ -99,6 +84,35 @@ struct FGeneratorComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitializer ComponentInitializer{};
+
+};
+
+
+
+/***********************************************************************************/
+/// <summary>
+/// Tasker Initializing
+/// </summary>
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameTaskFindData> TaskFinders;
+};
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UTaskerBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitializer ComponentInitializer{};
 
 };
 
@@ -194,14 +208,14 @@ public:
 	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(), 
 		NULL, 
-		TEXT("/Game/Enviroment/Material/M_TileEnabled")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(),
 		NULL,
-		TEXT("/Game/Enviroment/Material/M_TileDisabled")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
 	));
 };
 
@@ -337,6 +351,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitData GeneratorComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitData TaskerComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventoryComponentInitData InventoryComponentInitData{};

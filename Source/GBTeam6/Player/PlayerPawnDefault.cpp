@@ -41,6 +41,8 @@ APlayerPawnDefault::APlayerPawnDefault()
 
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
+
+	CustomTimeDilation = 1.f;
 }
 
 // Called when the game starts or when spawned
@@ -102,6 +104,16 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Command action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
+
+		// Set game speed pause action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedPauseAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SetGameSpeedPause);
+		// Set game speed higher action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedHigherAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SetGameSpeedHigher);
+		// Set game speed lower action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedLowerAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SetGameSpeedLower);
 	}
 	else
 	{
@@ -192,9 +204,10 @@ void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectC
 
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
-	// input is a Vector2D
-	const FVector2D MovementVector = Value.Get<FVector2D>();
-
+	float MovementFactor = (TargetCameraBoomLength-MinCameraBoomLength)/(MaxCameraBoomLength-MinCameraBoomLength);
+	if (MovementFactor < 0.2f)
+		MovementFactor = 0.2f;
+	const FVector2D MovementVector = Value.Get<FVector2D>()*MovementFactor;
 	if (Controller != nullptr) {
 		// find out which way is forward
 		const FRotator Rotation = RootComponent->GetComponentRotation();
@@ -207,8 +220,13 @@ void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		//AddMovementInput(ForwardDirection, MovementVector.Y);
+		//AddMovementInput(RightDirection, MovementVector.X);;
+		auto TargetLocation = GetActorLocation();
+		auto ForwardVector = ForwardDirection*MovementVector.Y;
+		auto RightVector = RightDirection*MovementVector.X;
+		TargetLocation += (ForwardVector + RightVector)*100;
+		SetActorLocation(TargetLocation);
 	}
 }
 
@@ -271,14 +289,57 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 }
 
 void APlayerPawnDefault::CameraZoomTick() {
+	float CustomDeltaTime = GetWorld()->GetDeltaSeconds();
+	const float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+	if (GlobalTimeDilation > 0.f)
+		CustomDeltaTime = GetWorld()->GetDeltaSeconds()/GlobalTimeDilation;
 	CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(
 		CameraBoom->TargetArmLength,
 		TargetCameraBoomLength,
-		GetWorld()->GetDeltaSeconds(),
+		CustomDeltaTime,
 		5.f
 		);
-	
 	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f) {
 		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
 	}
+}
+
+void APlayerPawnDefault::SetGameSpeedPause(const FInputActionValue& Value)
+{
+	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+	if (GlobalTimeDilation > 0.1f)
+		SetGameSpeed(0.0001f);
+	else
+		SetGameSpeed(1.f);
+}
+
+void APlayerPawnDefault::SetGameSpeedHigher(const FInputActionValue& Value)
+{
+	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+
+	if (GlobalTimeDilation >= 2.f)
+		return;
+	if (GlobalTimeDilation >= 1.f)
+		SetGameSpeed(2.f);
+	else
+		SetGameSpeed(1.f);
+}
+
+void APlayerPawnDefault::SetGameSpeedLower(const FInputActionValue& Value)
+{
+	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+
+	if (GlobalTimeDilation < 0.1f)
+		return;
+	if (GlobalTimeDilation <= 1.f)
+		SetGameSpeed(0.0001f);
+	else
+		SetGameSpeed(1.f);
+}
+
+void APlayerPawnDefault::SetGameSpeed(float TimeDilation)
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
+	if (TimeDilation >= 0.0001f)
+		CustomTimeDilation = 1/TimeDilation;
 }
