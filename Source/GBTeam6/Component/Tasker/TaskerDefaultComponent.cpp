@@ -157,7 +157,7 @@ TMap<EResource, int> UTaskerDefaultComponent::GetOffers() {
 	EResource currentTaskResource;
 	int currentTaskCount = 0;
 	if (ObjectTasks.Num() > 0 && ObjectTasks[0].Count > 0) {
-		currentTaskResource = ObjectTasks[0].Resource
+		currentTaskResource = ObjectTasks[0].Resource;
 		currentTaskCount = ObjectTasks[0].Count;
 	}
 

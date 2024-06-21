@@ -33,7 +33,7 @@ private:
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetNeedsByCores(TSet<UGameObjectCore*> cores);
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetOversByCores(TSet<UGameObjectCore*> cores);
 
-	UGameObjectCore* GetRandCore(TArray<UGameObjectCore*> cores);
+	UGameObjectCore* GetRandCore(TArray<UGameObjectCore*>& cores);
 	FGameTask CreateTask(UGameObjectCore* core, EResource resource, int count);
 	TArray<FGameTask> FindTaskByNeedsOvers(TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& needsMap,
 										   TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& oversMap);

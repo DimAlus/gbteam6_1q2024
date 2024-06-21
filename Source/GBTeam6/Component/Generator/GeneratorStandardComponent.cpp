@@ -601,7 +601,6 @@ void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
 	if (CoresAttached.Contains(Core)
 		&& !CoresReserved.Contains(Core)) {
 		CoresReady.AddUnique(Core);
-		OnGeneratorChanging.Broadcast(this->Generators[generatorName]);
 	}
 }
 

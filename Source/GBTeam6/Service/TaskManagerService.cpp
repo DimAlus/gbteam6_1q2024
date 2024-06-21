@@ -119,7 +119,7 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 		tasks = FindTaskByNeedsOvers(NeedMap, OverMap);
 	}
 	else {
-		TArray<UGameObjectCore*> destarr = dests.ToArray();
+		TArray<UGameObjectCore*> destarr = dests.Array();
 		if (UGameObjectCore* dest = GetRandCore(destarr)) {
 			for (auto iter : OverMap) {
 				int ind = FMath::RandRange(0, iter.Value.Num() - 1);
@@ -141,7 +141,7 @@ TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindD
 	auto OverMap = GetOversByCores({ findData.Performer });
 
 	if (OverMap.Num() > 0) {
-		TArray<UGameObjectCore*> destarr = dests.ToArray();
+		TArray<UGameObjectCore*> destarr = dests.Array();
 		if (UGameObjectCore* dest = GetRandCore(destarr)) {
 			for (auto iter : OverMap) {
 				return { CreateTask(dest, iter.Key, iter.Value[0].Value) };
