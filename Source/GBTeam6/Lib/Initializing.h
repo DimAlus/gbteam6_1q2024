@@ -98,6 +98,9 @@ struct FGeneratorComponentInitData {
 USTRUCT(BlueprintType)
 struct FTaskerComponentInitializer {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameTaskFindData> TaskFinders;
 };
 
 

@@ -2,12 +2,15 @@
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Generator/GeneratorBaseComponent.h"
 #include "../../Interface/GameObjectCore.h"
+#include "../../Game/GameStateDefault.h"
+#include "../../Service/TaskManagerService.h"
 #include "TaskerDefaultComponent.h"
 
 
 
 void UTaskerDefaultComponent::Initialize(const FTaskerComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
+	TaskFinders = initializer.TaskFinders;
 }
 
 
@@ -21,44 +24,33 @@ void UTaskerDefaultComponent::LoadComponent(const FTaskerSaveData& saveData) {
 }
 
 
-TMap<EResource, int> UTaskerDefaultComponent::GetRequests() { 
-	TMap<EResource, int> result;
-	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
-		for (const auto& need : generator->GetNeeds()) {
-			EResource res = need.Key;
-			int count = need.Value;
-			if (ExpectedResources.Contains(res)) {
-				count -= ExpectedResources[res];
-			}
-			if (count > 0) {
-				result.Add(res, count);
-			}
+void UTaskerDefaultComponent::RegisterTasks(TArray<FGameTask>& tasks) {
+	for (const auto& task : tasks) {
+		UE_LOG_COMPONENT(Log, "Register task: <%s> <- '%s': %d", *task.Core->GetOwnerName(),
+			*UEnum::GetValueAsString(task.Resource), task.Count);
+		if (auto tasker = Cast<UTaskerBaseComponent>(task.Core->GetComponent(EGameComponentType::Tasker))) {
+			tasker->AddExpecting(GetCore(), task);
 		}
+		ObjectTasks.Add(task);
 	}
-	return result;
-}
-
-
-TMap<EResource, int> UTaskerDefaultComponent::GetOffers() { 
-	TMap<EResource, int> result;
-	if (auto inventory = Cast<UInventoryBaseComponent>(GetCore()->GetComponent(EGameComponentType::Inventory))) {
-		for (const auto& over : inventory->GetOverage()) {
-			EResource res = over.Key;
-			int count = over.Value;
-			if (ExpectedResources.Contains(res) && ExpectedResources[res] < 0) {
-				count += ExpectedResources[res];
-			}
-			if (count > 0) {
-				result.Add(res, count);
-			}
-		}
-	}
-	return result;
 }
 
 
 bool UTaskerDefaultComponent::FindTask() { 
-	UE_LOG_COMPONENT(Log, "Find new task");
+	UE_LOG_COMPONENT(Log, "Try find new tasks");
+
+	AGameStateDefault* gameState = GetGameState();
+	if (gameState) {
+		if (auto taskManager = gameState->GetTaskManagerService()) {
+			for (const auto& finder : this->TaskFinders) {
+				TArray<FGameTask> tasks = taskManager->FindTaskByTags(finder);
+				if (tasks.Num() > 0) {
+					RegisterTasks(tasks);
+					return true;
+				}
+			}
+		}
+	}
 	return false; 
 }
 
@@ -139,6 +131,52 @@ void UTaskerDefaultComponent::CancleTask() {
 		}
 	}
 	this->ObjectTasks.RemoveAt(0);
+}
+
+
+TMap<EResource, int> UTaskerDefaultComponent::GetRequests() {
+	TMap<EResource, int> result;
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		for (const auto& need : generator->GetNeeds()) {
+			EResource res = need.Key;
+			int count = need.Value;
+			if (ExpectedResources.Contains(res)) {
+				count -= ExpectedResources[res];
+			}
+			if (count > 0) {
+				result.Add(res, count);
+			}
+		}
+	}
+	return result;
+}
+
+
+TMap<EResource, int> UTaskerDefaultComponent::GetOffers() { 
+	TMap<EResource, int> result;
+	EResource currentTaskResource;
+	int currentTaskCount = 0;
+	if (ObjectTasks.Num() > 0 && ObjectTasks[0].Count > 0) {
+		currentTaskResource = ObjectTasks[0].Resource
+		currentTaskCount = ObjectTasks[0].Count;
+	}
+
+	if (auto inventory = Cast<UInventoryBaseComponent>(GetCore()->GetComponent(EGameComponentType::Inventory))) {
+		for (const auto& over : inventory->GetOverage()) {
+			EResource res = over.Key;
+			int count = over.Value;
+			if (res == currentTaskResource) {
+				count -= currentTaskCount;
+			}
+			if (ExpectedResources.Contains(res) && ExpectedResources[res] < 0) {
+				count += ExpectedResources[res];
+			}
+			if (count > 0) {
+				result.Add(res, count);
+			}
+		}
+	}
+	return result;
 }
 
 

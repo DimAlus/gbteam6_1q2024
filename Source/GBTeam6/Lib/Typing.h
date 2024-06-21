@@ -338,7 +338,7 @@ struct FGameTaskFindData {
 	TSet<ESocialTag> DestinationsIgnores;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool FromPerformer;
+	bool ForPerformer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool CheckNeeds;

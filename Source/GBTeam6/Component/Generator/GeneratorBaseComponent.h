@@ -32,7 +32,10 @@ public:
 	FPriceListSignature OnResourceGenerated;
 
 	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnGeneratorsChanging;
+	FTouchSignature OnAllGeneratorsChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeberatorInfoSignature OnGeneratorChanging;
 
 	UPROPERTY(BlueprintAssignable)
 	FGeberatorInfoSignature OnGeneratorSuccess;
@@ -62,10 +65,10 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetPower(FString threadName);
+	virtual float GetProgress(FString threadName);
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetPowerPercents(FString threadName);
+	virtual float GetProgressPercents(FString threadName);
 
 
 	UFUNCTION(BlueprintCallable)

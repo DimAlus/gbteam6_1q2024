@@ -24,15 +24,19 @@ private:
 	TArray<FGameTask> ObjectTasks;
 	TArray<FGameTask> ExpectedTasks;
 
-public:
+	TArray<FGameTaskFindData> TaskFinders;
+private:
+	void RegisterTasks(TArray<FGameTask>& tasks);
 
-	virtual TMap<EResource, int> GetRequests() override;
-	virtual TMap<EResource, int> GetOffers() override;
+public:
 
 	virtual bool FindTask() override;
 	virtual const FGameTask& GetCurrentTask(bool& exists) override;
 	virtual bool ApplyTask() override;
 	virtual void CancleTask() override;
+
+	virtual TMap<EResource, int> GetRequests() override;
+	virtual TMap<EResource, int> GetOffers() override;
 	
 	virtual void AddExpecting(UGameObjectCore* core, const FGameTask& task) override;
 	virtual void RemoveExpecting(UGameObjectCore* core, const FGameTask& task) override;
