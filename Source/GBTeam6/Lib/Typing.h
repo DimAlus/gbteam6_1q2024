@@ -11,6 +11,8 @@ DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTouchSignature);
+
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
 #define UE_LOG_SERVICE(LogType, Message, ...) \

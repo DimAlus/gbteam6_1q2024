@@ -57,6 +57,10 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 				ApplyWork(thread.GeneratorName);
 				thread.GeneratorName = "";
 			}
+
+			if (thread.GeneratorName != "") {
+				OnGeneratorProgress.Broadcast(thread.GeneratorName, info);
+			}
 		}
 
 		if (thread.GeneratorName == "") {
@@ -281,7 +285,7 @@ void UGeneratorStandardComponent::StartWork(const FString& threadName, const FSt
 	HireWorkers(generatorName);
 	RemoveTask(generatorName);
 
-	OnGenerationBegin.Broadcast(this->Generators[generatorName]);
+	OnGenerationBegin.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -320,7 +324,7 @@ void UGeneratorStandardComponent::ApplyWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Applied <%s>", *generatorName);
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	DismissWorkers(info.ThreadName);
-	OnGeneratorSuccess.Broadcast(info);
+	OnGeneratorSuccess.Broadcast(generatorName, info);
 
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		inventory->Push(info.Barter.Result);
@@ -426,7 +430,7 @@ void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& gen
 	}
 	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
 	this->TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(this->Generators[generatorName]);
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
 }
 
@@ -438,7 +442,7 @@ void UGeneratorStandardComponent::ChangeGenerationPriority(const FString& genera
 		return;
 	}
 	this->GeneratorsContext[generatorName].Priority = isPriority;
-	OnGeneratorChanging.Broadcast(this->Generators[generatorName]);
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -535,7 +539,7 @@ void UGeneratorStandardComponent::AddTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(this->Generators[generatorName]);
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
 }
 
@@ -546,7 +550,7 @@ void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(this->Generators[generatorName]);
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
 }
 
@@ -561,7 +565,7 @@ void UGeneratorStandardComponent::CancelTask(FString generatorName) {
 		thread.SavePower.Add(thread.GeneratorName, thread.Power);
 		thread.Power = 0;
 		thread.GeneratorName = FString();
-		OnGeneratorChanging.Broadcast(info);
+		OnGeneratorChanging.Broadcast(generatorName, info);
 	}
 }
 

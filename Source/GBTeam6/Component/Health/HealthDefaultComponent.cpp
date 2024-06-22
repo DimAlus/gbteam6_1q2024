@@ -47,7 +47,8 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 		CurrentHealth-=Damage;
 		UE_LOG_COMPONENT(Log, "Pawn damaged! Damage = %f; Current health = %f!", Damage, CurrentHealth);
 		OnDamage.Broadcast(Damage);
-		
+		OnChangeHealth.Broadcast();
+
 		if(CurrentHealth <= 0.f) {
 			CurrentHealth = 0.f;
 			bDead = true;

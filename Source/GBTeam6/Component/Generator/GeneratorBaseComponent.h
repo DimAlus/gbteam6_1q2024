@@ -10,9 +10,8 @@
 
 class UGameObjectCore;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTouchSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPriceListSignature, TArray<FPrice>, GeneratedResources);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGeberatorInfoSignature, const FGeneratorElementInfo&, Generator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGeneratorInfoSignature, const FString&, GeneratorName, const FGeneratorElementInfo&, Generator);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UGeneratorBaseComponent : public UBaseComponent {
@@ -35,13 +34,16 @@ public:
 	FTouchSignature OnAllGeneratorsChanging;
 
 	UPROPERTY(BlueprintAssignable)
-	FGeberatorInfoSignature OnGeneratorChanging;
+	FGeneratorInfoSignature OnGeneratorChanging;
 
 	UPROPERTY(BlueprintAssignable)
-	FGeberatorInfoSignature OnGeneratorSuccess;
+	FGeneratorInfoSignature OnGeneratorProgress;
 
 	UPROPERTY(BlueprintAssignable)
-	FGeberatorInfoSignature OnGenerationBegin;
+	FGeneratorInfoSignature OnGeneratorSuccess;
+
+	UPROPERTY(BlueprintAssignable)
+	FGeneratorInfoSignature OnGenerationBegin;
 
 public:
 	UFUNCTION(BlueprintCallable)

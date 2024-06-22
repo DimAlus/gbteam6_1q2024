@@ -10,7 +10,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTryDead, int, Lifes);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UHealthBaseComponent : public UBaseComponent {
@@ -29,7 +28,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnDamage OnDamage;
 	UPROPERTY(BlueprintAssignable)
-	FOnDeath OnDeath;
+	FTouchSignature OnDeath;
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnChangeHealth;
 	UPROPERTY(BlueprintAssignable)
 	FOnTryDead OnTryDead;
 public:
