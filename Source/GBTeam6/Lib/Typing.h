@@ -33,16 +33,12 @@ class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 
 class UStringCycledIterator {
 private:
-	TArray<FString> EmptyArray;
-	TArray<FString>& Iterable = EmptyArray;
 	int iter;
 
 public:
-	UStringCycledIterator(TArray<FString>& iterable);
-	UStringCycledIterator();
+	TArray<FString> Iterable;
 
-	void operator =(const UStringCycledIterator& copy);
-
+public:
 	FString* Next();
 	FString* Prev();
 };
@@ -280,13 +276,9 @@ struct FGeneratorThreadIterators {
 
 public:
 
-	UStringCycledIterator PriorityIterator;
-	UStringCycledIterator TasksIterator;
-	UStringCycledIterator PassiveIterator;
-	FGeneratorThreadIterators(UStringCycledIterator priorityIterator,
-							  UStringCycledIterator tasksIterator,
-						      UStringCycledIterator passiveIterator);
-	FGeneratorThreadIterators();
+	UStringCycledIterator Priority;
+	UStringCycledIterator Tasks;
+	UStringCycledIterator Passive;
 };
 
 

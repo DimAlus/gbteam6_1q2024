@@ -11,6 +11,9 @@
 void UTaskerDefaultComponent::Initialize(const FTaskerComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	TaskFinders = initializer.TaskFinders;
+	for (int i = 0; i < TaskFinders.Num(); i++) {
+		TaskFinders[i].Performer = GetCore();
+	}
 }
 
 

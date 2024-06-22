@@ -36,14 +36,13 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			FGeneratorElementInfo& info = this->Generators[thread.GeneratorName];
 
 			/** Add power for thread */
-			thread.Power += info.AutoGenPower;
-			thread.Power += this->WorkPower;
+			float DeltaPower = info.AutoGenPower + this->WorkPower;
 			for (int i = thread.AttachedCores.Num() - 1; i >= 0; i--) {
 				UGameObjectCore* core = thread.AttachedCores[i];
 
 				if (IsValid(core)) {
 					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
-						thread.Power += gen->GetWorkPower() * info.WorkMultiplier;
+						DeltaPower += gen->GetWorkPower() * info.WorkMultiplier;
 					}
 				}
 				else {
@@ -51,11 +50,14 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 				}
 			}
 
+			thread.Power += DeltaPower * DeltaTime;
 			if (thread.Power >= info.Barter.WorkSize) {
 				thread.SavePower.Add(thread.GeneratorName, thread.Power - info.Barter.WorkSize);
 				thread.Power = 0;
 				ApplyWork(thread.GeneratorName);
+				FString save = thread.GeneratorName;
 				thread.GeneratorName = "";
+				OnGeneratorChanging.Broadcast(save, info);
 			}
 
 			if (thread.GeneratorName != "") {
@@ -86,7 +88,7 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 		this->GeneratorsContext.Add(iter.Key, context);
 
 		if (info.IsSelected) {
-			this->QueuesPassive[info.ThreadName].Add(iter.Key);
+			this->ThreadsIterators[info.ThreadName].Passive.Iterable.Add(iter.Key);
 		}
 	}
 
@@ -104,8 +106,13 @@ void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
 
 void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
-	GeneratorsContext = saveData.GeneratorsContext;
-	IsDestructed = saveData.IsDestructed;
+	// GeneratorsContext = saveData.GeneratorsContext;
+	this->IsDestructed = saveData.IsDestructed;
+
+	for (const auto& iter : saveData.GeneratorsContext) {
+		this->GeneratorsContext.Add(iter.Key, iter.Value);
+	}
+
 }
 
 
@@ -128,15 +135,8 @@ void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
 	if (!this->Threads.Contains(threadName)) {
 		this->Threads.Add(threadName, {});
 		this->CurrentThreadGenerators.Add(threadName, {});
-		this->QueuesPriority.Add(threadName, {});
-		this->QueuesTasks.Add(threadName, {});
-		this->QueuesPassive.Add(threadName, {});
 
-		this->ThreadsIterators.Add(threadName, FGeneratorThreadIterators(
-			{ this->QueuesPriority[threadName] },
-			{ this->QueuesTasks[threadName] },
-			{ this->QueuesPassive[threadName] }
-		));
+		this->ThreadsIterators.Add(threadName, FGeneratorThreadIterators());
 	}
 }
 
@@ -154,21 +154,21 @@ void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 	}
 
 	if (atLevel && context.PassiveWork) {
-		this->QueuesPassive[info.ThreadName].AddUnique(generatorName);
+		this->ThreadsIterators[info.ThreadName].Passive.Iterable.AddUnique(generatorName);
 	}
 	else {
-		this->QueuesPassive[info.ThreadName].RemoveSingle(generatorName);
+		this->ThreadsIterators[info.ThreadName].Passive.Iterable.RemoveSingle(generatorName);
 	}
 
 	if (atLevel && context.CountTasks > 0) {
-		this->QueuesTasks[info.ThreadName].AddUnique(generatorName);
+		this->ThreadsIterators[info.ThreadName].Tasks.Iterable.AddUnique(generatorName);
 		if (context.Priority) {
-			this->QueuesPriority[info.ThreadName].AddUnique(generatorName);
+			this->ThreadsIterators[info.ThreadName].Priority.Iterable.AddUnique(generatorName);
 		}
 	}
 	else {
-		this->QueuesTasks[info.ThreadName].RemoveSingle(generatorName);
-		this->QueuesPriority[info.ThreadName].RemoveSingle(generatorName);
+		this->ThreadsIterators[info.ThreadName].Tasks.Iterable.RemoveSingle(generatorName);
+		this->ThreadsIterators[info.ThreadName].Priority.Iterable.RemoveSingle(generatorName);
 	}
 }
 
@@ -305,18 +305,22 @@ FString UGeneratorStandardComponent::FindWorkByIterator(UStringCycledIterator& i
 }
 
 
+bool UGeneratorStandardComponent::TryStartWorkByIterator(const FString& threadName, UStringCycledIterator& iterator) {
+	FString generatorName = FindWorkByIterator(iterator);
+	if (!generatorName.IsEmpty()) {
+		StartWork(threadName, generatorName);
+		return true;
+	}
+	return false;
+}
+
+
 bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
 	FGeneratorThreadIterators& threadIterators = this->ThreadsIterators[threadName];
 	
-	for (auto iterator : { threadIterators.PriorityIterator, threadIterators.TasksIterator, threadIterators.PassiveIterator }) {
-		FString generatorName = FindWorkByIterator(iterator);
-		if (!generatorName.IsEmpty()) {
-			StartWork(threadName, generatorName);
-			return true;
-		}
-	}
-
-	return false;
+	return TryStartWorkByIterator(threadName, threadIterators.Priority)
+		|| TryStartWorkByIterator(threadName, threadIterators.Tasks)
+		|| TryStartWorkByIterator(threadName, threadIterators.Passive);
 }
 
 
@@ -380,14 +384,14 @@ TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
 			}
 			if (count > 0) {
 				for (const FPrice& price : info.Barter.Price) {
-					if (!UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
+					if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
 						continue;
 					}
 					if (!needs.Contains(price.Resource)) {
-						needs.Add(price.Resource, price.Count * steps);
+						needs.Add(price.Resource, price.Count * count);
 					}
 					else {
-						needs[price.Resource] += price.Count * steps;
+						needs[price.Resource] += price.Count * count;
 					}
 				}
 			}
@@ -407,6 +411,7 @@ void UGeneratorStandardComponent::SetIsSetedAtMap(bool isBuilded) {
 	if (this->Level == 0) {
 		if (isBuilded) {
 			this->Level = 1;
+			TouchAllGenerators();
 		}
 	}
 }
@@ -442,6 +447,7 @@ void UGeneratorStandardComponent::ChangeGenerationPriority(const FString& genera
 		return;
 	}
 	this->GeneratorsContext[generatorName].Priority = isPriority;
+	this->TouchGenerator(generatorName);
 	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 

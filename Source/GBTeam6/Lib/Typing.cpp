@@ -48,29 +48,3 @@ FString* UStringCycledIterator::Prev() {
 
     return &this->Iterable[this->iter]; 
 }
-
-UStringCycledIterator::UStringCycledIterator(TArray<FString>& iterable) {
-    this->Iterable = iterable;
-}
-
-UStringCycledIterator::UStringCycledIterator() {
-}
-
-void UStringCycledIterator::operator=(const UStringCycledIterator& copy) {
-    this->Iterable = copy.Iterable;
-    this->iter = copy.iter;
-}
-
-FGeneratorThreadIterators::FGeneratorThreadIterators(
-    UStringCycledIterator priorityIterator,
-    UStringCycledIterator tasksIterator,
-    UStringCycledIterator passiveIterator
-) : PriorityIterator(priorityIterator), TasksIterator(tasksIterator), PassiveIterator(passiveIterator) {
-}
-
-FGeneratorThreadIterators::FGeneratorThreadIterators() {
-    static UStringCycledIterator EmptyIterator;
-    PriorityIterator = EmptyIterator;
-    TasksIterator = EmptyIterator;
-    PassiveIterator = EmptyIterator;
-}

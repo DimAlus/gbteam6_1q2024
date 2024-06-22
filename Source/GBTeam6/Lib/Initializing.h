@@ -240,8 +240,6 @@ USTRUCT(BlueprintType)
 struct FInventoryComponentInitializer {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountStacks = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool ShowInventoryChanging{ false };

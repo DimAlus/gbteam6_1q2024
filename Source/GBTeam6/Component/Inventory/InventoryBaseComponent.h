@@ -41,13 +41,7 @@ public:
 	virtual bool Pop(const TArray<FPrice>& resources);
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetStacks();
-
-	UFUNCTION(BlueprintCallable)
 	virtual int GetResourceCount(EResource resource);
-
-	UFUNCTION(BlueprintCallable)
-	virtual int GetMaxStacksCount();
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TMap<EResource, int>& GetAllResources();

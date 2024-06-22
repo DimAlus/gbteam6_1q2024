@@ -35,9 +35,6 @@ private:
 	TMap<FString, FGeneratorThreadIterators> ThreadsIterators;
 	TMap<FString, TArray<FString>> CurrentThreadGenerators;
 	TMap<FString, TMap<ESocialTag, int>> CurrentThreadNeedSocialTags;
-	TMap<FString, TArray<FString>> QueuesPriority;
-	TMap<FString, TArray<FString>> QueuesTasks;
-	TMap<FString, TArray<FString>> QueuesPassive;
 
 	float WorkPower;
 
@@ -73,6 +70,7 @@ private:
 	void DismissWorkers(const FString& threadName);
 	void StartWork(const FString& threadName, const FString& generatorName);
 	FString FindWorkByIterator(UStringCycledIterator& iterator);
+	bool TryStartWorkByIterator(const FString& threadName, UStringCycledIterator& iterator);
 	bool FindWork(const FString& threadName);
 
 	void ApplyWork(const FString& generatorName);
@@ -83,6 +81,7 @@ private:
 	TMap<EResource, int> CalculateNeeds(int steps);
 	void ResetCurrentNeeds();
 
+	UFUNCTION()
 	void SetIsSetedAtMap(bool isBuilded);
 public:
 	virtual float GetWorkPower() override;

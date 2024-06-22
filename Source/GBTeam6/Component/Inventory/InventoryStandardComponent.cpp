@@ -7,27 +7,23 @@
 
 void UInventoryStandardComponent::Initialize(const FInventoryComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
-	MaxStacksCount = initializer.CountStacks;
 	ShowChaging = initializer.ShowInventoryChanging;
 	ShowChagingIgnore = initializer.ShowInventoryChangingIgnore;
 }
 
 void UInventoryStandardComponent::SaveComponent(FInventorySaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
-	saveData.CountStacks = CurrentStacksCount;
 	saveData.Resources = Resources;
 }
 
 void UInventoryStandardComponent::LoadComponent(const FInventorySaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	Resources = saveData.Resources;
-	CurrentStacksCount = saveData.CountStacks;
 }
 
 
 void UInventoryStandardComponent::SavePoint() {
 	FSaveStruct save;
-	save.CurrentStacksCount = CurrentStacksCount;
 	for (auto iter = Resources.begin(); iter != Resources.end(); ++iter) {
 		save.Resources.Add(iter.Key(), iter.Value());
 	}
@@ -37,7 +33,6 @@ void UInventoryStandardComponent::SavePoint() {
 void UInventoryStandardComponent::RollBack(bool isBack) {
 	FSaveStruct& save = Saves[Saves.Num() - 1];
 	if (isBack) {
-		CurrentStacksCount = save.CurrentStacksCount;
 		Resources.Reset();
 		for (auto iter = save.Resources.begin(); iter != save.Resources.end(); ++iter) {
 			Resources.Add(iter.Key(), iter.Value());
@@ -54,14 +49,6 @@ bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 		if (!Resources.Contains(res.Resource)) {
 			Resources.Add(res.Resource, 0);
 		}
-		int stacksNow = StackCount(res.Resource, Resources[res.Resource]);
-		int stacksAfter = StackCount(res.Resource, Resources[res.Resource] + res.Count);
-
-		if (CurrentStacksCount + stacksAfter - stacksNow > MaxStacksCount) {
-			success = false;
-			break;
-		}
-		CurrentStacksCount += stacksAfter - stacksNow;
 		Resources[res.Resource] += res.Count;
 	}
 	return success;
@@ -74,10 +61,6 @@ bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 		}
 		if (Resources.Contains(res.Resource)
 			&& Resources[res.Resource] >= res.Count) {
-			CurrentStacksCount -= (
-				StackCount(res.Resource, Resources[res.Resource]) -
-				StackCount(res.Resource, Resources[res.Resource] - res.Count)
-				);
 			Resources[res.Resource] -= res.Count;
 		}
 		else {
@@ -125,9 +108,6 @@ bool UInventoryStandardComponent::_player_pop(const TArray<FPrice>& resources) {
 	return success;
 }
 
-int UInventoryStandardComponent::StackCount(EResource res, int count) {
-	return count == 0 ? 0 : (count - 1) / GetGameState()->GetStackSize(res) + 1;
-}
 
 bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
 	SavePoint();
@@ -200,33 +180,11 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 	return success;
 }
 
-TArray<FPrice> UInventoryStandardComponent::GetStacks() {
-	TArray<FPrice> result;
-	for (auto iter = Resources.begin(); iter != Resources.end(); ++iter) {
-		FPrice price;
-		int stacks = StackCount(iter.Key(), iter.Value());
-		int stackSize = GetGameState()->GetStackSize(iter.Key());
-		price.Resource = iter.Key();
-		price.Count = stackSize;
-		for (int i = 0; i < stacks - 1; i++) {
-			result.Add(FPrice(price));
-		}
-		price.Count = iter.Value() - std::max(0, (stacks - 1) * price.Count);
-		if (price.Count > 0)
-			result.Add(price);
-	}
-	return result;
-}
-
 int UInventoryStandardComponent::GetResourceCount(EResource resource) {
 	if (Resources.Contains(resource)) {
 		return Resources[resource];
 	}
 	return 0;
-}
-
-int UInventoryStandardComponent::GetMaxStacksCount() {
-	return MaxStacksCount;
 }
 
 const TMap<EResource, int>& UInventoryStandardComponent::GetAllResources() {
