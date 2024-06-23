@@ -35,6 +35,7 @@ private:
 	TMap<FString, FGeneratorThreadIterators> ThreadsIterators;
 	TMap<FString, TArray<FString>> CurrentThreadGenerators;
 	TMap<FString, TMap<ESocialTag, int>> CurrentThreadNeedSocialTags;
+	bool CurrentThreadNeedSocialTagsActual = false;
 
 	float WorkPower;
 
@@ -113,6 +114,7 @@ public:
 	virtual void DetachCore(UGameObjectCore* Core) override;
 	virtual void SetReadyCore(UGameObjectCore* Core) override;
 
+	void CalculateCurrentThreadNeedSocialTags();
 	TSet<ESocialTag> CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores);
 	virtual TSet<ESocialTag> GetNeededSocialTags() override;
 	virtual bool GetNeedMe(UGameObjectCore* core) override;

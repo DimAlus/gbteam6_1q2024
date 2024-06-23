@@ -78,17 +78,24 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 	this->WorkPower = initializer.WorkPower;
 
 	this->Generators = initializer.Generators;
-	for (auto iter : this->Generators) {
-		const FGeneratorElementInfo& info = iter.Value;
+
+	TArray<FString> keys;
+	this->Generators.GetKeys(keys);
+	for (const FString& key : keys) {
+		FGeneratorElementInfo& info = this->Generators[key];
 		FGeneratorContext context;
 
 		this->TouchThread(info.ThreadName);
 
 		context.PassiveWork = info.IsSelected;
-		this->GeneratorsContext.Add(iter.Key, context);
+		this->GeneratorsContext.Add(key, context);
 
-		if (info.IsSelected) {
-			this->ThreadsIterators[info.ThreadName].Passive.Iterable.Add(iter.Key);
+		info.HasSocialTagNeeds = false;
+		for (const auto& prc : info.Barter.Price) {
+			if (prc.Resource == EResource::SocialTag) {
+				info.HasSocialTagNeeds = true;
+				break;
+			}
 		}
 	}
 
@@ -145,6 +152,10 @@ void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
+
+	if (info.HasSocialTagNeeds) {
+		CurrentThreadNeedSocialTagsActual = false;
+	}
 
 	if (atLevel){
 		this->CurrentThreadGenerators[info.ThreadName].AddUnique(generatorName);
@@ -615,8 +626,49 @@ void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
 }
 
 
+void UGeneratorStandardComponent::CalculateCurrentThreadNeedSocialTags() {
+	TMap<FString, TMap<ESocialTag, int>> result;
+	for (const auto& iter : this->Generators) {
+		const auto& info = iter.Value;
+		bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
+
+		if (atLevel && info.HasSocialTagNeeds) {
+			const auto& context = this->GeneratorsContext[iter.Key];
+
+			if (context.PassiveWork || context.CountTasks > 0) {
+				if (!result.Contains(info.ThreadName)) {
+					result.Add(info.ThreadName);
+				}
+				auto& needs = result[info.ThreadName];
+				for (const auto& prc : info.Barter.Price) {
+					if (prc.Resource == EResource::SocialTag) {
+						int cnt = 0;
+						ESocialTag tag = ESocialTag::None;
+						for (auto tg : prc.SocialTags) {
+							tag = tg;
+							break;
+						}
+
+						if (needs.Contains(tag)) {
+							cnt = needs[tag];
+						}
+						needs.Add(tag, std::max(cnt, prc.Count));
+					}
+				}
+			}
+		}
+	}
+
+	this->CurrentThreadNeedSocialTags = result;
+
+}
+
 TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores) {
 	TSet<ESocialTag> result;
+
+	if (!CurrentThreadNeedSocialTagsActual) {
+		CalculateCurrentThreadNeedSocialTags();
+	}
 
 	TMap<ESocialTag, int> needs;
 	for (const auto& needsST : this->CurrentThreadNeedSocialTags) {

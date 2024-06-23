@@ -248,6 +248,9 @@ struct FGeneratorElementInfo {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool ShowResult{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool HasSocialTagNeeds{ false };
 };
 
 
