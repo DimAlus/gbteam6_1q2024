@@ -113,7 +113,7 @@ bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
 
 bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
 	if (PlayerResources.Contains(resource)) {
-		if (PlayerResources[resource] > count) {
+		if (PlayerResources[resource] >= count) {
 			PlayerResources[resource] -= count;
 			return true;
 		}
