@@ -254,6 +254,7 @@ bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
 				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
 						cores.AddUnique(core);
+						cnt--;
 					}
 				}
 			}
