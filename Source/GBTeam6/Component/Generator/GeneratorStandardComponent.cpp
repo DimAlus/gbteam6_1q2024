@@ -715,10 +715,14 @@ bool UGeneratorStandardComponent::GetNeedMe(UGameObjectCore* core) {
 	if (this->CoresReserved.Contains(core)) {
 		return true;
 	}
+	TSet<ESocialTag> needNow = this->GetNeededSocialTags();
 	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		if (this->GetNeededSocialTags().Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+		if (needNow.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
 			return true;
 		}
 	}
-	return false;
+	TArray<UGameObjectCore*> attached = this->CoresAttached;
+	attached.Remove(core);
+	TSet<ESocialTag> needAfterDelete = CalculateNeededSocalTags(attached);
+	return needAfterDelete.Num() != needNow.Num();
 }
