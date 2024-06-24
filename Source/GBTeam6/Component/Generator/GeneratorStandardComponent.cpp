@@ -295,7 +295,9 @@ void UGeneratorStandardComponent::StartWork(const FString& threadName, const FSt
 		inventory->Pop(this->Generators[generatorName].Barter.Price);
 	}
 	HireWorkers(generatorName);
-	RemoveTask(generatorName);
+	if (context.CountTasks > 0) {
+		RemoveTask(generatorName);
+	}
 
 	OnGenerationBegin.Broadcast(generatorName, this->Generators[generatorName]);
 }
@@ -564,12 +566,18 @@ void UGeneratorStandardComponent::AddTask(FString generatorName) {
 
 void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
-	context.CountTasks = std::max(0, context.CountTasks - 1);
-	UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
-	ResetCurrentNeeds();
-	TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
-	IsActualCurrentSocialTagNeeds = false;
+	if (context.CountTasks <= 0) {
+		CancelTask(generatorName);
+	}
+	else {
+		context.CountTasks--;
+		UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
+		ResetCurrentNeeds();
+		TouchGenerator(generatorName);
+		OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
+		IsActualCurrentSocialTagNeeds = false;
+
+	}
 }
 
 

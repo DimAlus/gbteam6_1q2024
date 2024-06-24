@@ -98,7 +98,7 @@ void UTaskManagerService::SetGameState(AGameStateDefault* ownerGameState) {
 
 TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& findData) {
 	if (findData.ForPerformer) {
-		FindTaskForPerformer(findData);
+		return FindTaskForPerformer(findData);
 	}
 	UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
 	USocialService* social = gameState->GetSocialService();
