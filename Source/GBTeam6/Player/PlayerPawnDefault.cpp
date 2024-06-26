@@ -104,16 +104,10 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Command action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
-
-		// Set game speed pause action binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedPauseAction, ETriggerEvent::Started, this,
-			&APlayerPawnDefault::SetGameSpeedPause);
-		// Set game speed higher action binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedHigherAction, ETriggerEvent::Started, this,
-			&APlayerPawnDefault::SetGameSpeedHigher);
-		// Set game speed lower action binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedLowerAction, ETriggerEvent::Started, this,
-			&APlayerPawnDefault::SetGameSpeedLower);
+		
+		// Set game speed action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SetGameSpeedInput);
 	}
 	else
 	{
@@ -304,42 +298,36 @@ void APlayerPawnDefault::CameraZoomTick() {
 	}
 }
 
-void APlayerPawnDefault::SetGameSpeedPause(const FInputActionValue& Value)
-{
-	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
-	if (GlobalTimeDilation > 0.1f)
-		SetGameSpeed(0.0001f);
-	else
-		SetGameSpeed(1.f);
+void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
+	int speed = Value.Get<float>();
+	if (speed <= 0) {
+		SetGamePaused(!CurrentGamePaused);
+	}
+	else {
+		SetGameSpeed(speed);
+	}
 }
 
-void APlayerPawnDefault::SetGameSpeedHigher(const FInputActionValue& Value)
-{
-	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
-
-	if (GlobalTimeDilation >= 2.f)
-		return;
-	if (GlobalTimeDilation >= 1.f)
-		SetGameSpeed(2.f);
-	else
-		SetGameSpeed(1.f);
-}
-
-void APlayerPawnDefault::SetGameSpeedLower(const FInputActionValue& Value)
-{
-	float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
-
-	if (GlobalTimeDilation < 0.1f)
-		return;
-	if (GlobalTimeDilation <= 1.f)
-		SetGameSpeed(0.0001f);
-	else
-		SetGameSpeed(1.f);
-}
-
-void APlayerPawnDefault::SetGameSpeed(float TimeDilation)
-{
+void APlayerPawnDefault::UpdateGameSpeed() {
+	float TimeDilation;
+	if (CurrentGamePaused) {
+		TimeDilation = 0.0001f;
+	}
+	else {
+		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
+	}
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
 	if (TimeDilation >= 0.0001f)
 		CustomTimeDilation = 1/TimeDilation;
+	OnGameSpeedChanged.Broadcast();
+}
+
+void APlayerPawnDefault::SetGameSpeed(int speed) {
+	CurrentGameSpeed = speed;
+	UpdateGameSpeed();
+}
+
+void APlayerPawnDefault::SetGamePaused(bool isPaused) {
+	CurrentGamePaused = isPaused;
+	UpdateGameSpeed();
 }

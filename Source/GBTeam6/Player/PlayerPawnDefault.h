@@ -134,12 +134,10 @@ protected:
 	void CameraZoomTick();
 	
 	/** Change game speed input functions */
-	void SetGameSpeedPause(const FInputActionValue& Value);
-	void SetGameSpeedHigher(const FInputActionValue& Value);
-	void SetGameSpeedLower(const FInputActionValue& Value);
+	void SetGameSpeedInput(const FInputActionValue& Value);
 
 	/** Change game speed main function */
-	void SetGameSpeed(float TimeDilation);
+	void UpdateGameSpeed();
 	
 
 	
@@ -150,4 +148,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const;
 
+
+	UPROPERTY(BlueprintReadOnly)
+	int CurrentGameSpeed = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool CurrentGamePaused = false;
+
+	UFUNCTION(BlueprintCallable)
+	void SetGameSpeed(int speed);
+
+	UFUNCTION(BlueprintCallable)
+	void SetGamePaused(bool isPaused);
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGameSpeedChanged;
 };
