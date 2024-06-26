@@ -375,7 +375,7 @@ void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FP
 			}
 		}
 		else if (res.Resource == EResource::Self) {
-			this->Level++;
+			OnObjectLevelChanged.Broadcast(++Level);
 			TouchAllGenerators();
 		}
 	}
@@ -425,6 +425,7 @@ void UGeneratorStandardComponent::SetIsSetedAtMap(bool isBuilded) {
 	if (this->Level == 0) {
 		if (isBuilded) {
 			this->Level = 1;
+			OnObjectLevelChanged.Broadcast(Level);
 			TouchAllGenerators();
 		}
 	}

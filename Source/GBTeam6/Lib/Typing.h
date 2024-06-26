@@ -194,6 +194,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMesh* ConstructionFullMesh{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UMaterialInstance* ConstructionMaterial{};
 	
 };
 

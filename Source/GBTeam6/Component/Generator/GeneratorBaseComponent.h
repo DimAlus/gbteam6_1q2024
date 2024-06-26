@@ -12,6 +12,7 @@ class UGameObjectCore;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPriceListSignature, TArray<FPrice>, GeneratedResources);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGeneratorInfoSignature, const FString&, GeneratorName, const FGeneratorElementInfo&, Generator);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FObjectLevelSignature, int, CurrentLevel);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UGeneratorBaseComponent : public UBaseComponent {
@@ -44,6 +45,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FGeneratorInfoSignature OnGenerationBegin;
+
+	UPROPERTY(BlueprintAssignable)
+	FObjectLevelSignature OnObjectLevelChanged;
 
 	int Level = 0;
 
