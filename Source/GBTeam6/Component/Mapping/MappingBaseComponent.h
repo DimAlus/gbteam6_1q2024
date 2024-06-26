@@ -8,7 +8,7 @@
 
 #include "MappingBaseComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuildedEventSignature, bool, IsBuilded);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlacedEventSignature, bool, IsPlaced);
 
 class AMapPreview;
 
@@ -33,10 +33,10 @@ public:
 
 public:
 	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	bool bCanBuild = false;
+	bool bCanPlace = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	bool bIsBuilded = false;
+	bool bIsPlaced = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
 	FIntVector currentLocation;
@@ -44,19 +44,19 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild);
+	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetPreviewVisibility(bool isVilible);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool SetIsBuilded(bool isBuilded);
+	virtual bool SetIsPlaced(bool isPlaced);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool GetIsBuilded();
+	virtual bool GetIsPlaced();
 
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnBuildedEventSignature OnBuilded;
+	FOnPlacedEventSignature OnPlaced;
 };

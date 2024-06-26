@@ -23,7 +23,7 @@ protected:
 	void UnRegisterObjectInService();
 
 	UFUNCTION()
-	void OnBuildedRegist(bool IsBuilded);
+	void OnPlacedRegister(bool IsPlaced);
 public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) override;
 

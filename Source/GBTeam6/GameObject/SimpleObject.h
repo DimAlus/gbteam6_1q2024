@@ -54,7 +54,7 @@ protected:
 protected:
 
 	UFUNCTION()
-	void OnBuildedBehaviour(bool IsBuilded);
+	void OnPlacedBehaviour(bool IsPlaced);
 	
 	UFUNCTION()
 	void OnResourceGeneratedBehaviour(TArray<FPrice> GeneratedRes);

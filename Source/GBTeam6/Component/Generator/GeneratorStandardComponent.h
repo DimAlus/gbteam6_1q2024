@@ -39,8 +39,7 @@ private:
 
 	float WorkPower;
 
-	bool IsDestructed = false;
-	bool IsDead = false;
+
 
 	TArray<UGameObjectCore*> CoresAttached;
 	TArray<UGameObjectCore*> CoresReady;
@@ -49,14 +48,14 @@ private:
 	TSet<ESocialTag> CurrentSocialTagNeeds;
 	bool IsActualCurrentSocialTagNeeds = false;
 
-	int Level = 0;
+
 
 	TMap<EResource, int> CurrentNeeds;
 private:
 
 	UInventoryBaseComponent* GetInventory();
 
-	FORCEINLINE float GetLevel() const { return IsDestructed ? -666 : Level; };
+
 
 	void TouchThread(const FString& threadName);
 	void TouchGenerator(const FString& generatorName);

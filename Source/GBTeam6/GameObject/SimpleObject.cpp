@@ -23,7 +23,7 @@ ASimpleObject::ASimpleObject() {
 	ObjectMesh->SetCollisionProfileName("GameObject");
 
 	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
-	MappingComponent->OnBuilded.AddDynamic(this, &ASimpleObject::OnBuildedBehaviour);
+	MappingComponent->OnPlaced.AddDynamic(this, &ASimpleObject::OnPlacedBehaviour);
 	//OnDestroyed.AddDynamic(this, &ASimpleObject::DestroyGameObject);
 }
 
@@ -60,9 +60,9 @@ void ASimpleObject::BeginPlay() {
 
 }
 
-void ASimpleObject::OnBuildedBehaviour(bool IsBuilded)
+void ASimpleObject::OnPlacedBehaviour(bool IsPlaced)
 {
-	if (!IsBuilded)
+	if (!IsPlaced)
 		return;
 }
 

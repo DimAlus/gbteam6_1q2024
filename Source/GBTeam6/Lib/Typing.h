@@ -185,6 +185,18 @@ public:
 
 };
 
+USTRUCT(BlueprintType)
+struct FBuildingConstruction {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMesh* ConstructionBaseMesh{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UStaticMesh* ConstructionFullMesh{};
+	
+};
+
 
 USTRUCT(BlueprintType)
 struct FPrice {

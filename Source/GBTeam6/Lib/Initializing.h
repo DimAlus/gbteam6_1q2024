@@ -332,6 +332,9 @@ struct FGameObjectInitializer
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Speed = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FBuildingConstruction BuildingConstruction{};
 };
 
 USTRUCT(BlueprintType)

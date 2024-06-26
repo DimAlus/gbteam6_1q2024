@@ -45,9 +45,18 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FGeneratorInfoSignature OnGenerationBegin;
 
+	int Level = 0;
+
+	bool IsDestructed = false;
+	bool IsDead = false;
+
 public:
+
 	UFUNCTION(BlueprintCallable)
-	virtual bool GetIsBuilded() {return false;};
+	FORCEINLINE float GetLevel() const { return IsDestructed ? -666 : Level; };
+	
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetIsPlaced() {return false;};
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetWorkPower();

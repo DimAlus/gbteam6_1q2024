@@ -19,7 +19,7 @@ void UGeneratorStandardComponent::BeginPlay() {
 	Super::BeginPlay();
 	if (auto core = GetCore()) {
 		if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
-			mapping->OnBuilded.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
+			mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
 		}
 	}
 }

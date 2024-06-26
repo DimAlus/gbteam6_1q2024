@@ -18,15 +18,15 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
 		UMappingBaseComponent* mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping));
 		if (mapping) {
-			if (mapping->GetIsBuilded()) {
-				OnBuildedRegist(true);
+			if (mapping->GetIsPlaced()) {
+				OnPlacedRegister(true);
 			}
 			else {
-				mapping->OnBuilded.AddDynamic(this, &USocialDefaultComponent::OnBuildedRegist);
+				mapping->OnPlaced.AddDynamic(this, &USocialDefaultComponent::OnPlacedRegister);
 			}
 		}
 		else {
-			OnBuildedRegist(true);
+			OnPlacedRegister(true);
 		}
 	}));
 	
@@ -56,7 +56,7 @@ void USocialDefaultComponent::UnRegisterObjectInService() {
 	}
 }
 
-void USocialDefaultComponent::OnBuildedRegist(bool IsBuilded) {
+void USocialDefaultComponent::OnPlacedRegister(bool IsPlaced) {
 	this->RegisterObjectInService();
 }
 

@@ -7,7 +7,7 @@
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	UE_LOG_COMPONENT(Log, "Destroy Component!");
-	SetIsBuilded(false);
+	SetIsPlaced(false);
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		iter->Value.Preview->DestroyComponent();
 	}
@@ -81,7 +81,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(bIsBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
+				Collision->SetCollisionEnabled(bIsPlaced ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
 			}
 			else
 			{
@@ -113,13 +113,13 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 		nullptr,
 		ETeleportType::TeleportPhysics
 	);
-	UpdateCanBuild();
-	if (!SetIsBuilded(true)) {
+	UpdateCanPlace();
+	if (!SetIsPlaced(true)) {
 		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
 		GetOwner()->Destroy();
 	}
-	bIsBuilded = true;
-	OnBuilded.Broadcast(bIsBuilded);
+	bIsPlaced = true;
+	OnPlaced.Broadcast(bIsPlaced);
 	if(GetCore())
 	{
 		if (auto Collision =
@@ -152,7 +152,7 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 }
 
 
-void UMappingDefaultComponent::UpdateCanBuild() {
+void UMappingDefaultComponent::UpdateCanPlace() {
 	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
 	if (!IsValid(gameState)) {
 		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
@@ -163,25 +163,25 @@ void UMappingDefaultComponent::UpdateCanBuild() {
 		UE_LOG_COMPONENT(Error, "Created UMappingService not Valid!");
 		return;
 	}
-	bCanBuild = true;
+	bCanPlace = true;
 
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		int x = currentLocation.X + iter.Key().Key;
 		int y = currentLocation.Y + iter.Key().Value;
 		const FTileInfo& info = mappingService->GetTileInfo(x, y);
 
-		bool IsCanBuild = info.state == ETileState::Free
+		bool IsCanPlace = info.state == ETileState::Free
 			&& mappingService->GetTileIsParent(info.type, iter->Value.TileType);
 
-		this->SetMeshIsEnabled(iter->Value.Preview, IsCanBuild);
+		this->SetMeshIsEnabled(iter->Value.Preview, IsCanPlace);
 
-		bCanBuild = bCanBuild && IsCanBuild;
+		bCanPlace = bCanPlace && IsCanPlace;
 	}
 }
 
 
 
-void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) {
+void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) {
 	currentLocation = FIntVector((TargetLocation/* + this->Initializer.ComponentLocation */ ) / FVector(this->tileSize));
 	currentLocation += FIntVector(this->Initializer.ComponentLocation.X / tileSize.X, this->Initializer.ComponentLocation.Y / tileSize.Y, 0);
 
@@ -191,8 +191,8 @@ void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation, bool bUp
 		nullptr,
 		ETeleportType::TeleportPhysics
 	);
-	if (bUpdateCanBuild) {
-		UpdateCanBuild();
+	if (bUpdateCanPlace) {
+		UpdateCanPlace();
 	}
 }
 
@@ -203,9 +203,9 @@ void UMappingDefaultComponent::SetPreviewVisibility(bool isVilible) {
 	}
 }
 
-bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
-	if (bIsBuilded ^ isBuilded) {
-		if (isBuilded && !bCanBuild) {
+bool UMappingDefaultComponent::SetIsPlaced(bool isPlaced) {
+	if (bIsPlaced ^ isPlaced) {
+		if (isPlaced && !bCanPlace) {
 			return false;
 		}
 
@@ -227,22 +227,22 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 			int x = currentLocation.X + iter.Key().Key;
 			int y = currentLocation.Y + iter.Key().Value;
 
-			mappingService->SetTileBusy(x, y, isBuilded ? ETileState::Busy : ETileState::Free);
+			mappingService->SetTileBusy(x, y, isPlaced ? ETileState::Busy : ETileState::Free);
 		}
-		bIsBuilded = isBuilded;
-		OnBuilded.Broadcast(isBuilded);
+		bIsPlaced = isPlaced;
+		OnPlaced.Broadcast(isPlaced);
 		
 		if(GetCore())
 		{
 			if (auto Collision =
 					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
 			{
-				Collision->SetCollisionEnabled(isBuilded ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
+				Collision->SetCollisionEnabled(isPlaced ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
 			}
 		}
 		else
 		{
-			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on SetIsBuilded! No Core!");
+			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on SetIsPlaced! No Core!");
 		}
 		
 		return true;
@@ -250,6 +250,6 @@ bool UMappingDefaultComponent::SetIsBuilded(bool isBuilded) {
 	return false;
 }
 
-bool UMappingDefaultComponent::GetIsBuilded() {
-	return bIsBuilded;
+bool UMappingDefaultComponent::GetIsPlaced() {
+	return bIsPlaced;
 }
