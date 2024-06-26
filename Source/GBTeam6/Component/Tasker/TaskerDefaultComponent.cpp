@@ -140,9 +140,11 @@ void UTaskerDefaultComponent::CancleTask() {
 TMap<EResource, int> UTaskerDefaultComponent::GetRequests() {
 	TMap<EResource, int> result;
 	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		auto inventory = Cast<UInventoryBaseComponent>(GetCore()->GetComponent(EGameComponentType::Inventory));
 		for (const auto& need : generator->GetNeeds()) {
 			EResource res = need.Key;
 			int count = need.Value;
+			count -= inventory->GetResourceCount(res);
 			if (ExpectedResources.Contains(res)) {
 				count -= ExpectedResources[res];
 			}
