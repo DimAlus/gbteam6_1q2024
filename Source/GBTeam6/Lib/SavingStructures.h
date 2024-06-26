@@ -139,6 +139,9 @@ struct FGameStateSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int DayNumber{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsDay{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

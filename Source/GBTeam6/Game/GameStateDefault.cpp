@@ -183,6 +183,9 @@ void AGameStateDefault::DayChangingLoop(){
 	bool isDay = perc > dayPeriod.X && perc < dayPeriod.Y;
 	if (isDay != CurrentIsDay) {
 		CurrentIsDay = isDay;
+		if (isDay) {
+			CurrentDayNum++;
+		}
 		OnDayStateChanging.Broadcast(isDay);
 	}
 	if (isDay) {
@@ -235,12 +238,14 @@ void AGameStateDefault::Save(FGameProgressSaveData& data) {
 	data.GameStateData.PlayerResources = this->PlayerResources;
 	data.GameStateData.CurrentDayTime = this->CurrentDayTime;
 	data.GameStateData.IsDay = this->CurrentIsDay;
+	data.GameStateData.DayNumber = this->CurrentDayNum;
 }
 
 void AGameStateDefault::Load(FGameProgressSaveData& data) {
 	this->PlayerResources = data.GameStateData.PlayerResources;
 	this->CurrentDayTime = data.GameStateData.CurrentDayTime;
 	this->CurrentIsDay = data.GameStateData.IsDay;
+	this->CurrentDayNum = data.GameStateData.DayNumber;
 }
 
 bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {

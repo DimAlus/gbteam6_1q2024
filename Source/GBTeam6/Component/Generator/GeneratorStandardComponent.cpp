@@ -190,6 +190,7 @@ void UGeneratorStandardComponent::TouchAllGenerators() {
 	for (const FString& key : keys) {
 		this->TouchGenerator(key);
 	}
+	ResetCurrentNeeds();
 	OnAllGeneratorsChanging.Broadcast();
 }
 
@@ -449,6 +450,7 @@ void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& gen
 		return;
 	}
 	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
+	ResetCurrentNeeds();
 	this->TouchGenerator(generatorName);
 	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
