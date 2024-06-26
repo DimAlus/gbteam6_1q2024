@@ -177,6 +177,7 @@ private:
 	float CurrentDayTime;
 	float DayChangingDelay = 0.1f;
 	bool CurrentIsDay = true;
+	int CurrentDayNum = 0;
 	FTimerHandle DayChangingTimer;
 	//FVector DayPeriod{ 0.2f, 0.8f, 0.f };
 	float SunPosition;
@@ -195,6 +196,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsDay() const { return CurrentIsDay; }
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE int GetDayNumber() const { return CurrentDayNum; }
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE float GetCurrentDayTime() const { return CurrentDayTime; }
