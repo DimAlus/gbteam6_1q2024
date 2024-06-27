@@ -304,6 +304,9 @@ void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
 		SetGamePaused(!CurrentGamePaused);
 	}
 	else {
+		if (CurrentGamePaused) {
+			SetGamePaused(false);
+		}
 		SetGameSpeed(speed);
 	}
 }

@@ -620,6 +620,7 @@ void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
 	if (CoresReserved.Contains(Core)) {
 		for (auto thread : this->Threads) {
 			if (thread.Value.AttachedCores.Contains(Core)) {
+				AddTask(thread.Value.GeneratorName);
 				CancelTask(thread.Value.GeneratorName);
 			}
 		}
