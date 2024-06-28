@@ -40,7 +40,8 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			for (int i = thread.AttachedCores.Num() - 1; i >= 0; i--) {
 				UGameObjectCore* core = thread.AttachedCores[i];
 
-				if (IsValid(core)) {
+				if (core->IsValidLowLevel()) {
+					UE_LOG_COMPONENT(Warning, "Core at 44 line is %s", *GetNameSafe(core));
 					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 						DeltaPower += gen->GetWorkPower() * info.WorkMultiplier;
 					}
@@ -126,6 +127,9 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 
 UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 	UGameObjectCore* core = GetCore();
+	if (!IsValid(core)) {
+		return nullptr;
+	}
 
 	UInventoryBaseComponent* inventory = Cast<UInventoryBaseComponent>(
 		core->GetComponent(EGameComponentType::Inventory)
@@ -201,9 +205,11 @@ bool UGeneratorStandardComponent::HasAllSocialTags(const FString& generatorName)
 		if (prc.Resource == EResource::SocialTag) {
 			int cnt = prc.Count;
 			for (UGameObjectCore* core : CoresReady) {
-				if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-					if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
-						cnt--;
+				if (IsValid(core)) {
+					if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+						if (prc.SocialTags.Intersect(TSet<ESocialTag>(social->GetSocialTags())).Num() > 0) {
+							cnt--;
+						}
 					}
 				}
 				if (cnt <= 0)
@@ -249,6 +255,9 @@ bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
 			for (UGameObjectCore* core : CoresReady) {
 				if (cnt <= 0)
 					break;
+				if (!IsValid(core)) {
+					continue;
+				}
 				if (cores.Contains(core)) {
 					continue;
 				}
@@ -625,6 +634,7 @@ void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
 			}
 		}
 	}
+	
 	CoresReady.Remove(Core);
 	CoresAttached.Remove(Core);
 	IsActualCurrentSocialTagNeeds = false;
@@ -696,14 +706,19 @@ TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TAr
 	}
 
 	for (const auto& core : attachedCores) {
-		if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-			const auto& tags = social->GetSocialTags();
-			for (const ESocialTag& tag : tags) {
-				if (needs.Contains(tag)) {
-					needs[tag]--;
-					break;
+		if (IsValid(core)) {
+			if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+				const auto& tags = social->GetSocialTags();
+				for (const ESocialTag& tag : tags) {
+					if (needs.Contains(tag)) {
+						needs[tag]--;
+						break;
+					}
 				}
 			}
+		}
+		else {
+			DetachCore(core);
 		}
 	}
 
@@ -725,6 +740,9 @@ TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 
 
 bool UGeneratorStandardComponent::GetNeedMe(UGameObjectCore* core) {
+	if (!IsValid(core)) {
+		return false;
+	}
 	if (this->CoresReserved.Contains(core)) {
 		return true;
 	}
