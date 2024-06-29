@@ -28,6 +28,7 @@ private:
 	AGameStateDefault* gameState;
 
 	float WorkerStackMultiplyer;
+	int MaxStackSize = 20;
 
 private:
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetNeedsByCores(TSet<UGameObjectCore*> cores);

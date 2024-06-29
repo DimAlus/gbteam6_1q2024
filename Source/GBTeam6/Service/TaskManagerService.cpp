@@ -75,7 +75,7 @@ TArray<FGameTask> UTaskManagerService::FindTaskByNeedsOvers(TMap<EResource, TArr
 		if (oversMap.Contains(res)) {
 			const auto& src = oversMap[res][FMath::RandRange(0, oversMap[res].Num() - 1)];
 			const auto& dst = needsMap[res][FMath::RandRange(0, needsMap[res].Num() - 1)];
-			int count = std::min(src.Value, dst.Value);
+			int count = std::min(MaxStackSize, std::min(src.Value, dst.Value));
 			tasks.Add(CreateTask(src.Key, res, -count));
 			tasks.Add(CreateTask(dst.Key, res, count));
 			break;
@@ -123,8 +123,9 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 		if (UGameObjectCore* dest = GetRandCore(destarr)) {
 			for (auto iter : OverMap) {
 				int ind = FMath::RandRange(0, iter.Value.Num() - 1);
-				tasks.Add(CreateTask(iter.Value[ind].Key, iter.Key, -iter.Value[ind].Value));
-				tasks.Add(CreateTask(dest, iter.Key, iter.Value[ind].Value));
+				int cnt = std::min(MaxStackSize, iter.Value[ind].Value);
+				tasks.Add(CreateTask(iter.Value[ind].Key, iter.Key, -cnt));
+				tasks.Add(CreateTask(dest, iter.Key, cnt));
 			}
 		}
 	}

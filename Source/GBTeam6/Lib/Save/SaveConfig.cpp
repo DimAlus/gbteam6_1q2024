@@ -9,7 +9,13 @@ FString USaveConfig::GetSlotName(FString playerName, FString slotName, FString l
 
 const TSet<EConfig>& USaveConfig::ConfigIgnore() {
     static TSet<EConfig> ignores = {
-        EConfig::FV_TileSize
+        EConfig::FV_TileSize,
+        EConfig::FV_DayPeriod,
+        EConfig::F_DayTime,
+        EConfig::F_StartGameTime,
+        EConfig::F_NewEventDelay,
+        EConfig::F_WorkDelay,
+        EConfig::F_WorkerStackMultiplyer
     };
     return ignores;
 }

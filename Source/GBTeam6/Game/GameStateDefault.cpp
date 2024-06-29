@@ -29,12 +29,12 @@ void AGameStateDefault::LoadConfig() {
 		TArray<FTRConfig*> data;
 		DT_Config->GetAllRows(context, data);
 		for (FTRConfig* row : data) {
-			if (!USaveConfig::ConfigIgnore().Contains(row->Value.ConfigType)) {
+			//if (!USaveConfig::ConfigIgnore().Contains(row->Value.ConfigType)) {
 				if (Configs.Contains(row->Value.ConfigType))
 					Configs[row->Value.ConfigType] = row->Value;
 				else
 					Configs.Add(row->Value.ConfigType, row->Value);
-			}
+			//}
 		}
 	}
 	else {
@@ -170,9 +170,13 @@ void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
 void AGameStateDefault::DayChangingLoop(){
 	CurrentDayTime += DayChangingDelay;
 	FConfig conf;
-	GetConfig(EConfig::F_DayTime, conf);
+	if (!GetConfig(EConfig::F_DayTime, conf)) {
+		return;
+	}
 	float dayLength = conf.FloatValue;
-	GetConfig(EConfig::FV_DayPeriod, conf);
+	if (!GetConfig(EConfig::FV_DayPeriod, conf)) {
+		return;
+	}
 	FVector dayPeriod = conf.VectorValue;
 
 	if (CurrentDayTime > dayLength) {
