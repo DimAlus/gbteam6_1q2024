@@ -13,7 +13,10 @@ void UGeneratorBaseComponent::SaveComponent(FGeneratorSaveData& saveData) {
 
 void UGeneratorBaseComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 }
-
+void UGeneratorBaseComponent::SetLevel(int NewLevel)
+{
+	Level = NewLevel;
+}
 float UGeneratorBaseComponent::GetWorkPower() {
 	return 0.0f;
 }

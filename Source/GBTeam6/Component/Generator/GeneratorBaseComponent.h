@@ -58,6 +58,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE int GetLevel() const { return IsDestructed ? -666 : Level; };
+
+	UFUNCTION(BlueprintCallable)
+	void SetLevel(int NewLevel);
 	
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsPlaced() {return false;};
