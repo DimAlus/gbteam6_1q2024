@@ -1,4 +1,6 @@
 #include "./HealthDefaultComponent.h"
+#include "../../Interface/GameObjectCore.h"
+#include "../Generator/GeneratorBaseComponent.h"
 
 UHealthDefaultComponent::UHealthDefaultComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -10,6 +12,17 @@ void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Init
 	MaxHealth = Initializer.MaxHealth;
 	CurrentHealth = MaxHealth;
 	DeadTime = Initializer.DeadTime;
+
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
+		if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+			bool exists;
+			const auto& gen = generator->GetGenerator(FString("Construction"), exists);
+			if (exists) {
+				this->CurrentHealth = 1;
+				generator->OnGeneratorProgress.AddDynamic(this, &UHealthDefaultComponent::GeneratorProgress);
+			}
+		}
+	}));
 }
 
 void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
@@ -43,13 +56,37 @@ void UHealthDefaultComponent::BeginPlay() {
 
 void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 										 class AController* InstigatedBy, AActor* DamageCauser) {
+	ChangeHealth(-Damage);
+}
+
+void UHealthDefaultComponent::GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info) {
+	if (generatorName == "Construction") {
+		if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+			bool exists;
+			const auto& gen = generator->GetGenerator(generatorName, exists);
+			if (exists) {
+				if (generator->GetThread(gen.ThreadName, exists).GeneratorName == generatorName) {
+					float CurrentGeneratorProgress = generator->GetProgressPercents(gen.ThreadName);
+					ChangeHealth(MaxHealth * (CurrentGeneratorProgress - LastGeneratorProgress));
+					LastGeneratorProgress = CurrentGeneratorProgress;
+
+				}
+			}
+		}
+	}
+}
+
+void UHealthDefaultComponent::ChangeHealth(float deltaHealth) {
 	if (!bDead) {
-		CurrentHealth-=Damage;
-		UE_LOG_COMPONENT(Log, "Pawn damaged! Damage = %f; Current health = %f!", Damage, CurrentHealth);
-		OnDamage.Broadcast(Damage);
+		CurrentHealth = std::min(MaxHealth, CurrentHealth + deltaHealth);
+		
+		UE_LOG_COMPONENT(Log, "Pawn damaged! Damage = %f; Current health = %f!", deltaHealth, CurrentHealth);
+		if (deltaHealth < 0) {
+			OnDamage.Broadcast(-deltaHealth);
+		}
 		OnChangeHealth.Broadcast();
 
-		if(CurrentHealth <= 0.f) {
+		if (CurrentHealth <= 0.00001f) {
 			CurrentHealth = 0.f;
 			bDead = true;
 			UE_LOG_COMPONENT(Log, "Death");
@@ -60,7 +97,7 @@ void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, con
 				destructionTimer,
 				FTimerDelegate::CreateWeakLambda(this, [this]() {
 					this->PleaseDead();
-				}),
+					}),
 				DeadTime,
 				false,
 				DeadTime

@@ -46,6 +46,11 @@ protected:
 	virtual void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser) override;
 
+	float LastGeneratorProgress = 0;
+	UFUNCTION()
+	void GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info);
+
+	void ChangeHealth(float deltaHealth);
 public:
 	
 	virtual float GetMaxHealth() override { return MaxHealth; }

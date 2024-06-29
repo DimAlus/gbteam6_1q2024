@@ -328,18 +328,20 @@ void UGameEventsService::LoadEvents() {
 
 
 void UGameEventsService::Update() {
-	for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
-		FGameEventConext& Context = iter.Value().Context;
-		TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
+	if (!gameState->isMenuMap) {
+		for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
+			FGameEventConext& Context = iter.Value().Context;
+			TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
 
-		for (auto iterT : Context.Timers) {
-			FGameEventTimer& timer = Context.Timers[iterT.Key];
-			if (!timer.IsPaused)
-				timer.Time += UpdateDelay;
-		}
+			for (auto iterT : Context.Timers) {
+				FGameEventTimer& timer = Context.Timers[iterT.Key];
+				if (!timer.IsPaused)
+					timer.Time += UpdateDelay;
+			}
 
-		for (auto data : QuestDatas) {
-			UpdateRow(data.Key, data.Value, Context);
+			for (auto data : QuestDatas) {
+				UpdateRow(data.Key, data.Value, Context);
+			}
 		}
 	}
 }
