@@ -66,9 +66,9 @@ protected:
 
 	bool isScrollPressed = false;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MinCameraZoomRotationPitch;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MaxCameraZoomRotationPitch;
 
 	/** Timers handles */
