@@ -47,7 +47,7 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 					}
 				}
 				else {
-					thread.AttachedCores.Remove(core);
+					DetachCore(core);
 				}
 			}
 
@@ -273,12 +273,10 @@ bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
 			}
 		}
 	}
-	if (cores.Num() > 0) {
-		for (const auto& core : cores) {
-			this->CoresReady.Remove(core);
-			this->CoresReserved.Add(core);
-			thread.AttachedCores.Add(core);
-		}
+	for (const auto& core : cores) {
+		this->CoresReady.Remove(core);
+		this->CoresReserved.Add(core);
+		thread.AttachedCores.Add(core);
 	}
 	return true;
 }
