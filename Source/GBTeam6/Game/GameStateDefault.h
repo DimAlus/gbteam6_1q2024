@@ -177,7 +177,7 @@ private:
 	float CurrentDayTime;
 	float DayChangingDelay = 0.1f;
 	bool CurrentIsDay = true;
-	int CurrentDayNum = 0;
+	int CurrentDayNum = 1;
 	FTimerHandle DayChangingTimer;
 	//FVector DayPeriod{ 0.2f, 0.8f, 0.f };
 	float SunPosition;
