@@ -289,6 +289,7 @@ void UGeneratorStandardComponent::DismissWorkers(const FString& threadName) {
 			this->CoresReady.Add(core);
 		}
 	}
+	this->Threads[threadName].AttachedCores.Reset();
 }
 
 
