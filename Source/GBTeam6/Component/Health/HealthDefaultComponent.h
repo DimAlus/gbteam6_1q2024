@@ -26,6 +26,11 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
+
+	int lifeCount = 0;
+	FTimerHandle destructionTimer;
+
+	float DeadTime;
 	/** Is dead flag */
 	UPROPERTY()
 	bool bDead;
@@ -41,11 +46,19 @@ protected:
 	virtual void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 		class AController* InstigatedBy, AActor* DamageCauser) override;
 
+	float LastGeneratorProgress = 0;
+	UFUNCTION()
+	void GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info);
+
+	void ChangeHealth(float deltaHealth);
 public:
 	
 	virtual float GetMaxHealth() override { return MaxHealth; }
 	virtual float GetCurrentHealth() override { return CurrentHealth; }
 	virtual float GetPercentageHealth() override {return CurrentHealth/MaxHealth;}
 	virtual bool IsDead() override { return bDead; }
-	
+	// If will called at OnDeath, actor will not destroyed
+	virtual void NotDestroyNow() override;
+	virtual void PleaseDead() override;
+
 };

@@ -21,9 +21,10 @@ public:
 	virtual void LoadComponent(const FInventorySaveData& saveData) override;
 
 protected:
+	bool ShowChaging;
+	TSet<EResource> ShowChagingIgnore;
+
 	TMap<EResource, int> Resources;
-	int CurrentStacksCount = 0;
-	int MaxStacksCount = 0;
 
 	struct FSaveStruct {
 		TMap<EResource, int> Resources;
@@ -32,19 +33,18 @@ protected:
 	TArray<FSaveStruct> Saves;
 
 private:
-	AGameStateDefault* GetGameState();
 	void SavePoint();
 	void RollBack(bool isBack);
 	bool _push(const TArray<FPrice>& resources);
 	bool _pop(const TArray<FPrice>& resources);
-	int StackCount(EResource res, int count);
+	bool _player_push(const TArray<FPrice>& resources);
+	bool _player_pop(const TArray<FPrice>& resources);
 public:
 	virtual bool CanPush(const TArray<FPrice>& resources) override;
 	virtual bool CanPop(const TArray<FPrice>& resources) override;
 	virtual bool Push(const TArray<FPrice>& resources) override;
 	virtual bool Pop(const TArray<FPrice>& resources) override;
-	virtual TArray<FPrice> GetStacks() override;
 	virtual int GetResourceCount(EResource resource) override;
-	virtual int GetMaxStacksCount() override;
 	virtual const TMap<EResource, int>& GetAllResources() override;
+	virtual TMap<EResource, int> GetOverage() override;
 };

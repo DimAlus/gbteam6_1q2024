@@ -19,6 +19,8 @@ public:
 	UGeneratorStandardComponent();
 
 	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 
 	virtual void Initialize(const FGeneratorComponentInitializer& initializer) override;
 
@@ -26,55 +28,94 @@ public:
 	virtual void LoadComponent(const FGeneratorSaveData& saveData) override;
 
 private:
-	TArray<FGenerator> Generics;
+	TMap<FString, FGeneratorElementInfo> Generators;
+	TMap<FString, FGeneratorContext> GeneratorsContext;
 
-	FTimerHandle generatorTimer;
-	float TimerDelay = 0.5f;
+	TMap<FString, FGeneratorThread> Threads;
+	TMap<FString, FGeneratorThreadIterators> ThreadsIterators;
+	TMap<FString, TArray<FString>> CurrentThreadGenerators;
+	TMap<FString, TMap<ESocialTag, int>> CurrentThreadNeedSocialTags;
+	bool CurrentThreadNeedSocialTagsActual = false;
 
-	int WorkIndex = 0;
-	float CurrentDelay;
-	bool IsWorked = false;
+	float WorkPower;
 
-	TArray<int> TaskStack;
 
-	bool IsBuilded = false;
-	TArray<FGenerator> BuildingGenerics;
 
+	TArray<UGameObjectCore*> CoresAttached;
+	TArray<UGameObjectCore*> CoresReady;
+	TArray<UGameObjectCore*> CoresReserved;
+
+	TSet<ESocialTag> CurrentSocialTagNeeds;
+	bool IsActualCurrentSocialTagNeeds = false;
+
+
+
+	TMap<EResource, int> CurrentNeeds;
 private:
-	TArray<FGenerator>* CurrentGenerics;
-	TArray<FGenerator>& GetCurrentGenerics();
 
 	UInventoryBaseComponent* GetInventory();
-	bool CanGenerate(int index);
-	bool IsGeneratorEnabled(int index);
-	void StartWork(int index);
-	bool FindWork();
-	void ApplyWork();
-	void CancelWork(const FGenerator& generator);
-	void Generate(const FGenerator& generator);
-	void WorkLoop();
-	void CreateTimer();
 
-	void SpawnActors(const TArray<FPrice>& resources);
 
-	TMap<EResource, int> _getNeeds(int steps);
+
+	void TouchThread(const FString& threadName);
+	void TouchGenerator(const FString& generatorName);
+	void TouchAllGenerators();
+
+	bool HasAllSocialTags(const FString& generatorName);
+	bool HasConstraintByResultActors(const FString& generatorName);
+	bool HasConstraintByInventory(const FString& generatorName);
+	bool CanGenerate(const FString& generatorName);
+
+	bool HireWorkers(const FString& generatorName);
+	void DismissWorkers(const FString& threadName);
+	void StartWork(const FString& threadName, const FString& generatorName);
+	FString FindWorkByIterator(UStringCycledIterator& iterator);
+	bool TryStartWorkByIterator(const FString& threadName, UStringCycledIterator& iterator);
+	bool FindWork(const FString& threadName);
+
+	void ApplyWork(const FString& generatorName);
+	void CancelWork(const FString& generatorName);
+
+	void ApplyNotInventoriableResources(const TArray<FPrice>& resources);
+
+	TMap<EResource, int> CalculateNeeds(int steps);
+	void ResetCurrentNeeds();
+
+	UFUNCTION()
+	void SetIsSetedAtMap(bool isBuilded);
 public:
+	virtual float GetWorkPower() override;
 
-	virtual TArray<FPrice> GetNeeds(int steps) override;
-	virtual TArray<FPrice> GetOvers(int steps) override;
+	virtual TMap<EResource, int> GetNeeds() override;
 	
-	virtual void SetWorkEnabled(bool isEnabled) override;
-	virtual void ChangeGenerationSelection(int index, bool isSelected) override;
-	virtual void ChangeGenerationLimit(int index, int newLimit) override;
+	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) override;
+	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;
 
-	virtual FGenerator GetCurrentGenerator() override;
-	virtual TArray<FGenerator> GetGenerators() override;
-	virtual float GetTime() override;
-	virtual float GetTimePercents() override;
-	virtual bool IsWorking() override;
+	virtual TArray<FString> GetGenerators(FString threadName) override;
+	virtual float GetProgress(FString threadName) override;
+	virtual float GetProgressPercents(FString threadName) override;
 
-	virtual TArray<FGenerator> GetTaskStack() override;
-	virtual void AddToTaskStack(int index) override;
-	virtual void RemoveFromStack(int index) override;
-	virtual void CancelTask() override;
+	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists) override;
+	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists) override;
+	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName, bool& exists) override;
+	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName, bool& exists) override;
+	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName, bool& exists) override;
+
+	virtual void AddTask(FString generatorName) override;
+	virtual void RemoveTask(FString generatorName) override;
+	virtual void CancelTask(FString generatorName) override;
+
+
+	virtual void SetIsDestruction(bool isDestroy) override;
+	virtual bool GetIsDestruction() override;
+
+	virtual void AttachCore(UGameObjectCore* Core) override;
+	virtual void DetachCore(UGameObjectCore* Core) override;
+	virtual void SetReadyCore(UGameObjectCore* Core) override;
+
+	void CalculateCurrentThreadNeedSocialTags();
+	TSet<ESocialTag> CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores);
+	virtual TSet<ESocialTag> GetNeededSocialTags() override;
+	virtual bool GetNeedMe(UGameObjectCore* core) override;
+
 };

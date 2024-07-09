@@ -37,29 +37,36 @@ enum class EGameComponentType : uint8 {
 	Movement	UMETA(DisplayName = "Movement"),
 	Mapping		UMETA(DisplayName = "Mapping"),
 	Generator	UMETA(DisplayName = "Generator"),
+	Tasker		UMETA(DisplayName = "Tasker"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
-	Sound		UMETA(DisplayName = "Sound")
+	Sound		UMETA(DisplayName = "Sound"),
+	Collision	UMETA(DisplayName = "Collision")
 };
 
 UENUM(BlueprintType)
 enum class EConfig : uint8 {
-	TileSize			UMETA(Hidden, DisplayName = "FV Tile Size"),
+	FV_TileSize			UMETA(Hidden, DisplayName = "FV Tile Size"),
 
 	/** Settings */
 	/** Sound Values */
-	SoundValue = 10		UMETA(DisplayName = "F  Sound Value"),
-	MusicValue			UMETA(DisplayName = "F  Music Value"),
-	EffectValue			UMETA(DisplayName = "F  Effect Value"),
-	VoiceValue			UMETA(DisplayName = "F  Voice Value"),
+	F_SoundValue = 10		UMETA(DisplayName = "F  Sound Value"),
+	F_MusicValue			UMETA(DisplayName = "F  Music Value"),
+	F_EffectValue			UMETA(DisplayName = "F  Effect Value"),
+	F_VoiceValue			UMETA(DisplayName = "F  Voice Value"),
 
 	/** Interface Size */
 
 	/** Gameplay */
-	DayTime = 100		UMETA(DisplayName = "F  Day Time"),
-	DayPeriod			UMETA(DisplayName = "FV Day Period"),
-	WorkDelay			UMETA(DisplayName = "F  Work Delay")
+	F_DayTime = 100			UMETA(DisplayName = "F  Day Time"),
+	FV_DayPeriod			UMETA(DisplayName = "FV Day Period"),
+	F_StartGameTime			UMETA(DisplayName = "F  Day Start Time"),
+	F_WorkDelay				UMETA(DisplayName = "F  Work Delay"),
+
+	F_NewEventDelay			UMETA(DisplayName = "F  New Event Delay"),
+
+	F_WorkerStackMultiplyer	UMETA(DisplayName = "F  Worker Stack Multiplyer")
 };
 
 UENUM(BlueprintType)
@@ -68,6 +75,7 @@ enum class EResource : uint8 {
 	Self		UMETA(DisplayName = "Self"),
 
 	Actor		UMETA(DisplayName = "Actor"),
+	SocialTag	UMETA(DisplayName = "SocialTag"),
 
 	Spirit		UMETA(DisplayName = "Spirit"),
 	Wood		UMETA(DisplayName = "Wood"),
@@ -88,16 +96,25 @@ enum class ESocialTeam : uint8 {
 };
 
 UENUM(BlueprintType)
+enum class ERelations : uint8 {
+	None		UMETA(DisplayName = "None"),
+	Neutral		UMETA(DisplayName = "Neutral"),
+	Friendly	UMETA(DisplayName = "Friendly"),
+	Hostile		UMETA(DisplayName = "Hostile")
+};
+
+UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
+	MainStorage			UMETA(DisplayName = "MainStorage"),
 	Storage				UMETA(DisplayName = "Storage"),
 	Worker				UMETA(DisplayName = "Worker"),
 	
 	Forester			UMETA(DisplayName = "Forester"),
 	Forestling			UMETA(DisplayName = "Forestling"),
-	ShoreMaiden			UMETA(DisplayName = "ShoreMaiden"),
-	WoodMaiden			UMETA(DisplayName = "WoodMaiden"),
-	MeadowMan			UMETA(DisplayName = "MeadowMan"),
+	Shoremaiden			UMETA(DisplayName = "Shoremaiden"),
+	Woodmaiden			UMETA(DisplayName = "Woodmaiden"),
+	Meadowman			UMETA(DisplayName = "Meadowman"),
 	Swimmer				UMETA(DisplayName = "Swimmer"),
 	Wisp				UMETA(DisplayName = "Wisp"),
 	Human				UMETA(DisplayName = "Human"),
@@ -106,14 +123,17 @@ enum class ESocialTag : uint8 {
 	
 	ForesterHouse		UMETA(DisplayName = "ForesterHouse"),
 	ForestlingHouse		UMETA(DisplayName = "ForestlingHouse"),
-	ShoreMaidenHouse	UMETA(DisplayName = "ShoreMaidenHouse"),
-	WoodMaidenHouse		UMETA(DisplayName = "WoodMaidenHouse"),
-	MeadowManHouse		UMETA(DisplayName = "MeadowManHouse"),
+	ShoremaidenHouse	UMETA(DisplayName = "ShoremaidenHouse"),
+	WoodmaidenHouse		UMETA(DisplayName = "WoodmaidenHouse"),
+	MeadowmanHouse		UMETA(DisplayName = "MeadowmanHouse"),
 	SwimmerHouse		UMETA(DisplayName = "SwimmerHouse"),
 	ReedThickets		UMETA(DisplayName = "ReedThickets"),
 	Cellar				UMETA(DisplayName = "Cellar"),
 	StumpAltar			UMETA(DisplayName = "StumpAltar"),
-	
+
+	EnergyGenerator		UMETA(DisplayName = "EnergyGenerator"),
+	Barricade			UMETA(DisplayName = "Barricade"),
+	Tower				UMETA(DisplayName = "Tower"),
 	BerryGrove			UMETA(DisplayName = "BerryGrove"),
 	WoodGrove			UMETA(DisplayName = "WoodGrove"),
 	HolyGrove			UMETA(DisplayName = "HolyGrove"),
@@ -154,6 +174,15 @@ enum class EUIGameObjectPanelType : uint8 {
 UENUM(BlueprintType)
 enum class EMessageTag : uint8 {
 	None			UMETA(DisplayName = "None"),
+	
+	/** Global */
+	GLB					UMETA(DisplayName = "GLB Global Events"),
+	GLBGameStart		UMETA(DisplayName = "GLB Game Start"),
+	GLBEnterPlayMap		UMETA(DisplayName = "GLB Enter PlayMap"),
+	GLBDay				UMETA(DisplayName = "GLB Day Start"),
+	GLBNight			UMETA(DisplayName = "GLB Night Start"),
+	
+	
 	/** UI */
 	UI				UMETA(DisplayName = "UI"),
 	UIGame			UMETA(DisplayName = "UI In Menu"),
@@ -174,16 +203,69 @@ enum class EMessageTag : uint8 {
 	/** Game Objects*/
 	GOE				UMETA(DisplayName = "GOE Game Object Element"),
 	
+	GOASelect		UMETA(DisplayName = "GOA Select"),
+	GOACommand		UMETA(DisplayName = "GOA Command"),
+	
 	GOASpawn		UMETA(DisplayName = "GOA Spawn"),
 	GOAHit			UMETA(DisplayName = "GOA Hit"),
 	GOADamage		UMETA(DisplayName = "GOA Get Damage"),
 	GOADeath		UMETA(DisplayName = "GOA Death"),
-
+	
 	GOAInventory	UMETA(DisplayName = "GOA Inventory Changing"),
 	GOAGenerator	UMETA(DisplayName = "GOA Generator"),
-
+	
 	MSuccess		UMETA(DisplayName = "Success"),
 	MFailed			UMETA(DisplayName = "Failed")
 };
 
+
+UENUM(BlueprintType)
+enum class ENeedType : uint8 {
+	Resource		UMETA(DisplayName = "Resource"),
+	SocialTag		UMETA(DisplayName = "SocialTag"),
+	Time			UMETA(DisplayName = "Time"),
+	Quest			UMETA(Hidden, DisplayName = "Quest"),
+	Tag				UMETA(DisplayName = "Tag")
+};
+
+
+UENUM(BlueprintType)
+enum class EQuestActionType : uint8 {
+	SpawnActors			UMETA(DisplayName = "Spawn Actors"),
+	Inventory			UMETA(DisplayName = "Change Inventory"),
+	FindLocation		UMETA(DisplayName = "Find Location"),
+	Widget				UMETA(DisplayName = "Add Selection Widget"),
+
+	Select				UMETA(DisplayName = "Select"),
+	Tag					UMETA(DisplayName = "Tag"),
+	Timer				UMETA(DisplayName = "Timer"),
+	RestartQuest		UMETA(DisplayName = "Restart Quest"),
+
+	GameOver			UMETA(DisplayName = "Game Over")
+
+};
+
+
+UENUM(BlueprintType)
+enum class EActionSelectionType : uint8 {
+	AllSpawned			UMETA(DisplayName = "AllSpawned"),
+	SpawnedRange		UMETA(DisplayName = "SpawnedRange"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag"),
+	All					UMETA(DisplayName = "All")
+};
+
+UENUM(BlueprintType)
+enum class EActionFindLocationType : uint8 {
+	Spawned				UMETA(DisplayName = "Spawned"),
+	Random				UMETA(DisplayName = "Random"),
+	BySocialTag			UMETA(DisplayName = "BySocialTag")
+};
+
+
+UENUM(BlueprintType)
+enum class ETopPanelType : uint8 {
+	None				UMETA(DisplayName = "None"),
+	Pawn				UMETA(DisplayName = "Pawn"),
+	Building			UMETA(DisplayName = "Buildingx")
+};
 

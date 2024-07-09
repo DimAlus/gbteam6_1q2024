@@ -27,6 +27,12 @@ protected:
 	FMusicSound MusicSound{};
 
 	UPROPERTY()
+	UAudioComponent* MusicAudioComponent = nullptr;
+
+	UPROPERTY()
+	UAudioComponent* SelectCommandAudioComponent = nullptr;
+
+	UPROPERTY()
 	TSet<EMessageTag> SubscriberMessageTags{};
 
 public:

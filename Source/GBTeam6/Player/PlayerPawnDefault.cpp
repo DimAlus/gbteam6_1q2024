@@ -5,7 +5,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
+#include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Service/MessageService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -39,6 +41,8 @@ APlayerPawnDefault::APlayerPawnDefault()
 
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
+
+	CustomTimeDilation = 1.f;
 }
 
 // Called when the game starts or when spawned
@@ -92,12 +96,18 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::CameraZoom);
+		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::CameraZoom);
 		// Select action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Select);
 		// Command action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
+		
+		// Set game speed action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SetGameSpeedInput);
 	}
 	else
 	{
@@ -121,38 +131,77 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 }
 
 void APlayerPawnDefault::Select(const FInputActionValue& Value) {
-	OnSelect();
+	CallSelect();
 }
 
 void APlayerPawnDefault::Command(const FInputActionValue& Value) {
-	OnCommand();
+	CallCommand();
 }
 
-void APlayerPawnDefault::OnSelect_Implementation() {
+void APlayerPawnDefault::CallSelect() {
 	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
-	SelectedActor = Hit.GetActor();
-}
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
 
-void APlayerPawnDefault::OnCommand_Implementation() {
-	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
-	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_WorldDynamic);
-	PointOfInterest = Hit.Location;
-	if(Cast<IGameObjectInterface>(Hit.GetActor())) {
-		TargetActor = Hit.GetActor();
+	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
+		OnSelect(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
 	}
 	else {
-		TargetActor = nullptr;
+		OnSelect(Hit.Location, nullptr, false);
 	}
+}
+
+void APlayerPawnDefault::OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
+	if (IsObject) {
+		SelectedActor = Core->GetOwner();
+
+		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
+			GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+		}
+	}
+	else {
+		SelectedActor = nullptr;
+	}
+}
+
+void APlayerPawnDefault::CallCommand() {
+	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+
+	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
+		OnCommand(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
+	}
+	else {
+		OnCommand(Hit.Location, nullptr, false);
+	}
+}
+
+void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
+	PointOfInterest = Location;
+
+	//if (IsObject) {
+	//	TSet<EMessageTag> MessageTags{};
+	//	MessageTags.Add();
+	//	if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
+	//	{
+	//		GameState->GetMessageService()->Send({ EMessageTag::GOACommand }, Core);
+	//		
+	//		if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
+	//		{
+	//			auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
+	//			
+	//		}
+	//	}
+	//}
 }
 
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
-	// input is a Vector2D
-	const FVector2D MovementVector = Value.Get<FVector2D>();
-
+	float MovementFactor = (TargetCameraBoomLength-MinCameraBoomLength)/(MaxCameraBoomLength-MinCameraBoomLength);
+	if (MovementFactor < 0.2f)
+		MovementFactor = 0.2f;
+	const FVector2D MovementVector = Value.Get<FVector2D>()*MovementFactor;
 	if (Controller != nullptr) {
 		// find out which way is forward
 		const FRotator Rotation = RootComponent->GetComponentRotation();
@@ -165,8 +214,13 @@ void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		//AddMovementInput(ForwardDirection, MovementVector.Y);
+		//AddMovementInput(RightDirection, MovementVector.X);;
+		auto TargetLocation = GetActorLocation();
+		auto ForwardVector = ForwardDirection*MovementVector.Y;
+		auto RightVector = RightDirection*MovementVector.X;
+		TargetLocation += (ForwardVector + RightVector)*100;
+		SetActorLocation(TargetLocation);
 	}
 }
 
@@ -229,14 +283,54 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 }
 
 void APlayerPawnDefault::CameraZoomTick() {
+	float CustomDeltaTime = GetWorld()->GetDeltaSeconds();
+	const float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
+	if (GlobalTimeDilation > 0.f)
+		CustomDeltaTime = GetWorld()->GetDeltaSeconds()/GlobalTimeDilation;
 	CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(
 		CameraBoom->TargetArmLength,
 		TargetCameraBoomLength,
-		GetWorld()->GetDeltaSeconds(),
+		CustomDeltaTime,
 		5.f
 		);
-	
 	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f) {
 		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
 	}
+}
+
+void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
+	int speed = Value.Get<float>();
+	if (speed <= 0) {
+		SetGamePaused(!CurrentGamePaused);
+	}
+	else {
+		if (CurrentGamePaused) {
+			SetGamePaused(false);
+		}
+		SetGameSpeed(speed);
+	}
+}
+
+void APlayerPawnDefault::UpdateGameSpeed() {
+	float TimeDilation;
+	if (CurrentGamePaused) {
+		TimeDilation = 0.0001f;
+	}
+	else {
+		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
+	}
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
+	if (TimeDilation >= 0.0001f)
+		CustomTimeDilation = 1/TimeDilation;
+	OnGameSpeedChanged.Broadcast();
+}
+
+void APlayerPawnDefault::SetGameSpeed(int speed) {
+	CurrentGameSpeed = speed;
+	UpdateGameSpeed();
+}
+
+void APlayerPawnDefault::SetGamePaused(bool isPaused) {
+	CurrentGamePaused = isPaused;
+	UpdateGameSpeed();
 }

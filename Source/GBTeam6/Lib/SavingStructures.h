@@ -14,6 +14,9 @@ class GBTEAM6_API USavingStructures : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()	
 };
 
+/***********************
+*	GAME OBJECTS
+************************/
 
 USTRUCT(BlueprintType)
 struct FActorSaveData {
@@ -40,6 +43,13 @@ struct FHealthSaveData {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Health = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDead{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsTimerToDeath{};
+	
 };
 
 
@@ -57,22 +67,17 @@ struct FGeneratorSaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FGenerator> Generics{};
+	TMap<FString, FGeneratorContext> GeneratorsContext{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsWorked{};
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool IsDestructed{};
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int WorkIndex{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float WorkTime{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool IsBuilded{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<int> TaskStack{};
+USTRUCT(BlueprintType)
+struct FTaskerSaveData {
+	GENERATED_BODY()
+public:
 };
 
 
@@ -81,10 +86,7 @@ struct FInventorySaveData {
 	GENERATED_BODY()
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountStacks{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<EResource, int> Resources;
+	TMap<EResource, int> Resources{};
 };
 
 USTRUCT(BlueprintType)
@@ -117,8 +119,57 @@ public:
 	FGeneratorSaveData GeneratorData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerSaveData TaskerData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventorySaveData InventoryData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialSaveData SocialData{};
+};
+
+
+/***********************
+*	GAME PROGRESS
+************************/
+
+
+USTRUCT(BlueprintType)
+struct FGameStateSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int DayNumber{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsDay{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CurrentDayTime{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<EResource, int> PlayerResources{};
+};
+
+USTRUCT(BlueprintType)
+struct FEventsSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameEventConext> Context{};
+
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FGameProgressSaveData {
+	GENERATED_BODY()
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameStateSaveData GameStateData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEventsSaveData EventsData{};
+
 };

@@ -1,133 +1,184 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "../Service/TaskManagerService.h"
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
-#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
-#include "GBTeam6/Component/Social/SocialBaseComponent.h"
-#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "./SocialService.h"
+#include "TaskManagerService.h"
 
-void UTaskManagerService::ShowGameTasksDebug()
-{
-	for (auto GameTask : GameTasks)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Task reserved by %s | From: %s To: %s Amount: %i |"),  *GetNameSafe(GameTask.TaskPerformer), *GetNameSafe(GameTask.From), *GetNameSafe(GameTask.To), GameTask.ResAmount);
-	}
-}
-//TMap<ESocialTag, TArray<AActor*>> ObjectsByTags{};
-TArray<FGameTask>& UTaskManagerService::GetGameTasksDebug()
-{
-	return GameTasks;
-}
 
-bool UTaskManagerService::AddStorage(AActor* InStorage)
-{
-	if (InStorage)
-	{
-		Storage = InStorage;
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool UTaskManagerService::AddClientObject(AActor* ClientObject)
-{
-	if (Clients.Contains(ClientObject))
-		return false;
-	Clients.Add(ClientObject);
-	UE_LOG(LogTemp, Warning, TEXT("TaskManager : Client added"));
-	return true;
-}
-
-void UTaskManagerService::AddTasksByObject(AActor* ClientObject, TArray<FPrice> InTasks)
-{
-	UE_LOG(LogTemp, Warning, TEXT("TaskManager : AddTasksByObject"));
-	for (auto& Task : InTasks)
-	{
-		FGameTask NewTask = {nullptr,Task.Resource,Task.Count, ClientObject, Storage};
-		GameTasks.Add(NewTask);
-	}
-}
-
-bool UTaskManagerService::RefreshNeeds()
-{
-	for (int i = 0; i < GameTasks.Num(); ++i)
-	{
-		if (!GameTasks[i].TaskPerformer && GameTasks[i].To != Storage)
-		{
-			GameTasks.RemoveAt(i);
+TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetNeedsByCores(TSet<UGameObjectCore*> cores) {
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> result;
+	for (auto core : cores) {
+		if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+			for (auto need : tasker->GetRequests()) {
+				if (!result.Contains(need.Key)) {
+					result.Add(need.Key, {});
+				}
+				result[need.Key].Add({ core, need.Value });
+			}
 		}
 	}
-	
-	for (auto Client : Clients)
-	{
-		if (auto GameObjectInterface = Cast<IGameObjectInterface>(Client))
-		{
-			if (auto Generator = Cast<UGeneratorBaseComponent>(
-				GameObjectInterface->Execute_GetCore(Client)->GetComponent(EGameComponentType::Generator))
-				)
-			{
-				auto CurrentClientNeeds = Generator->GetNeeds(1);
-				auto CurrentClientOvers = Generator->GetOvers(1);
-				
-				for (auto ClientNeed : CurrentClientNeeds)
-				{
-					if (Storage == Client)
-						continue;
-					FGameTask NewTask = {nullptr,ClientNeed.Resource,ClientNeed.Count, Storage, Client}; 
-					GameTasks.Add(NewTask);
-				}
+	return result;
+}
 
-				
-				for (auto ClientOver : CurrentClientOvers)
-				{
-					if (Storage == Client)
-						continue;
-					FGameTask NewTask = {nullptr,ClientOver.Resource,ClientOver.Count, Client, Storage}; 
-					GameTasks.Add(NewTask);
+
+TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetOversByCores(TSet<UGameObjectCore*> cores) {
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> result;
+	for (auto core : cores) {
+		if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+			for (auto need : tasker->GetOffers()) {
+				if (!result.Contains(need.Key)) {
+					result.Add(need.Key, {});
+				}
+				result[need.Key].Add({ core, need.Value });
+			}
+		}
+	}
+	return result;
+}
+
+
+
+UGameObjectCore* UTaskManagerService::GetRandCore(TArray<UGameObjectCore*>& cores) { 
+	UGameObjectCore* core;
+	while (cores.Num() > 0) {
+		int i = FMath::RandRange(0, cores.Num() - 1);
+		core = cores[i];
+		cores.RemoveAtSwap(i);
+		if (IsValid(core)) {
+			return core;
+		}
+	}
+	return nullptr; 
+}
+
+
+FGameTask UTaskManagerService::CreateTask(UGameObjectCore* core, EResource resource, int count) { 
+	FGameTask task;
+	task.Core = core;
+	task.Resource = resource;
+	task.Count = count;
+	return task; 
+}
+
+TArray<FGameTask> UTaskManagerService::FindTaskByNeedsOvers(TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& needsMap,
+															TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& oversMap) {
+	TArray<FGameTask> tasks;
+	TArray<EResource> keys;
+	needsMap.GetKeys(keys);
+	while (keys.Num() > 0) {
+		int ind = FMath::RandRange(0, keys.Num() - 1);
+		EResource res = keys[ind];
+
+		if (oversMap.Contains(res)) {
+			const auto& src = oversMap[res][FMath::RandRange(0, oversMap[res].Num() - 1)];
+			const auto& dst = needsMap[res][FMath::RandRange(0, needsMap[res].Num() - 1)];
+			int count = std::min(MaxStackSize, std::min(src.Value, dst.Value));
+			tasks.Add(CreateTask(src.Key, res, -count));
+			tasks.Add(CreateTask(dst.Key, res, count));
+			break;
+		}
+
+		keys.RemoveAtSwap(ind);
+	}
+	return tasks;
+}
+
+void UTaskManagerService::SetGameState(AGameStateDefault* ownerGameState) {
+
+	gameState = ownerGameState;
+	FConfig conf;
+	conf.FloatValue = 1.f;
+	gameState->GetConfig(EConfig::F_WorkerStackMultiplyer, conf);
+	WorkerStackMultiplyer = conf.FloatValue;
+}
+
+
+TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& findData) {
+	if (findData.ForPerformer) {
+		return FindTaskForPerformer(findData);
+	}
+	UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
+	USocialService* social = gameState->GetSocialService();
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+
+	auto OverMap = GetOversByCores(sources);
+
+	if (OverMap.Num() == 0) {
+		return {};
+	}
+
+
+	TArray<FGameTask> tasks;
+
+	if (findData.CheckNeeds) {
+		auto NeedMap = GetNeedsByCores(dests);
+		tasks = FindTaskByNeedsOvers(NeedMap, OverMap);
+	}
+	else {
+		TArray<UGameObjectCore*> destarr = dests.Array();
+		if (UGameObjectCore* dest = GetRandCore(destarr)) {
+			for (auto iter : OverMap) {
+				int ind = FMath::RandRange(0, iter.Value.Num() - 1);
+				int cnt = std::min(MaxStackSize, iter.Value[ind].Value);
+				tasks.Add(CreateTask(iter.Value[ind].Key, iter.Key, -cnt));
+				tasks.Add(CreateTask(dest, iter.Key, cnt));
+			}
+		}
+	}
+	return tasks;
+}
+
+
+TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindData& findData) { 
+	UE_LOG_SERVICE(Log, "Start FindTaskForPerformer for <%s>", *findData.Performer->GetOwnerName());
+	USocialService* social = gameState->GetSocialService();
+	
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+
+	auto OverMap = GetOversByCores({ findData.Performer });
+
+	if (OverMap.Num() > 0) {
+		TArray<UGameObjectCore*> destarr = dests.Array();
+		if (UGameObjectCore* dest = GetRandCore(destarr)) {
+			for (auto iter : OverMap) {
+				return { CreateTask(dest, iter.Key, iter.Value[0].Value) };
+			}
+		}
+	}
+
+	auto NeedMap = GetNeedsByCores({ findData.Performer });
+
+	if (NeedMap.Num() == 0) {
+		return {};
+	}
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
+	OverMap = GetOversByCores(sources);
+
+	if (OverMap.Num() == 0) {
+		return {};
+	}
+
+	for (auto iter : NeedMap) {
+		if (OverMap.Contains(iter.Key)) {
+			int needCount = iter.Value[0].Value;
+
+			auto& overs = OverMap[iter.Key];
+			int mx = 0;
+			for (int i = 0; i < overs.Num(); i++) {
+				if (overs[i].Value > overs[mx].Value) {
+					mx = i;
+				}
+				if (overs[mx].Value >= needCount) {
+					break;
 				}
 			}
-			else return false;
-		}
-		else return false;
-	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Clients num = %i"), Clients.Num());
-	UE_LOG(LogTemp, Warning, TEXT("GameTasks num = %i"), GameTasks.Num());
-	
-	return true;
-}
-
-bool UTaskManagerService::ReserveTask(AActor* TaskPerformer, FGameTask& TaskToReserve)
-{
-	for (FGameTask& GameTask : GameTasks)
-	{
-		if (GameTask.TaskPerformer == nullptr)
-		{
-			GameTask.TaskPerformer = TaskPerformer;
-			TaskToReserve = GameTask;
-			UE_LOG(LogTemp, Warning, TEXT("Reserved task by %s | From: %s To: %s Amount: %i |"),  *GetNameSafe(GameTask.TaskPerformer), *GetNameSafe(TaskToReserve.From), *GetNameSafe(TaskToReserve.To), TaskToReserve.ResAmount);
-			return true;
+			return { CreateTask(overs[mx].Key, iter.Key, -std::min(overs[mx].Value, needCount)) };
 		}
 	}
-	return false;
-}
-
-bool UTaskManagerService::CompleteTask(AActor* TaskPerformer)
-{
-	RefreshNeeds();
-	
-	for (int i = 0; i < GameTasks.Num(); ++i)
-	{
-		if (GameTasks[i].TaskPerformer && GameTasks[i].TaskPerformer == TaskPerformer)
-		{
-			GameTasks.RemoveAt(i);
-			return true;
-		}
-	}
-	return false;
+	return {};
 }

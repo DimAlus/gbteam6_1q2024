@@ -9,6 +9,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class IGameObjectInterface;
 struct FInputActionValue;
 
 UCLASS()
@@ -65,9 +66,9 @@ protected:
 
 	bool isScrollPressed = false;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MinCameraZoomRotationPitch;
-	UPROPERTY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = CameraZoom)
 	float MaxCameraZoomRotationPitch;
 
 	/** Timers handles */
@@ -79,11 +80,11 @@ protected:
 	FTimerHandle CameraZoomTimerHandle;
 
 	/** Values to write from select and command */
-	UPROPERTY(BlueprintReadOnly)
-	AActor* SelectedActor;
+	UPROPERTY(BlueprintReadWrite)
+	AActor* SelectedActor = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
-	AActor* TargetActor;
+	AActor* TargetActor = nullptr;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector PointOfInterest;
@@ -97,12 +98,18 @@ protected:
 	void Command(const FInputActionValue& Value);
 
 	/** Select object function*/
+	void CallSelect();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnSelect(); void OnSelect_Implementation();
+	void OnSelect(FVector Location, UGameObjectCore* Core, bool IsObject);
+	void OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
+
+
 
 	/** Command object function*/
+	void CallCommand();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnCommand(); void OnCommand_Implementation();
+	void OnCommand(FVector Location, UGameObjectCore* Core, bool IsObject);
+	void OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
 
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
@@ -125,6 +132,13 @@ protected:
 
 	/** Camera zoom tick function */
 	void CameraZoomTick();
+	
+	/** Change game speed input functions */
+	void SetGameSpeedInput(const FInputActionValue& Value);
+
+	/** Change game speed main function */
+	void UpdateGameSpeed();
+	
 
 	
 public:	
@@ -134,4 +148,19 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const;
 
+
+	UPROPERTY(BlueprintReadOnly)
+	int CurrentGameSpeed = 1;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool CurrentGamePaused = false;
+
+	UFUNCTION(BlueprintCallable)
+	void SetGameSpeed(int speed);
+
+	UFUNCTION(BlueprintCallable)
+	void SetGamePaused(bool isPaused);
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGameSpeedChanged;
 };

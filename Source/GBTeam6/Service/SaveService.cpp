@@ -7,6 +7,7 @@
 #include "../Lib/Save/SaveTileMap.h"
 #include "../Lib/Save/SaveGameObjects.h"
 #include "../Lib/Save/SaveConfig.h"
+#include "../Lib/Save/SaveProgress.h"
 
 #include "../GameObject/SimpleObject.h"
 #include "../GameObject/MovableObject.h"
@@ -16,9 +17,14 @@
 #include "../Component/Mapping/MappingBaseComponent.h"
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
+#include "../Component/Tasker/TaskerBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
+#include "PlatformFeatures.h"
+#include "GameFramework/SaveGame.h"
 
 #include "../Interface/GameObjectCore.h"
+
+#include "./GameEventsService.h"
 
 
 
@@ -56,6 +62,7 @@ void USaveService::SaveSave(USaveDefault* saver) {
 }
 
 
+/// Saving Loading TileMap
 void USaveService::SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save TileMap"), *GetNameSafe(this));
 	UMappingService* mappingService = gameState->GetMappingService();
@@ -89,6 +96,8 @@ void USaveService::LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver
 	);
 }
 
+
+/// Saving Loading Objects
 void USaveService::SaveObjects(AGameStateDefault* gameState, USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save GameObjects"), *GetNameSafe(this));
 
@@ -105,24 +114,31 @@ void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* s
 	UE_LOG(LgService, Log, TEXT("<%s>: Start load GameObjects"), *GetNameSafe(this));
 	
 	for (FGameObjectSaveData& saveData : saver->Objects) {
-		AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
-		IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-		UGameObjectCore* core = obj->Execute_GetCore(act);
-		if (!(IsValid(act) && obj)) {
-			UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
-			act->Destroy();
-			continue;
-		}
+		if (saveData.ObjectClass) {
+			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
+			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
+			if (!(IsValid(act) && obj)) {
+				UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
+				act->Destroy();
+				continue;
+			}
 
-		if (core->GetIsCreated()) {
-			InitGameObject(core, saveData);
+			if (core->GetIsCreated()) {
+				InitGameObject(core, saveData);
+			}
+			else {
+				UE_LOG(LgService, Error, TEXT("<%s>: Actor not created!"), *GetNameSafe(this));
+			}
 		}
 		else {
-			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created!"), *GetNameSafe(this));
+			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created! ObjectClass is None!"), *GetNameSafe(this));
 		}
 	}
 }
 
+
+/// Saving Loading Config
 void USaveService::SaveConfig(AGameStateDefault* gameState, USaveConfig* saver) {
 	const TMap<EConfig, FConfig>& configs = gameState->GetAllConfigs();
 	for (auto conf : configs) {
@@ -140,6 +156,27 @@ void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) 
 	}
 }
 
+
+/// Saving Loading Progress
+void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* saver) {
+	for (auto ptr : this->ProgressSavers) {
+		if (IsValid(ptr->_getUObject())) {
+			ptr->Save(saver->GameProgressSaveData);
+		}
+		
+	}
+}
+
+void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* saver) {
+	for (auto ptr : this->ProgressSavers) {
+		if (IsValid(ptr->_getUObject())) {
+			ptr->Load(saver->GameProgressSaveData);
+		}
+	}
+}
+
+
+/// Saving Loading Config Public
 void USaveService::SaveConfigPublic(AGameStateDefault* gameState) {
 	USaveConfig* saveConfig = Cast<USaveConfig>(CreateSave(
 		gameState,
@@ -167,6 +204,8 @@ void USaveService::LoadConfigPublic(AGameStateDefault* gameState) {
 	}
 }
 
+
+/// Saving Loading Game
 void USaveService::SaveGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start SaveGame to slot '%s'"), *GetNameSafe(this), *SlotName);
 	if (!IsValid(gameState)) {
@@ -207,6 +246,21 @@ void USaveService::SaveGame(AGameStateDefault* gameState, FString SlotName, bool
 	if (!isDevMap) {
 		SaveConfigPublic(gameState);
 	}
+
+	/// Save Progress
+	if (!isDevMap) {
+		USaveProgress* saveProgress = Cast<USaveProgress>(CreateSave(
+			gameState,
+			USaveProgress::StaticClass(),
+			playerName,
+			SlotName,
+			isDevMap
+		));
+		if (IsValid(saveProgress)) {
+			SaveProgress(gameState, saveProgress);
+			SaveSave(saveProgress);
+		}
+	}
 }
 
 void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
@@ -241,10 +295,60 @@ void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool
 			LoadObjects(gameState, saveGameObjects);
 		}
 
-		/// Load GameObjects
+		/// Load Config
 		LoadConfigPublic(gameState);
+
+		/// Load Progress
+		USaveProgress* saveProgress = Cast<USaveProgress>(LoadSave(
+			gameState,
+			USaveProgress::StaticClass(),
+			playerName,
+			USaveProgress::GetSlotName(playerName, SlotName, mapName, isDevMap),
+			isDevMap
+		));
+		if (IsValid(saveProgress)) {
+			LoadProgress(gameState, saveProgress);
+		}
 	}
 }
+
+TArray<FString> USaveService::GetSaveNames(AGameStateDefault* gameState, FString MapName) {
+	TArray<FString> result = {
+		FString("save1"),
+		FString("save2"),
+		FString("save3"),
+		FString("save4"),
+		FString("QuickSave")
+	};
+	FString playerName = FString("player");
+	for (int i = result.Num() - 1; i >= 0; i--) {
+		USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(LoadSave(
+			gameState,
+			USaveGameObjects::StaticClass(),
+			playerName,
+			USaveGameObjects::GetSlotName(playerName, result[i], MapName, false),
+			false
+		));
+		if (!IsValid(saveGameObjects)) {
+			result.RemoveAt(i);
+		}
+		else {
+			USaveProgress* saveProgress = Cast<USaveProgress>(LoadSave(
+				gameState,
+				USaveProgress::StaticClass(),
+				playerName,
+				USaveProgress::GetSlotName(playerName, result[i], MapName, false),
+				false
+			));
+			if (!IsValid(saveProgress)) {
+				result.RemoveAt(i);
+			}
+		}
+	}
+	return result;
+}
+
+
 
 
 
@@ -252,7 +356,7 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 	for (AActor* act : actors) {
 		if (IsValid(act)) {
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
-			UGameObjectCore* core = obj->Execute_GetCore(act);
+			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 			FGameObjectSaveData SaveData;
 
 			SaveData.ObjectClass = act->GetClass();
@@ -270,6 +374,9 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			}
 			if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 				generator->SaveComponent(SaveData.GeneratorData);
+			}
+			if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+				tasker->SaveComponent(SaveData.TaskerData);
 			}
 			if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				social->SaveComponent(SaveData.SocialData);
@@ -292,16 +399,27 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
 		mapping->LoadComponent(objectSaveData.MappingData);
 	}
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		social->LoadComponent(objectSaveData.SocialData);
+	}
 	if (auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory))) {
 		inventory->LoadComponent(objectSaveData.InventoryData);
 	}
 	if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 		generator->LoadComponent(objectSaveData.GeneratorData);
 	}
-	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		social->LoadComponent(objectSaveData.SocialData);
+	if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
+		tasker->LoadComponent(objectSaveData.TaskerData);
 	}
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);
 	}
+}
+
+void USaveService::AddSaveProgressOwner(ICanSaveInterface* saver) {
+	//ProgressSavers.Add(saver);
+}
+
+void USaveService::RemoveSaveProgressOwner(ICanSaveInterface* saver) {
+	ProgressSavers.Remove(saver);
 }

@@ -20,6 +20,8 @@ protected:
 
 	bool isCreated = false;
 
+	FString OwnerName;
+
 	/** Currently existing actor components */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Existing runtime components")
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
@@ -32,11 +34,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AActor* GetOwner();
 
+	void DestroyOwner();
+
 	void SaveActor(FActorSaveData& saveData);
 	void LoadActor(const FActorSaveData& saveData);
 
 	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
 	FORCEINLINE bool GetIsCreated() const { return isCreated; };
+	FORCEINLINE FString GetOwnerName() const { return OwnerName; };
 	
 	void SetIsCreated();
 

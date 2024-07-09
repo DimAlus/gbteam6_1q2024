@@ -40,11 +40,12 @@ protected:
 	void SetMeshIsEnabled(UStaticMeshComponent* mesh, bool IsEnabled);
 
 private:
-	void UpdateCanBuild();
+	void UpdateCanPlace();
 public:
 
 
-	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) override;
+	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) override;
 	virtual void SetPreviewVisibility(bool isVilible) override;
-	virtual bool SetIsBuilded(bool isBuilded) override;
+	virtual bool SetIsPlaced(bool isPlaced) override;
+	virtual bool GetIsPlaced() override;
 };

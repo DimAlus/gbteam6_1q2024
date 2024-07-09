@@ -15,12 +15,16 @@ void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
 void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
 }
 
-void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanBuild) {
+void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) {
 }
 
 void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {
 }
 
-bool UMappingBaseComponent::SetIsBuilded(bool isBuilded) {
+bool UMappingBaseComponent::SetIsPlaced(bool isPlaced) {
+	return true;
+}
+
+bool UMappingBaseComponent::GetIsPlaced() {
 	return true;
 }

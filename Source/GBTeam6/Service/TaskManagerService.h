@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,6 +5,11 @@
 #include "../Lib/Lib.h"
 #include "TaskManagerService.generated.h"
 
+
+class UGameObjectCore;
+class AGameStateDefault;
+
+struct ClientNeeds;
 /**
  * 
  */
@@ -16,42 +19,31 @@ class GBTEAM6_API UTaskManagerService : public UObject
 	GENERATED_BODY()
 
 private:
+	FGameTask NoneTask;
 
-	UPROPERTY()
-	AActor* Storage;
 
-	UPROPERTY()
-	TSet<AActor*> Clients;
+	TMap<UGameObjectCore*, TMap<EResource, int>> ReserverResources;
+	TMap<UGameObjectCore*, FGameTask> CurrentTasks;
 
-	UPROPERTY()
-	TArray<FGameTask> GameTasks;
+	AGameStateDefault* gameState;
 
+	float WorkerStackMultiplyer;
+	int MaxStackSize = 20;
+
+private:
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetNeedsByCores(TSet<UGameObjectCore*> cores);
+	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> GetOversByCores(TSet<UGameObjectCore*> cores);
+
+	UGameObjectCore* GetRandCore(TArray<UGameObjectCore*>& cores);
+	FGameTask CreateTask(UGameObjectCore* core, EResource resource, int count);
+	TArray<FGameTask> FindTaskByNeedsOvers(TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& needsMap,
+										   TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& oversMap);
 public:
 
-	/****	Debug	******/
-	UFUNCTION(BlueprintCallable)
-	void ShowGameTasksDebug();
+	void SetGameState(AGameStateDefault* ownerGameState);
 
-	UFUNCTION(BlueprintCallable)
-	TArray<FGameTask>& GetGameTasksDebug();
-	/*********************/
-
-	UFUNCTION(BlueprintCallable)
-	bool AddStorage(AActor* InStorage);
-	
-	UFUNCTION(BlueprintCallable)
-	bool AddClientObject(AActor* ClientObject);
-
-	void AddTasksByObject(AActor* ClientObject, TArray<FPrice> InTasks);
-
-	UFUNCTION(BlueprintCallable)
-	bool RefreshNeeds();
-
-	UFUNCTION(BlueprintCallable)
-	bool ReserveTask(AActor* TaskPerformer, FGameTask& TaskToReserve);
-
-	UFUNCTION(BlueprintCallable)
-	bool CompleteTask(AActor* TaskPerformer);
+	TArray<FGameTask> FindTaskByTags(const FGameTaskFindData& findData);
+	TArray<FGameTask> FindTaskForPerformer(const FGameTaskFindData& findData);
 
 	
 };

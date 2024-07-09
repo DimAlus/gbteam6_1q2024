@@ -10,6 +10,9 @@ AMovableObject::AMovableObject() {
 	PrimaryActorTick.bCanEverTick = true;
 	MappingComponent = CreateDefaultSubobject<UMappingBaseComponent>(TEXT("MappingComponent"));
 
+	GetCapsuleComponent()->SetCollisionProfileName("GameObject");
+	GetMesh()->SetCollisionProfileName("NoCollision");
+	
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationRoll = false;
@@ -18,6 +21,7 @@ AMovableObject::AMovableObject() {
 	if (MovementComponent)
 	{
 		MovementComponent->bUseRVOAvoidance = true;
+		MovementComponent->AvoidanceConsiderationRadius = 200.f;
 		MovementComponent->bOrientRotationToMovement = true;
 		MovementComponent->bUseControllerDesiredRotation = false;
 	}
@@ -26,9 +30,15 @@ AMovableObject::AMovableObject() {
 
 }
 
+void AMovableObject::Destroyed() {
+	if (GameObjectCore) {
+		GameObjectCore->DestroyOwner();
+	}
+	Super::Destroyed();
+}
+
 // Called when the game starts or when spawned
 void AMovableObject::BeginPlay() {
-	Super::BeginPlay();
 
 	this->GameObjectCore = NewObject<UGameObjectCore>();
 	this->GameObjectCore->SetOwner(this);
@@ -39,12 +49,18 @@ void AMovableObject::BeginPlay() {
 	);
 
 	this->GameObjectCore->BindComponentNoRegister(
+		EGameComponentType::Collision,
+		GetCapsuleComponent()
+	);
+
+	this->GameObjectCore->BindComponentNoRegister(
 		EGameComponentType::Mapping,
 		MappingComponent
 	);
 
 	this->GameObjectCore->InitDataByName(ObjectName);
 	this->GameObjectCore->SetIsCreated();
+	Super::BeginPlay();
 }
 
 UGameObjectCore* AMovableObject::GetCore_Implementation()

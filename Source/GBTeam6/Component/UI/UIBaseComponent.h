@@ -28,6 +28,7 @@ protected:
 	UTexture* Icon;
 	TArray<EComandType> EnabledCommands;
 	TArray<FUIGameObjectPanelData> EnabledPanels;
+	ETopPanelType TopPanelType;
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -44,4 +45,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE TArray<FUIGameObjectPanelData> GetEnabledPanels() const { return EnabledPanels; };
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE ETopPanelType GetTopPanelType() const { return TopPanelType; };
 };

@@ -28,3 +28,23 @@ FString GetLevelName(ULevel* level) {
     path = path.Replace(TEXT("/"), TEXT("_")).Replace(TEXT(":"), TEXT("-")).Replace(TEXT(" "), TEXT("--"));
     return path;
 }
+
+
+FString* UStringCycledIterator::Next() {
+    if (this->Iterable.Num() == 0) {
+        return nullptr;
+    }
+    if (this->iter >= this->Iterable.Num()) {
+        this->iter = 0;
+    }
+    return &this->Iterable[this->iter++];
+}
+
+FString* UStringCycledIterator::Prev() {
+    if (this->Iterable.Num() == 0) {
+        return nullptr;
+    }
+    this->iter = (this->iter - 1 + this->Iterable.Num()) % this->Iterable.Num();
+
+    return &this->Iterable[this->iter]; 
+}

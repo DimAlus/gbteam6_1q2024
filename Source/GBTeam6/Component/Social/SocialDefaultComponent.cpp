@@ -1,7 +1,9 @@
 #include "./SocialDefaultComponent.h"
 
 #include "GBTeam6/Game/GameStateDefault.h"
+#include "../../Interface/GameObjectCore.h"
 #include "GBTeam6/Service/SocialService.h"
+#include "../Mapping/MappingBaseComponent.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	this->UnRegisterObjectInService();
@@ -14,7 +16,18 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 	SocialTags = Initializer.SocialTags;
 	HomeObjectTag = Initializer.HomeObjectTag;
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
-		this->RegisterObjectInService();
+		UMappingBaseComponent* mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping));
+		if (mapping) {
+			if (mapping->GetIsPlaced()) {
+				OnPlacedRegister(true);
+			}
+			else {
+				mapping->OnPlaced.AddDynamic(this, &USocialDefaultComponent::OnPlacedRegister);
+			}
+		}
+		else {
+			OnPlacedRegister(true);
+		}
 	}));
 	
 }
@@ -30,16 +43,21 @@ void USocialDefaultComponent::LoadComponent(const FSocialSaveData& saveData) {
 
 void USocialDefaultComponent::RegisterObjectInService() {
 	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
-		GameState->GetSocialService()->AddObjectByTags(GetOwner(), SocialTags);
+		GameState->GetSocialService()->AddObjectByTags(GetCore(), SocialTags);
+		GameState->GetSocialService()->AddObjectByTeams(GetCore(), { SocialTeam });
 		UE_LOG_COMPONENT(Log, "registered in social service <%s>!", *GetNameSafe(GameState));
 	}
 }
 
 void USocialDefaultComponent::UnRegisterObjectInService() {
 	if (auto GameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState())) {
-		GameState->GetSocialService()->RemoveObject(GetOwner());
+		GameState->GetSocialService()->RemoveObject(GetCore());
 		UE_LOG_COMPONENT(Log, "UNregistered in social service <%s>!", *GetNameSafe(GameState));
 	}
+}
+
+void USocialDefaultComponent::OnPlacedRegister(bool IsPlaced) {
+	this->RegisterObjectInService();
 }
 
 bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam) {

@@ -16,6 +16,8 @@ class GBTEAM6_API UInventoryBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 public:	
+	static const TSet<EResource>& GetIgnoreResources();
+
 	UInventoryBaseComponent();
 
 	UFUNCTION(BlueprintCallable)
@@ -23,6 +25,7 @@ public:
 
 	virtual void SaveComponent(FInventorySaveData& saveData);
 	virtual void LoadComponent(const FInventorySaveData& saveData);
+
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -38,16 +41,13 @@ public:
 	virtual bool Pop(const TArray<FPrice>& resources);
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FPrice> GetStacks();
-
-	UFUNCTION(BlueprintCallable)
 	virtual int GetResourceCount(EResource resource);
 
 	UFUNCTION(BlueprintCallable)
-	virtual int GetMaxStacksCount();
+	virtual const TMap<EResource, int>& GetAllResources();
 
 	UFUNCTION(BlueprintCallable)
-	virtual const TMap<EResource, int>& GetAllResources();
+	virtual TMap<EResource, int> GetOverage();
 
 public:
 	UPROPERTY(BlueprintAssignable)

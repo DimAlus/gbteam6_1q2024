@@ -8,7 +8,7 @@ UMappingService::UMappingService() {
 }
 
 void UMappingService::BeginDestroy() {
-	UE_LOG(LgService, Log, TEXT("<%s>: BeginDestroy"), *GetNameSafe(this));
+	UE_LOG_SERVICE(Log, "BeginDestroy");
 
 	ClearTileInfoArray();
 	Super::BeginDestroy();
@@ -32,7 +32,7 @@ void UMappingService::InitTileTypes(AGameStateDefault* GameState) {
 		}
 	}
 	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to find an DataTable TileType at AGameStateDefault!"), *GetNameSafe(this));
+		UE_LOG_SERVICE(Error, "Failed to find an DataTable TileType at AGameStateDefault!");
 	}
 }
 
@@ -49,7 +49,7 @@ void UMappingService::InitTileTypesTree(AGameStateDefault* GameState) {
 		}
 	}
 	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to find an DataTable TileTypeTree at AGameStateDefault!"), *GetNameSafe(this));
+		UE_LOG_SERVICE(Error, "Failed to find an DataTable TileTypeTree at AGameStateDefault!");
 	}
 }
 
@@ -73,26 +73,25 @@ void UMappingService::InitTileTypesTreeRow(TArray<FTRTileTypeTree*>& rows, FTRTi
 	}
 	else {
 		this->TileTypesTree.Add(currentRow->TileType, { currentRow->TileType, ETileType::Any });
-		UE_LOG(LgService, Warning, TEXT("<%s>: Failed to load <%s> from DataTable TileTypeTree!"), 
-										*GetNameSafe(this),
-										*StaticEnum<ETileType>()->GetNameStringByValue((uint8)currentRow->ParentType));
+		UE_LOG_SERVICE(Warning, "Failed to load <%s> from DataTable TileTypeTree!",
+				*StaticEnum<ETileType>()->GetNameStringByValue((uint8)currentRow->ParentType));
 	}
 }
 
 void UMappingService::Initialize(AGameStateDefault* gameState) {
-	UE_LOG(LgService, Log, TEXT("<%s>: Initialize"), *GetNameSafe(this));
+	UE_LOG_SERVICE(Log, "Initialize");
 
 	if (IsValid(gameState)) {
 		InitTileTypes(gameState);
 		InitTileTypesTree(gameState);
 	}
 	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to find an AGameStateDefault!"), *GetNameSafe(this));
+		UE_LOG_SERVICE(Error, "Failed to find an AGameStateDefault!");
 	}
 }
 
 void UMappingService::DestroyService() {
-	UE_LOG(LgService, Log, TEXT("<%s>: DestroyService"), *GetNameSafe(this));
+	UE_LOG_SERVICE(Log, "DestroyService");
 
 	ClearTileInfoArray();
 	this->TileTypesTree.Empty();
@@ -100,11 +99,11 @@ void UMappingService::DestroyService() {
 }
 
 void UMappingService::GenerateMap(UPaperTileMap* tileMap, FString layerName) {
-	UE_LOG(LgService, Log, TEXT("<%s>: GenerateMap '%s' with layer '%s'"), *GetNameSafe(this), *GetNameSafe(tileMap), *layerName);
+	UE_LOG_SERVICE(Log, "GenerateMap '%s' with layer '%s'", *GetNameSafe(tileMap), *layerName);
 	
 	ClearTileInfoArray();
 	if (!IsValid(tileMap)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to GenerateMap! TileMap not Valid"), *GetNameSafe(this));
+		UE_LOG_SERVICE(Error, "Failed to GenerateMap! TileMap not Valid");
 		return;
 	}
 	
@@ -115,14 +114,14 @@ void UMappingService::GenerateMap(UPaperTileMap* tileMap, FString layerName) {
 			return;
 		}
 	}
-	UE_LOG(LgService, Error, TEXT("<%s>: Failed to find the Layer '%s' at TileMap '%s'!"), *GetNameSafe(this), *layerName, *GetNameSafe(tileMap));
+	UE_LOG_SERVICE(Error, "Failed to find the Layer '%s' at TileMap '%s'!", *layerName, *GetNameSafe(tileMap));
 }
 
 void UMappingService::LoadMap(const TArray<ETileType>& tiles, int width, int height) {
 	ClearTileInfoArray();
 
 	if (tiles.Num() != width * height) {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to load map! Uncorrect num tiles: %d != %d"), *GetNameSafe(this), tiles.Num(), width * height);
+		UE_LOG_SERVICE(Error, "Failed to load map! Uncorrect num tiles: %d != %d", tiles.Num(), width * height);
 	}
 	else {
 		this->MapHeight = height;
@@ -164,7 +163,8 @@ void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
 				};
 			}
 			else {
-				UE_LOG(LgService, Error, TEXT("<%s>: Failed to find the TileType by index %d!"), *GetNameSafe(this), tileIndex);
+
+				UE_LOG_SERVICE(Error, "Failed to find the TileType by index %d!", tileIndex);
 				this->TileInfoArray[i + j * this->MapWidth] = { ETileType::Any, ETileState::Free };
 			}
 		}

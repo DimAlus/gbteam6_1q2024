@@ -3,18 +3,17 @@
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "./Enuming.h"
+#include "./Typing.h"
 #include "Initializing.generated.h"
 
 class UHealthBaseComponent;
 class UMappingBaseComponent;
 class UGeneratorBaseComponent;
+class UTaskerBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
 class UUIBaseComponent;
 class USoundBaseComponent;
-struct FMapInfo;
-struct FBarter;
-struct FPrice;
 
 /**
  * 
@@ -38,6 +37,9 @@ struct FHealthComponentInitializer {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxHealth = 10.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DeadTime = 1.f;
 };
 
 
@@ -59,21 +61,17 @@ struct FHealthComponentInitData {
 /// <summary>
 /// Generator Initializing
 /// </summary>
+
+
 USTRUCT(BlueprintType)
 struct FGeneratorComponentInitializer {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FBarter> BarterTypes{};
+	TMap<FString, FGeneratorElementInfo> Generators{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<FPrice> BuildPrice{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool BuildSelectedDefault{false};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float BuildTime{};
+	float WorkPower{};
 };
 
 
@@ -86,6 +84,35 @@ struct FGeneratorComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FGeneratorComponentInitializer ComponentInitializer{};
+
+};
+
+
+
+/***********************************************************************************/
+/// <summary>
+/// Tasker Initializing
+/// </summary>
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitializer {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FGameTaskFindData> TaskFinders;
+};
+
+
+USTRUCT(BlueprintType)
+struct FTaskerComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UTaskerBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitializer ComponentInitializer{};
 
 };
 
@@ -126,6 +153,9 @@ struct FUIComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<FUIGameObjectPanelData> EnabledPanels{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	ETopPanelType TopPanelType{};
 };
 
 
@@ -178,14 +208,14 @@ public:
 	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(), 
 		NULL, 
-		TEXT("/Engine/MapTemplates/Materials/BasicAsset03")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
 		UMaterial::StaticClass(),
 		NULL,
-		TEXT("/Engine/MapTemplates/Materials/BasicAsset01")
+		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
 	));
 };
 
@@ -210,8 +240,12 @@ USTRUCT(BlueprintType)
 struct FInventoryComponentInitializer {
 	GENERATED_BODY()
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int CountStacks = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowInventoryChanging{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSet<EResource> ShowInventoryChangingIgnore{};
 };
 
 
@@ -284,10 +318,31 @@ struct FSoundComponentInitData {
 
 
 /***********************************************************************************/
+/// <summary>
+/// Game Object Initializing
+/// </summary>
+///
+USTRUCT(BlueprintType)
+struct FGameObjectInitializer
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Damage = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Speed = 0.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FBuildingConstruction BuildingConstruction{};
+};
 
 USTRUCT(BlueprintType)
 struct FGameObjectInitData : public FTableRowBase {
 	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGameObjectInitializer GameObjectInitializer{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FUIComponentInitData UIComponentInitData{};
@@ -299,6 +354,9 @@ struct FGameObjectInitData : public FTableRowBase {
 	FGeneratorComponentInitData GeneratorComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTaskerComponentInitData TaskerComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventoryComponentInitData InventoryComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -307,3 +365,5 @@ struct FGameObjectInitData : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoundComponentInitData SoundComponentInitData{};
 };
+
+/***********************************************************************************/
