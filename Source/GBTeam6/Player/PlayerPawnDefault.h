@@ -163,4 +163,26 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnGameSpeedChanged;
+
+public:
+	//Console commands
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void MakeWorkers(int WorkersAmount=1);
+	void MakeWorkers_Implementation(int WorkersAmount);
+
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void GiveWood(int WoodAmount=100);
+	void GiveWood_Implementation(int WoodAmount);
+
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void GiveSpirit(int SpiritAmount=100);
+	void GiveSpirit_Implementation(int SpiritAmount);
+
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void EnableHumanRaids();
+	void EnableHumanRaids_Implementation();
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void DisableHumanRaids();
+	void DisableHumanRaids_Implementation();
 };

@@ -334,3 +334,24 @@ void APlayerPawnDefault::SetGamePaused(bool isPaused) {
 	CurrentGamePaused = isPaused;
 	UpdateGameSpeed();
 }
+
+
+void APlayerPawnDefault::MakeWorkers_Implementation(int WorkersAmount)
+{
+}
+
+void APlayerPawnDefault::GiveWood_Implementation(int WoodAmount)
+{
+}
+
+void APlayerPawnDefault::GiveSpirit_Implementation(int SpiritAmount)
+{
+}
+
+void APlayerPawnDefault::EnableHumanRaids_Implementation()
+{
+}
+
+void APlayerPawnDefault::DisableHumanRaids_Implementation()
+{
+}
