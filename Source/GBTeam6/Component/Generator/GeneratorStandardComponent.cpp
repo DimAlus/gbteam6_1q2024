@@ -14,13 +14,10 @@ UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseCompo
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
-void UGeneratorStandardComponent::BeginPlay() {
-	Super::BeginPlay();
-	if (auto core = GetCore()) {
-		if (auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))) {
-			mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
-		}
+void UGeneratorStandardComponent::OnCoreCreatedBefore() {
+	Super::OnCoreCreatedBefore();
+	if (auto mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping))) {
+		mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
 	}
 }
 
@@ -40,7 +37,7 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 			for (int i = thread.AttachedCores.Num() - 1; i >= 0; i--) {
 				UGameObjectCore* core = thread.AttachedCores[i];
 
-				if (core->IsValidLowLevel()) {
+				if (IsValid(core)) {
 					UE_LOG_COMPONENT(Warning, "Core at 44 line is %s", *GetNameSafe(core));
 					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 						DeltaPower += gen->GetWorkPower() * info.WorkMultiplier;
@@ -618,9 +615,13 @@ bool UGeneratorStandardComponent::GetIsDestruction() {
 }
 
 
-void UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
-	CoresAttached.Add(Core);
-	IsActualCurrentSocialTagNeeds = false;
+bool UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
+	if (Core->IsValidLowLevel()) {
+		CoresAttached.Add(Core);
+		IsActualCurrentSocialTagNeeds = false;
+		return true;
+	}
+	return false;
 }
 
 

@@ -89,7 +89,8 @@ bool UGeneratorBaseComponent::GetIsDestruction() {
 	return false; 
 }
 
-void UGeneratorBaseComponent::AttachCore(UGameObjectCore* Core) {
+bool UGeneratorBaseComponent::AttachCore(UGameObjectCore* Core) {
+	return false;
 }
 
 void UGeneratorBaseComponent::DetachCore(UGameObjectCore* Core) {

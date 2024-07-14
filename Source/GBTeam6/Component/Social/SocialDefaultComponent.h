@@ -12,6 +12,8 @@ class GBTEAM6_API USocialDefaultComponent : public USocialBaseComponent
 
 public:	
 	virtual void DestroyComponent(bool bPromoteChildren = false) override;
+protected:
+	virtual void OnCoreCreatedAfter();
 
 	virtual void Initialize(const FSocialComponentInitializer& Initializer) override;
 

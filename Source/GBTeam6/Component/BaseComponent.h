@@ -14,7 +14,23 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UBaseComponent : public UActorComponent {
 	GENERATED_BODY()
 
+private:
+	UGameObjectCore* GameObjectCore;
+
+	void SetCore(UGameObjectCore* Core);
+	friend class UGameObjectCore;
 protected:
 	AGameStateDefault* GetGameState();
 	UGameObjectCore* GetCore();
+
+	// Pre init of component
+	UFUNCTION()
+	virtual void OnCoreCreatedBefore();
+	// Init of component
+	UFUNCTION()
+	virtual void OnCoreCreated();
+	// Init of component when other components needed
+	UFUNCTION()
+	virtual void OnCoreCreatedAfter();
+
 };

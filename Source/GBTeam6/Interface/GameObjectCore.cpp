@@ -43,6 +43,9 @@ void UGameObjectCore::LoadActor(const FActorSaveData& saveData) {
 
 void UGameObjectCore::SetIsCreated() {
 	isCreated = true;
+	OnCreatingBefore.Broadcast();
+	OnCreating.Broadcast();
+	OnCreatingAfter.Broadcast();
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
@@ -142,6 +145,9 @@ void UGameObjectCore::BindComponentNoRegister(EGameComponentType ComponentType, 
 		UnbindComponent(ComponentType);
 	}
 	ExistingComponents.Add(ComponentType, NewComponent);
+	if (UBaseComponent* comp = Cast<UBaseComponent>(NewComponent)) {
+		comp->SetCore(this);
+	}
 }
 
 void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComponent* NewComponent) {
@@ -151,6 +157,9 @@ void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComp
 	}
 	ExistingComponents.Add(ComponentType, NewComponent);
 	NewComponent->RegisterComponent();
+	if (UBaseComponent* comp = Cast<UBaseComponent>(NewComponent)) {
+		comp->SetCore(this);
+	}
 }
 
 void UGameObjectCore::UnbindComponent(EGameComponentType ComponentType) {

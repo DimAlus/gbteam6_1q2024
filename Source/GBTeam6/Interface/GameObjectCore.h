@@ -27,6 +27,16 @@ protected:
 	TMap<EGameComponentType, UActorComponent*> ExistingComponents;
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnCreatingBefore;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnCreating;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnCreatingAfter;
+
+public:
 	UGameObjectCore();
 
 	void SetOwner(AActor* ownerObject);

@@ -123,7 +123,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	virtual void AttachCore(UGameObjectCore* Core);
+	virtual bool AttachCore(UGameObjectCore* Core);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void DetachCore(UGameObjectCore* Core);

@@ -18,7 +18,10 @@ class GBTEAM6_API UGeneratorStandardComponent : public UGeneratorBaseComponent {
 public:
 	UGeneratorStandardComponent();
 
-	virtual void BeginPlay() override;
+protected:
+	virtual void OnCoreCreatedBefore() override;
+
+public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
@@ -109,7 +112,7 @@ public:
 	virtual void SetIsDestruction(bool isDestroy) override;
 	virtual bool GetIsDestruction() override;
 
-	virtual void AttachCore(UGameObjectCore* Core) override;
+	virtual bool AttachCore(UGameObjectCore* Core) override;
 	virtual void DetachCore(UGameObjectCore* Core) override;
 	virtual void SetReadyCore(UGameObjectCore* Core) override;
 
