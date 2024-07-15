@@ -97,9 +97,12 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 	int cnt = 0;
 	const TSet<UGameObjectCore*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
 	for (auto core : actors) {
-		cnt += Cast<UInventoryBaseComponent>(
+		auto overs = Cast<UInventoryBaseComponent>(
 			core->GetComponent(EGameComponentType::Inventory)
-		)->GetResourceCount(resource);
+		)->GetOverage();
+		if (overs.Contains(resource)) {
+			cnt += overs[resource];
+		}
 	}
 	return cnt;
 }
