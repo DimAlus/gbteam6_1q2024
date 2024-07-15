@@ -174,6 +174,7 @@ void AGameStateDefault::SetCurrentDayTime(float dayTimePercent) {
 	float dayLength = conf.FloatValue;
 
 	CurrentDayTime = dayLength * dayTimePercent;
+	DayChangingLoop();
 }
 
 
