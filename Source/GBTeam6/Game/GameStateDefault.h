@@ -176,6 +176,7 @@ public:
 private:
 	float CurrentDayTime;
 	float DayChangingDelay = 0.1f;
+	bool DayChagingEnable = true;
 	bool CurrentIsDay = true;
 	int CurrentDayNum = 1;
 	FTimerHandle DayChangingTimer;
@@ -192,6 +193,12 @@ protected:
 	UFUNCTION()
 	void SendMessageDayStateChange(bool IsDay);
 
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE void SetDayChangingEnable(bool isEnable) { DayChagingEnable = isEnable; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentDayTime(float dayTimePercent);
 public:
 	
 	UFUNCTION(BlueprintCallable)

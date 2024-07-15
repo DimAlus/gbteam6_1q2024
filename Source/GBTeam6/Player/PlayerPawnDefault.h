@@ -185,4 +185,24 @@ public:
 	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
 	void DisableHumanRaids();
 	void DisableHumanRaids_Implementation();
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void HumanRaids(bool isEnable = true);
+	void HumanRaids_Implementation(bool isEnable);
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void CallHumanRaid();
+	void CallHumanRaid_Implementation();
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void AddResource(EResource resource, int count = 100);
+	void AddResource_Implementation(EResource resource, int count = 100);
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void SetTime(float time = 0.5f);
+	void SetTime_Implementation(float time);
+	
+	UFUNCTION(Exec, BlueprintNativeEvent, Category="Commands")
+	void SetTimeChanging(bool isChanged = true);
+	void SetTimeChanging_Implementation(bool isChanged);
 };

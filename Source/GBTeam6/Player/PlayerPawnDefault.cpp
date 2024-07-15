@@ -355,3 +355,23 @@ void APlayerPawnDefault::EnableHumanRaids_Implementation()
 void APlayerPawnDefault::DisableHumanRaids_Implementation()
 {
 }
+
+void APlayerPawnDefault::HumanRaids_Implementation(bool isEnable)
+{
+}
+
+void APlayerPawnDefault::CallHumanRaid_Implementation()
+{
+}
+
+void APlayerPawnDefault::AddResource_Implementation(EResource resource, int count)
+{
+}
+
+void APlayerPawnDefault::SetTime_Implementation(float time)
+{
+}
+
+void APlayerPawnDefault::SetTimeChanging_Implementation(bool isChanged)
+{
+}

@@ -166,9 +166,21 @@ void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
 	}
 }
 
+void AGameStateDefault::SetCurrentDayTime(float dayTimePercent) {
+	FConfig conf;
+	if (!GetConfig(EConfig::F_DayTime, conf)) {
+		return;
+	}
+	float dayLength = conf.FloatValue;
+
+	CurrentDayTime = dayLength * dayTimePercent;
+}
+
 
 void AGameStateDefault::DayChangingLoop(){
-	CurrentDayTime += DayChangingDelay;
+	if (DayChagingEnable) {
+		CurrentDayTime += DayChangingDelay;
+	}
 	FConfig conf;
 	if (!GetConfig(EConfig::F_DayTime, conf)) {
 		return;
