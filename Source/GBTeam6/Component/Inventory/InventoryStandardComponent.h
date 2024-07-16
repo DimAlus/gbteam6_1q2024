@@ -39,6 +39,8 @@ private:
 	bool _pop(const TArray<FPrice>& resources);
 	bool _player_push(const TArray<FPrice>& resources);
 	bool _player_pop(const TArray<FPrice>& resources);
+	bool _can_player_push(const TArray<FPrice>& resources);
+	bool _can_player_pop(const TArray<FPrice>& resources);
 public:
 	virtual bool CanPush(const TArray<FPrice>& resources) override;
 	virtual bool CanPop(const TArray<FPrice>& resources) override;

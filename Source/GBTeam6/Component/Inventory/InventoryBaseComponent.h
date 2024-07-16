@@ -8,7 +8,6 @@
 
 #include "InventoryBaseComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnInventoryChange);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -51,5 +50,5 @@ public:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnInventoryChange OnInventoryChange;
+	FTouchSignature OnInventoryChange;
 };

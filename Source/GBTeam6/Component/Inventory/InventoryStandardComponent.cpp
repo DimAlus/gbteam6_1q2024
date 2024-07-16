@@ -109,24 +109,39 @@ bool UInventoryStandardComponent::_player_pop(const TArray<FPrice>& resources) {
 }
 
 
+bool UInventoryStandardComponent::_can_player_push(const TArray<FPrice>& resources) {
+	AGameStateDefault* gameState = GetGameState();
+	for (int i = 0; i < resources.Num(); i++) {
+		if (!gameState->CanPushPlayerResource(resources[i].Resource, resources[i].Count)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool UInventoryStandardComponent::_can_player_pop(const TArray<FPrice>& resources) {
+	AGameStateDefault* gameState = GetGameState();
+	for (int i = 0; i < resources.Num(); i++) {
+		if (!gameState->CanPopPlayerResource(resources[i].Resource, resources[i].Count)) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
 bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
 	SavePoint();
-	bool result = _player_push(resources);
-	if (result) {
-		_player_pop(resources);
-		result = _push(resources);
-	}
+	bool result = _can_player_push(resources)
+				&& _push(resources);
 	RollBack(true);
 	return result;
 }
 
 bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
 	SavePoint();
-	bool result = _player_pop(resources);
-	if (result) {
-		_player_push(resources);
-		result = _pop(resources);
-	}
+	bool result = _can_player_pop(resources)
+				&& _pop(resources);
 	RollBack(true);
 	return result;
 }

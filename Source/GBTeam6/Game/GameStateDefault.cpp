@@ -110,6 +110,7 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
 	if (PlayerResources.Contains(resource)) {
 		PlayerResources[resource] += count;
+		OnPlayerInventoryChanging.Broadcast();
 	}
 	return true;
 }
@@ -118,9 +119,21 @@ bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
 	if (PlayerResources.Contains(resource)) {
 		if (PlayerResources[resource] >= count) {
 			PlayerResources[resource] -= count;
+			OnPlayerInventoryChanging.Broadcast();
 			return true;
 		}
 		return false;
+	}
+	return true;
+}
+
+bool AGameStateDefault::CanPushPlayerResource(EResource resource, int count) {
+	return true;
+}
+
+bool AGameStateDefault::CanPopPlayerResource(EResource resource, int count) {
+	if (PlayerResources.Contains(resource)) {
+		return PlayerResources[resource] >= count;
 	}
 	return true;
 }

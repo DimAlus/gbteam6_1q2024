@@ -38,6 +38,8 @@ private:
 	TMap<FString, FGeneratorThreadIterators> ThreadsIterators;
 	TMap<FString, TArray<FString>> CurrentThreadGenerators;
 	TMap<FString, TMap<ESocialTag, int>> CurrentThreadNeedSocialTags;
+	TArray<FString> CurrentGeneratorsWithSocialTagNeeds;
+	TArray<FString> GeneratorsWithSocialTagNeedsAndPlayerResources;
 	bool CurrentThreadNeedSocialTagsActual = false;
 
 	float WorkPower;
@@ -58,11 +60,19 @@ private:
 
 	UInventoryBaseComponent* GetInventory();
 
+protected:
+	UFUNCTION()
+	void OnInventoryChanging();
+	UFUNCTION()
+	void OnPlayerInventoryChanging();
 
-
+private:
 	void TouchThread(const FString& threadName);
+	void TouchGeneratorSocialTagNeeds(const FString& generatorName);
 	void TouchGenerator(const FString& generatorName);
 	void TouchAllGenerators();
+
+	bool GeneratorSelected(const FString& generatorName);
 
 	bool HasAllSocialTags(const FString& generatorName);
 	bool HasConstraintByResultActors(const FString& generatorName);

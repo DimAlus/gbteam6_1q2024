@@ -156,6 +156,8 @@ private:
 
 	
 public:
+	FORCEINLINE const TMap<EResource, int>& GetPlayerResources() const { return PlayerResources; }
+
 	int GetStackSize(EResource resource);
 
 	UFUNCTION(BlueprintCallable)
@@ -166,6 +168,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool PopPlayerResource(EResource resource, int count);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanPushPlayerResource(EResource resource, int count);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanPopPlayerResource(EResource resource, int count);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
@@ -231,4 +239,8 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FOnInventoryChanging OnShowInventoryChanging;
+
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FTouchSignature OnPlayerInventoryChanging;
 };

@@ -19,6 +19,12 @@ void UGeneratorStandardComponent::OnCoreCreatedBefore() {
 	if (auto mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping))) {
 		mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
 	}
+	if (auto inventory = GetInventory()) {
+		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorStandardComponent::OnInventoryChanging);
+	}
+	if (auto gameState = GetGameState()) {
+		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorStandardComponent::OnPlayerInventoryChanging);
+	}
 }
 
 
@@ -89,11 +95,18 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 		this->GeneratorsContext.Add(key, context);
 
 		info.HasSocialTagNeeds = false;
+		bool HasPlayerResources = false;
+		auto gameState = GetGameState();
 		for (const auto& prc : info.Barter.Price) {
 			if (prc.Resource == EResource::SocialTag) {
 				info.HasSocialTagNeeds = true;
-				break;
 			}
+			if (gameState->GetPlayerResources().Contains(prc.Resource)) {
+				HasPlayerResources = true;
+			}
+		}
+		if (info.HasSocialTagNeeds && HasPlayerResources) {
+			GeneratorsWithSocialTagNeedsAndPlayerResources.Add(key);
 		}
 	}
 
@@ -139,6 +152,20 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 }
 
 
+void UGeneratorStandardComponent::OnInventoryChanging() {
+	for (auto& generatorName : CurrentGeneratorsWithSocialTagNeeds) {
+		TouchGeneratorSocialTagNeeds(generatorName);
+	}
+}
+
+
+void UGeneratorStandardComponent::OnPlayerInventoryChanging() {
+	for (auto& generatorName : GeneratorsWithSocialTagNeedsAndPlayerResources) {
+		TouchGeneratorSocialTagNeeds(generatorName);
+	}
+}
+
+
 void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
 	if (!this->Threads.Contains(threadName)) {
 		this->Threads.Add(threadName, {});
@@ -149,13 +176,35 @@ void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
 }
 
 
+void UGeneratorStandardComponent::TouchGeneratorSocialTagNeeds(const FString& generatorName) {
+	FGeneratorElementInfo& info = this->Generators[generatorName];
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+	FGeneratorThread& thread = Threads[info.ThreadName];
+	
+	if (!info.HasSocialTagNeeds) {
+		return;
+	}
+	if (((GeneratorSelected(generatorName) || thread.GeneratorName == generatorName)
+		&& !HasConstraintByResultActors(generatorName)
+		&& !HasConstraintByInventory(generatorName))
+		!= context.WaitSocialTags) {
+		context.WaitSocialTags = !context.WaitSocialTags;
+		CurrentThreadNeedSocialTagsActual = false;
+		IsActualCurrentSocialTagNeeds = false;
+	}
+}
+
+
 void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
 
-	if (info.HasSocialTagNeeds) {
-		CurrentThreadNeedSocialTagsActual = false;
+	if (atLevel && info.HasSocialTagNeeds) {
+		this->CurrentGeneratorsWithSocialTagNeeds.AddUnique(generatorName);
+	}
+	else {
+		this->CurrentGeneratorsWithSocialTagNeeds.RemoveSingle(generatorName);
 	}
 
 	if (atLevel){
@@ -182,6 +231,7 @@ void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 		this->ThreadsIterators[info.ThreadName].Tasks.Iterable.RemoveSingle(generatorName);
 		this->ThreadsIterators[info.ThreadName].Priority.Iterable.RemoveSingle(generatorName);
 	}
+	TouchGeneratorSocialTagNeeds(generatorName);
 }
 
 
@@ -193,6 +243,15 @@ void UGeneratorStandardComponent::TouchAllGenerators() {
 	}
 	ResetCurrentNeeds();
 	OnAllGeneratorsChanging.Broadcast();
+}
+
+
+bool UGeneratorStandardComponent::GeneratorSelected(const FString& generatorName) {
+	FGeneratorElementInfo& info = this->Generators[generatorName];
+	FGeneratorContext& context = this->GeneratorsContext[generatorName];
+	int level = GetLevel();
+	return level == std::clamp(GetLevel(), info.MinLevel, info.MaxLevel)
+		&& context.PassiveWork || context.CountTasks > 0;
 }
 
 
@@ -651,38 +710,35 @@ void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
 
 void UGeneratorStandardComponent::CalculateCurrentThreadNeedSocialTags() {
 	TMap<FString, TMap<ESocialTag, int>> result;
-	for (const auto& iter : this->Generators) {
-		const auto& info = iter.Value;
-		bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
+	for (const FString& generatorName : CurrentGeneratorsWithSocialTagNeeds) {
+		const auto& info = Generators[generatorName];
+		const auto& context = GeneratorsContext[generatorName];
 
-		if (atLevel && info.HasSocialTagNeeds) {
-			const auto& context = this->GeneratorsContext[iter.Key];
-
-			if (context.PassiveWork || context.CountTasks > 0) {
-				if (!result.Contains(info.ThreadName)) {
-					result.Add(info.ThreadName);
-				}
-				auto& needs = result[info.ThreadName];
-				for (const auto& prc : info.Barter.Price) {
-					if (prc.Resource == EResource::SocialTag) {
-						int cnt = 0;
-						ESocialTag tag = ESocialTag::None;
-						for (auto tg : prc.SocialTags) {
-							tag = tg;
-							break;
-						}
-
-						if (needs.Contains(tag)) {
-							cnt = needs[tag];
-						}
-						needs.Add(tag, std::max(cnt, prc.Count));
+		if (context.WaitSocialTags) {
+			if (!result.Contains(info.ThreadName)) {
+				result.Add(info.ThreadName);
+			}
+			auto& needs = result[info.ThreadName];
+			for (const auto& prc : info.Barter.Price) {
+				if (prc.Resource == EResource::SocialTag) {
+					int cnt = 0;
+					ESocialTag tag = ESocialTag::None;
+					for (auto tg : prc.SocialTags) {
+						tag = tg;
+						break;
 					}
+
+					if (needs.Contains(tag)) {
+						cnt = needs[tag];
+					}
+					needs.Add(tag, std::max(cnt, prc.Count));
 				}
 			}
 		}
 	}
 
 	this->CurrentThreadNeedSocialTags = result;
+	CurrentThreadNeedSocialTagsActual = true;
 
 }
 
@@ -734,6 +790,7 @@ TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TAr
 TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 	if (!IsActualCurrentSocialTagNeeds) {
 		CurrentSocialTagNeeds = this->CalculateNeededSocalTags(this->CoresAttached);
+		IsActualCurrentSocialTagNeeds = true;
 	}
 	return CurrentSocialTagNeeds;
 }

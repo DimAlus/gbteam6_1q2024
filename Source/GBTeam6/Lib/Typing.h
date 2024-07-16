@@ -304,6 +304,9 @@ struct FGeneratorContext {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CountTasks = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool WaitSocialTags{ false };
 };
 
 
