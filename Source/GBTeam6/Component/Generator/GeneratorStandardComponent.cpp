@@ -676,8 +676,13 @@ bool UGeneratorStandardComponent::GetIsDestruction() {
 
 bool UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
 	if (Core->IsValidLowLevel()) {
-		CoresAttached.Add(Core);
-		IsActualCurrentSocialTagNeeds = false;
+		if (CoresAttached.Contains(Core)) {
+			UE_LOG_COMPONENT(Error, "Double attach from '%s'", *Core->GetOwnerName());
+		}
+		else {
+			CoresAttached.Add(Core);
+			IsActualCurrentSocialTagNeeds = false;
+		}
 		return true;
 	}
 	return false;
