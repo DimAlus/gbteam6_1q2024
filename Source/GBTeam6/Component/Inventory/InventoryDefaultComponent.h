@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "./InventoryBaseComponent.h"
-#include "InventoryStandardComponent.generated.h"
+#include "InventoryDefaultComponent.generated.h"
 
 class AGameStateDefault;
 
@@ -10,7 +10,7 @@ class AGameStateDefault;
  * 
  */
 UCLASS()
-class GBTEAM6_API UInventoryStandardComponent : public UInventoryBaseComponent
+class GBTEAM6_API UInventoryDefaultComponent : public UInventoryBaseComponent
 {
 	GENERATED_BODY()
 public:

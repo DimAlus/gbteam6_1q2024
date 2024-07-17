@@ -1,4 +1,4 @@
-#include "./GeneratorStandardComponent.h"
+#include "./GeneratorDefaultComponent.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Interface/GameObjectCore.h"
 #include "../../Interface/GameObjectInterface.h"
@@ -8,27 +8,27 @@
 #include "../Social/SocialBaseComponent.h"
 #include "../../Service/MessageService.h"
 #include "../../Service/SocialService.h"
-#include "GeneratorStandardComponent.h"
+#include "GeneratorDefaultComponent.h"
 
-UGeneratorStandardComponent::UGeneratorStandardComponent() : UGeneratorBaseComponent() {
+UGeneratorDefaultComponent::UGeneratorDefaultComponent() : UGeneratorBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-void UGeneratorStandardComponent::OnCoreCreatedBefore() {
+void UGeneratorDefaultComponent::OnCoreCreatedBefore() {
 	Super::OnCoreCreatedBefore();
 	if (auto mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping))) {
-		mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorStandardComponent::SetIsSetedAtMap);
+		mapping->OnPlaced.AddUniqueDynamic(this, &UGeneratorDefaultComponent::SetIsSetedAtMap);
 	}
 	if (auto inventory = GetInventory()) {
-		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorStandardComponent::OnInventoryChanging);
+		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorDefaultComponent::OnInventoryChanging);
 	}
 	if (auto gameState = GetGameState()) {
-		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorStandardComponent::OnPlayerInventoryChanging);
+		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorDefaultComponent::OnPlayerInventoryChanging);
 	}
 }
 
 
-void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
+void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	TArray<FString> keys;
@@ -76,7 +76,7 @@ void UGeneratorStandardComponent::TickComponent(float DeltaTime, ELevelTick Tick
 }
 
 
-void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
+void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 
 	this->WorkPower = initializer.WorkPower;
@@ -120,14 +120,14 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 }
 
 
-void UGeneratorStandardComponent::SaveComponent(FGeneratorSaveData& saveData) {
+void UGeneratorDefaultComponent::SaveComponent(FGeneratorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.GeneratorsContext = GeneratorsContext;
 	saveData.IsDestructed = IsDestructed;
 }
 
 
-void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveData) {
+void UGeneratorDefaultComponent::LoadComponent(const FGeneratorSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	// GeneratorsContext = saveData.GeneratorsContext;
 	this->IsDestructed = saveData.IsDestructed;
@@ -140,7 +140,7 @@ void UGeneratorStandardComponent::LoadComponent(const FGeneratorSaveData& saveDa
 
 
 
-UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
+UInventoryBaseComponent* UGeneratorDefaultComponent::GetInventory() {
 	UGameObjectCore* core = GetCore();
 	if (!IsValid(core)) {
 		return nullptr;
@@ -157,21 +157,21 @@ UInventoryBaseComponent* UGeneratorStandardComponent::GetInventory() {
 }
 
 
-void UGeneratorStandardComponent::OnInventoryChanging() {
+void UGeneratorDefaultComponent::OnInventoryChanging() {
 	for (auto& generatorName : CurrentGeneratorsWithSocialTagNeeds) {
 		TouchGeneratorSocialTagNeeds(generatorName);
 	}
 }
 
 
-void UGeneratorStandardComponent::OnPlayerInventoryChanging() {
+void UGeneratorDefaultComponent::OnPlayerInventoryChanging() {
 	for (auto& generatorName : GeneratorsWithSocialTagNeedsAndPlayerResources) {
 		TouchGeneratorSocialTagNeeds(generatorName);
 	}
 }
 
 
-void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
+void UGeneratorDefaultComponent::TouchThread(const FString& threadName) {
 	if (!this->Threads.Contains(threadName)) {
 		this->Threads.Add(threadName, {});
 		this->CurrentThreadGenerators.Add(threadName, {});
@@ -181,7 +181,7 @@ void UGeneratorStandardComponent::TouchThread(const FString& threadName) {
 }
 
 
-void UGeneratorStandardComponent::TouchGeneratorSocialTagNeeds(const FString& generatorName) {
+void UGeneratorDefaultComponent::TouchGeneratorSocialTagNeeds(const FString& generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	FGeneratorThread& thread = Threads[info.ThreadName];
@@ -200,7 +200,7 @@ void UGeneratorStandardComponent::TouchGeneratorSocialTagNeeds(const FString& ge
 }
 
 
-void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
+void UGeneratorDefaultComponent::TouchGenerator(const FString& generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	bool atLevel = this->Level == std::clamp(this->Level, info.MinLevel, info.MaxLevel);
@@ -240,7 +240,7 @@ void UGeneratorStandardComponent::TouchGenerator(const FString& generatorName) {
 }
 
 
-void UGeneratorStandardComponent::TouchAllGenerators() {
+void UGeneratorDefaultComponent::TouchAllGenerators() {
 	TArray<FString> keys;
 	this->Generators.GetKeys(keys);
 	for (const FString& key : keys) {
@@ -251,7 +251,7 @@ void UGeneratorStandardComponent::TouchAllGenerators() {
 }
 
 
-bool UGeneratorStandardComponent::GeneratorSelected(const FString& generatorName) {
+bool UGeneratorDefaultComponent::GeneratorSelected(const FString& generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	int level = GetLevel();
@@ -260,7 +260,7 @@ bool UGeneratorStandardComponent::GeneratorSelected(const FString& generatorName
 }
 
 
-bool UGeneratorStandardComponent::HasAllSocialTags(const FString& generatorName) {
+bool UGeneratorDefaultComponent::HasAllSocialTags(const FString& generatorName) {
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	for (const FPrice& prc : info.Barter.Price) {
 		if (prc.Resource == EResource::SocialTag) {
@@ -284,11 +284,11 @@ bool UGeneratorStandardComponent::HasAllSocialTags(const FString& generatorName)
 	return true;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByResultActors(const FString& generatorName) {
+bool UGeneratorDefaultComponent::HasConstraintByResultActors(const FString& generatorName) {
 	return false;
 }
 
-bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& generatorName) {
+bool UGeneratorDefaultComponent::HasConstraintByInventory(const FString& generatorName) {
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		return !(inventory->CanPop(info.Barter.Price)
@@ -298,14 +298,14 @@ bool UGeneratorStandardComponent::HasConstraintByInventory(const FString& genera
 }
 
 
-bool UGeneratorStandardComponent::CanGenerate(const FString& generatorName) {
+bool UGeneratorDefaultComponent::CanGenerate(const FString& generatorName) {
 	return HasAllSocialTags(generatorName)
 		&& !HasConstraintByResultActors(generatorName)
 		&& !HasConstraintByInventory(generatorName);
 }
 
 
-bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
+bool UGeneratorDefaultComponent::HireWorkers(const FString& generatorName) {
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	FGeneratorThread& thread = this->Threads[info.ThreadName];
 
@@ -343,7 +343,7 @@ bool UGeneratorStandardComponent::HireWorkers(const FString& generatorName) {
 }
 
 
-void UGeneratorStandardComponent::DismissWorkers(const FString& threadName) {
+void UGeneratorDefaultComponent::DismissWorkers(const FString& threadName) {
 	for (const auto& core : this->Threads[threadName].AttachedCores) {
 		if (this->CoresReserved.Contains(core)) {
 			this->CoresReserved.Remove(core);
@@ -354,7 +354,7 @@ void UGeneratorStandardComponent::DismissWorkers(const FString& threadName) {
 }
 
 
-void UGeneratorStandardComponent::StartWork(const FString& threadName, const FString& generatorName) {
+void UGeneratorDefaultComponent::StartWork(const FString& threadName, const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Started work by <%s>: <%s>", *threadName, *generatorName);
 	FGeneratorThread& thread = this->Threads[threadName];
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
@@ -373,7 +373,7 @@ void UGeneratorStandardComponent::StartWork(const FString& threadName, const FSt
 }
 
 
-FString UGeneratorStandardComponent::FindWorkByIterator(UStringCycledIterator& iterator) {
+FString UGeneratorDefaultComponent::FindWorkByIterator(UStringCycledIterator& iterator) {
 	FString* genSave = iterator.Next();
 	if (genSave) {
 		FString* genName = genSave;
@@ -389,7 +389,7 @@ FString UGeneratorStandardComponent::FindWorkByIterator(UStringCycledIterator& i
 }
 
 
-bool UGeneratorStandardComponent::TryStartWorkByIterator(const FString& threadName, UStringCycledIterator& iterator) {
+bool UGeneratorDefaultComponent::TryStartWorkByIterator(const FString& threadName, UStringCycledIterator& iterator) {
 	FString generatorName = FindWorkByIterator(iterator);
 	if (!generatorName.IsEmpty()) {
 		StartWork(threadName, generatorName);
@@ -399,7 +399,7 @@ bool UGeneratorStandardComponent::TryStartWorkByIterator(const FString& threadNa
 }
 
 
-bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
+bool UGeneratorDefaultComponent::FindWork(const FString& threadName) {
 	FGeneratorThreadIterators& threadIterators = this->ThreadsIterators[threadName];
 	
 	return TryStartWorkByIterator(threadName, threadIterators.Priority)
@@ -408,7 +408,7 @@ bool UGeneratorStandardComponent::FindWork(const FString& threadName) {
 }
 
 
-void UGeneratorStandardComponent::ApplyWork(const FString& generatorName) {
+void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Applied <%s>", *generatorName);
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	DismissWorkers(info.ThreadName);
@@ -427,7 +427,7 @@ void UGeneratorStandardComponent::ApplyWork(const FString& generatorName) {
 }
 
 
-void UGeneratorStandardComponent::CancelWork(const FString& generatorName) {
+void UGeneratorDefaultComponent::CancelWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Canceled <%s>", *generatorName);
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		inventory->Push(this->Generators[generatorName].Barter.Price);
@@ -435,7 +435,7 @@ void UGeneratorStandardComponent::CancelWork(const FString& generatorName) {
 }
 
 
-void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FPrice>& resources) {
+void UGeneratorDefaultComponent::ApplyNotInventoriableResources(const TArray<FPrice>& resources) {
 	FVector loc = GetOwner()->GetActorLocation() + FVector(0, 0, 100);
 	FRotator rot;
 	for (const FPrice& res : resources) {
@@ -452,7 +452,7 @@ void UGeneratorStandardComponent::ApplyNotInventoriableResources(const TArray<FP
 }
 
 
-TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
+TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 	TMap<EResource, int> needs;
 
 	TArray<FString> keys;
@@ -486,12 +486,12 @@ TMap<EResource, int> UGeneratorStandardComponent::CalculateNeeds(int steps){
 }
 
 
-void UGeneratorStandardComponent::ResetCurrentNeeds() {
+void UGeneratorDefaultComponent::ResetCurrentNeeds() {
 	this->CurrentNeeds = this->CalculateNeeds(1);
 }
 
 
-void UGeneratorStandardComponent::SetIsSetedAtMap(bool isBuilded) {
+void UGeneratorDefaultComponent::SetIsSetedAtMap(bool isBuilded) {
 	if (this->Level == 0) {
 		if (isBuilded) {
 			this->Level = 1;
@@ -502,17 +502,17 @@ void UGeneratorStandardComponent::SetIsSetedAtMap(bool isBuilded) {
 }
 
 
-float UGeneratorStandardComponent::GetWorkPower() {
+float UGeneratorDefaultComponent::GetWorkPower() {
 	return this->WorkPower;
 }
 
 
-TMap<EResource, int> UGeneratorStandardComponent::GetNeeds() {
+TMap<EResource, int> UGeneratorDefaultComponent::GetNeeds() {
 	return CurrentNeeds;
 }
 
 
-void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
+void UGeneratorDefaultComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
 	UE_LOG_COMPONENT(Log, "Set Generator Passive Work <%s>: %d", *generatorName, isPassive ? 1 : 0);
 	if (!this->Generators.Contains(generatorName)) {
 		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationPassiveWork! %s out of map!", *generatorName);
@@ -526,7 +526,7 @@ void UGeneratorStandardComponent::ChangeGenerationPassiveWork(const FString& gen
 }
 
 
-void UGeneratorStandardComponent::ChangeGenerationPriority(const FString& generatorName, bool isPriority) {
+void UGeneratorDefaultComponent::ChangeGenerationPriority(const FString& generatorName, bool isPriority) {
 	UE_LOG_COMPONENT(Log, "Set Generator Priority <%s>: %d", *generatorName, isPriority ? 1 : 0);
 	if (!this->Generators.Contains(generatorName)) {
 		UE_LOG_COMPONENT(Error, "Failed ChangeGenerationPriority! %s out of map!", *generatorName);
@@ -538,14 +538,14 @@ void UGeneratorStandardComponent::ChangeGenerationPriority(const FString& genera
 }
 
 
-TArray<FString> UGeneratorStandardComponent::GetGenerators(FString threadName) {
+TArray<FString> UGeneratorDefaultComponent::GetGenerators(FString threadName) {
 	if (CurrentThreadGenerators.Contains(threadName))
 		return CurrentThreadGenerators[threadName];
 	return {};
 }
 
 
-float UGeneratorStandardComponent::GetProgress(FString threadName) {
+float UGeneratorDefaultComponent::GetProgress(FString threadName) {
 	if (this->Threads.Contains(threadName)) {
 		return this->Threads[threadName].Power;
 	}
@@ -553,7 +553,7 @@ float UGeneratorStandardComponent::GetProgress(FString threadName) {
 }
 
 
-float UGeneratorStandardComponent::GetProgressPercents(FString threadName) {
+float UGeneratorDefaultComponent::GetProgressPercents(FString threadName) {
 	if (this->Threads.Contains(threadName)) {
 		FString& generatorName = this->Threads[threadName].GeneratorName;
 		if (!generatorName.IsEmpty()) {
@@ -564,7 +564,7 @@ float UGeneratorStandardComponent::GetProgressPercents(FString threadName) {
 }
 
 
-const FGeneratorThread& UGeneratorStandardComponent::GetThread(FString threadName, bool& exists) {
+const FGeneratorThread& UGeneratorDefaultComponent::GetThread(FString threadName, bool& exists) {
 	static FGeneratorThread EmptyThread;
 	if (this->Threads.Contains(threadName)) {
 		exists = true;
@@ -575,7 +575,7 @@ const FGeneratorThread& UGeneratorStandardComponent::GetThread(FString threadNam
 }
 
 
-const FGeneratorElementInfo& UGeneratorStandardComponent::GetCurrentGenerator(FString threadName, bool& exists) {
+const FGeneratorElementInfo& UGeneratorDefaultComponent::GetCurrentGenerator(FString threadName, bool& exists) {
 	static FGeneratorElementInfo EmptyGenerator;
 	if (this->Threads.Contains(threadName)) {
 		FString& generatorName = this->Threads[threadName].GeneratorName;
@@ -589,7 +589,7 @@ const FGeneratorElementInfo& UGeneratorStandardComponent::GetCurrentGenerator(FS
 }
 
 
-const FGeneratorContext& UGeneratorStandardComponent::GetCurrentGeneratorContext(FString threadName, bool& exists) {
+const FGeneratorContext& UGeneratorDefaultComponent::GetCurrentGeneratorContext(FString threadName, bool& exists) {
 	static FGeneratorContext EmptyContext;
 	if (this->Threads.Contains(threadName)) {
 		FString& generatorName = this->Threads[threadName].GeneratorName;
@@ -603,7 +603,7 @@ const FGeneratorContext& UGeneratorStandardComponent::GetCurrentGeneratorContext
 }
 
 
-const FGeneratorElementInfo& UGeneratorStandardComponent::GetGenerator(FString generatorName, bool& exists) {
+const FGeneratorElementInfo& UGeneratorDefaultComponent::GetGenerator(FString generatorName, bool& exists) {
 	static FGeneratorElementInfo EmptyGenerator;
 	if (this->Generators.Contains(generatorName)) {
 		exists = true;
@@ -614,7 +614,7 @@ const FGeneratorElementInfo& UGeneratorStandardComponent::GetGenerator(FString g
 }
 
 
-const FGeneratorContext& UGeneratorStandardComponent::GetGeneratorContext(FString generatorName, bool& exists) {
+const FGeneratorContext& UGeneratorDefaultComponent::GetGeneratorContext(FString generatorName, bool& exists) {
 	static FGeneratorContext EmptyContext;
 	if (this->GeneratorsContext.Contains(generatorName)) {
 		exists = true;
@@ -625,7 +625,7 @@ const FGeneratorContext& UGeneratorStandardComponent::GetGeneratorContext(FStrin
 }
 
 
-void UGeneratorStandardComponent::AddTask(FString generatorName) {
+void UGeneratorDefaultComponent::AddTask(FString generatorName) {
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	context.CountTasks++;
 	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
@@ -636,7 +636,7 @@ void UGeneratorStandardComponent::AddTask(FString generatorName) {
 }
 
 
-void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
+void UGeneratorDefaultComponent::RemoveTask(FString generatorName) {
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
 	if (context.CountTasks <= 0) {
 		CancelTask(generatorName);
@@ -653,7 +653,7 @@ void UGeneratorStandardComponent::RemoveTask(FString generatorName) {
 }
 
 
-void UGeneratorStandardComponent::CancelTask(FString generatorName) {
+void UGeneratorDefaultComponent::CancelTask(FString generatorName) {
 	FGeneratorElementInfo& info = this->Generators[generatorName];
 	UE_LOG_COMPONENT(Log, "Cancel Task <%s> from <%s>", *generatorName, *info.ThreadName);
 	FGeneratorThread& thread = this->Threads[info.ThreadName];
@@ -668,18 +668,18 @@ void UGeneratorStandardComponent::CancelTask(FString generatorName) {
 }
 
 
-void UGeneratorStandardComponent::SetIsDestruction(bool isDestroy) {
+void UGeneratorDefaultComponent::SetIsDestruction(bool isDestroy) {
 	IsDestructed = isDestroy;
 	TouchAllGenerators();
 }
 
 
-bool UGeneratorStandardComponent::GetIsDestruction() { 
+bool UGeneratorDefaultComponent::GetIsDestruction() { 
 	return IsDestructed; 
 }
 
 
-bool UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
+bool UGeneratorDefaultComponent::AttachCore(UGameObjectCore* Core) {
 	if (Core->IsValidLowLevel()) {
 		if (CoresAttached.Contains(Core)) {
 			UE_LOG_COMPONENT(Error, "Double attach from '%s'", *Core->GetOwnerName());
@@ -694,7 +694,7 @@ bool UGeneratorStandardComponent::AttachCore(UGameObjectCore* Core) {
 }
 
 
-void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
+void UGeneratorDefaultComponent::DetachCore(UGameObjectCore* Core) {
 	if (CoresReserved.Contains(Core)) {
 		for (auto thread : this->Threads) {
 			if (thread.Value.AttachedCores.Contains(Core)) {
@@ -710,7 +710,7 @@ void UGeneratorStandardComponent::DetachCore(UGameObjectCore* Core) {
 }
 
 
-void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
+void UGeneratorDefaultComponent::SetReadyCore(UGameObjectCore* Core) {
 	if (CoresAttached.Contains(Core)
 		&& !CoresReserved.Contains(Core)) {
 		CoresReady.AddUnique(Core);
@@ -718,7 +718,7 @@ void UGeneratorStandardComponent::SetReadyCore(UGameObjectCore* Core) {
 }
 
 
-void UGeneratorStandardComponent::CalculateCurrentThreadNeedSocialTags() {
+void UGeneratorDefaultComponent::CalculateCurrentThreadNeedSocialTags() {
 	TMap<FString, TMap<ESocialTag, int>> result;
 	for (const FString& generatorName : CurrentGeneratorsWithSocialTagNeeds) {
 		const auto& info = Generators[generatorName];
@@ -752,7 +752,7 @@ void UGeneratorStandardComponent::CalculateCurrentThreadNeedSocialTags() {
 
 }
 
-TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores) {
+TSet<ESocialTag> UGeneratorDefaultComponent::CalculateNeededSocalTags(const TArray<UGameObjectCore*>& attachedCores) {
 	TSet<ESocialTag> result;
 
 	if (!CurrentThreadNeedSocialTagsActual) {
@@ -797,7 +797,7 @@ TSet<ESocialTag> UGeneratorStandardComponent::CalculateNeededSocalTags(const TAr
 }
 
 
-TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
+TSet<ESocialTag> UGeneratorDefaultComponent::GetNeededSocialTags() {
 	if (!IsActualCurrentSocialTagNeeds) {
 		CurrentSocialTagNeeds = this->CalculateNeededSocalTags(this->CoresAttached);
 		IsActualCurrentSocialTagNeeds = true;
@@ -806,7 +806,7 @@ TSet<ESocialTag> UGeneratorStandardComponent::GetNeededSocialTags() {
 }
 
 
-bool UGeneratorStandardComponent::GetNeedMe(UGameObjectCore* core) {
+bool UGeneratorDefaultComponent::GetNeedMe(UGameObjectCore* core) {
 	if (!IsValid(core)) {
 		return false;
 	}

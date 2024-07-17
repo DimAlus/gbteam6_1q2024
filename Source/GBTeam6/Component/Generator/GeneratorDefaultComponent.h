@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "./GeneratorBaseComponent.h"
-#include "GeneratorStandardComponent.generated.h"
+#include "GeneratorDefaultComponent.generated.h"
 
 
 class UInventoryBaseComponent;
@@ -12,11 +12,11 @@ class AGameStateDefault;
  * 
  */
 UCLASS()
-class GBTEAM6_API UGeneratorStandardComponent : public UGeneratorBaseComponent {
+class GBTEAM6_API UGeneratorDefaultComponent : public UGeneratorBaseComponent {
 	GENERATED_BODY()
 
 public:
-	UGeneratorStandardComponent();
+	UGeneratorDefaultComponent();
 
 protected:
 	virtual void OnCoreCreatedBefore() override;
