@@ -94,8 +94,6 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			&APlayerPawnDefault::CameraTurn);
 
 		// Zoom camera binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Started, this,
-			&APlayerPawnDefault::CameraZoom);
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraZoom);
 		// Select action binding
@@ -259,12 +257,27 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 		MaxCameraBoomLength
 	);
 
-	if (!(CameraZoomTimerHandle.IsValid())) {
+	float CameraZoomTickTimerRate = GetWorld()->GetDeltaSeconds()*0.02f;
+	if (!CurrentGamePaused)
+		CameraZoomTickTimerRate=CustomTimeDilation*0.02f;
+	
+	if (GetWorld()->GetTimerManager().IsTimerActive(CameraZoomTimerHandle))
+	{
+		auto ActiveZoomTickTimerRate = GetWorld()->GetTimerManager().GetTimerRate(CameraZoomTimerHandle);
+		bool IsCorrectTimerRate = UKismetMathLibrary::InRange_FloatFloat(
+			ActiveZoomTickTimerRate,
+			CameraZoomTickTimerRate*0.5f,
+			CameraZoomTickTimerRate*2.f);
+		if (!IsCorrectTimerRate)
+			GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
+	}
+	
+	if (!(GetWorld()->GetTimerManager().IsTimerActive(CameraZoomTimerHandle))) {
 		GetWorld()->GetTimerManager().SetTimer(
 			CameraZoomTimerHandle,
 			this,
 			&APlayerPawnDefault::CameraZoomTick,
-			GetWorld()->GetDeltaSeconds(),
+			CameraZoomTickTimerRate,
 			true
 		);
 	}
@@ -283,14 +296,13 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 }
 
 void APlayerPawnDefault::CameraZoomTick() {
-	float CustomDeltaTime = GetWorld()->GetDeltaSeconds();
-	const float GlobalTimeDilation = UGameplayStatics::GetGlobalTimeDilation(GetWorld());
-	if (GlobalTimeDilation > 0.f)
-		CustomDeltaTime = GetWorld()->GetDeltaSeconds()/GlobalTimeDilation;
+	float InterpStepTime=CustomTimeDilation*0.02f;
+	if (CurrentGamePaused)
+		InterpStepTime*=GetWorld()->GetDeltaSeconds();
 	CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(
 		CameraBoom->TargetArmLength,
 		TargetCameraBoomLength,
-		CustomDeltaTime,
+		InterpStepTime,
 		5.f
 		);
 	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f) {
