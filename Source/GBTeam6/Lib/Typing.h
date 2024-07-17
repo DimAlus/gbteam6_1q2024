@@ -239,6 +239,9 @@ struct FGeneratorElementInfo {
 	bool IsSelected{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool DoOnce{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int MinLevel{ 1 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

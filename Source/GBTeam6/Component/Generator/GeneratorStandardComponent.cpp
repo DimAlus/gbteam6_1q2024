@@ -91,6 +91,11 @@ void UGeneratorStandardComponent::Initialize(const FGeneratorComponentInitialize
 
 		this->TouchThread(info.ThreadName);
 
+		if (info.DoOnce) {
+			info.IsSelected = false;
+			context.CountTasks = 1;
+		}
+
 		context.PassiveWork = info.IsSelected;
 		this->GeneratorsContext.Add(key, context);
 
