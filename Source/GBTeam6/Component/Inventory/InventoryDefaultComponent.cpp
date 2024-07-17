@@ -1,28 +1,27 @@
-#include "./InventoryStandardComponent.h"
+#include "./InventoryDefaultComponent.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Interface/GameObjectCore.h"
 #include "../Generator/GeneratorBaseComponent.h"
-#include "InventoryStandardComponent.h"
+#include "InventoryDefaultComponent.h"
 
-
-void UInventoryStandardComponent::Initialize(const FInventoryComponentInitializer& initializer) {
+void UInventoryDefaultComponent::Initialize(const FInventoryComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	ShowChaging = initializer.ShowInventoryChanging;
 	ShowChagingIgnore = initializer.ShowInventoryChangingIgnore;
 }
 
-void UInventoryStandardComponent::SaveComponent(FInventorySaveData& saveData) {
+void UInventoryDefaultComponent::SaveComponent(FInventorySaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.Resources = Resources;
 }
 
-void UInventoryStandardComponent::LoadComponent(const FInventorySaveData& saveData) {
+void UInventoryDefaultComponent::LoadComponent(const FInventorySaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	Resources = saveData.Resources;
 }
 
 
-void UInventoryStandardComponent::SavePoint() {
+void UInventoryDefaultComponent::SavePoint() {
 	FSaveStruct save;
 	for (auto iter = Resources.begin(); iter != Resources.end(); ++iter) {
 		save.Resources.Add(iter.Key(), iter.Value());
@@ -30,7 +29,7 @@ void UInventoryStandardComponent::SavePoint() {
 	Saves.Add(save);
 }
 
-void UInventoryStandardComponent::RollBack(bool isBack) {
+void UInventoryDefaultComponent::RollBack(bool isBack) {
 	FSaveStruct& save = Saves[Saves.Num() - 1];
 	if (isBack) {
 		Resources.Reset();
@@ -40,7 +39,7 @@ void UInventoryStandardComponent::RollBack(bool isBack) {
 	}
 	Saves.RemoveAt(Saves.Num() - 1);
 }
-bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_push(const TArray<FPrice>& resources) {
 	bool success = true;
 	for (const FPrice& res : resources) {
 		if (GetIgnoreResources().Contains(res.Resource)) {
@@ -54,7 +53,7 @@ bool UInventoryStandardComponent::_push(const TArray<FPrice>& resources) {
 	return success;
 }
 
-bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_pop(const TArray<FPrice>& resources) {
 	for (const FPrice& res : resources) {
 		if (GetIgnoreResources().Contains(res.Resource)) {
 			continue;
@@ -70,7 +69,7 @@ bool UInventoryStandardComponent::_pop(const TArray<FPrice>& resources) {
 	return true;
 }
 
-bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_player_push(const TArray<FPrice>& resources) {
 	int i = 0;
 	bool success = true;
 	AGameStateDefault* gameState = GetGameState();
@@ -89,7 +88,7 @@ bool UInventoryStandardComponent::_player_push(const TArray<FPrice>& resources) 
 	return success;
 }
 
-bool UInventoryStandardComponent::_player_pop(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_player_pop(const TArray<FPrice>& resources) {
 	int i = 0;
 	bool success = true;
 	AGameStateDefault* gameState = GetGameState();
@@ -109,7 +108,7 @@ bool UInventoryStandardComponent::_player_pop(const TArray<FPrice>& resources) {
 }
 
 
-bool UInventoryStandardComponent::_can_player_push(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_can_player_push(const TArray<FPrice>& resources) {
 	AGameStateDefault* gameState = GetGameState();
 	for (int i = 0; i < resources.Num(); i++) {
 		if (!gameState->CanPushPlayerResource(resources[i].Resource, resources[i].Count)) {
@@ -119,7 +118,7 @@ bool UInventoryStandardComponent::_can_player_push(const TArray<FPrice>& resourc
 	return true;
 }
 
-bool UInventoryStandardComponent::_can_player_pop(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::_can_player_pop(const TArray<FPrice>& resources) {
 	AGameStateDefault* gameState = GetGameState();
 	for (int i = 0; i < resources.Num(); i++) {
 		if (!gameState->CanPopPlayerResource(resources[i].Resource, resources[i].Count)) {
@@ -130,7 +129,7 @@ bool UInventoryStandardComponent::_can_player_pop(const TArray<FPrice>& resource
 }
 
 
-bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::CanPush(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool result = _can_player_push(resources)
 				&& _push(resources);
@@ -138,7 +137,7 @@ bool UInventoryStandardComponent::CanPush(const TArray<FPrice>& resources) {
 	return result;
 }
 
-bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::CanPop(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool result = _can_player_pop(resources)
 				&& _pop(resources);
@@ -146,7 +145,7 @@ bool UInventoryStandardComponent::CanPop(const TArray<FPrice>& resources) {
 	return result;
 }
 
-bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::Push(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool success = _push(resources);
 	if (success) {
@@ -170,7 +169,7 @@ bool UInventoryStandardComponent::Push(const TArray<FPrice>& resources) {
 	return success;
 }
 
-bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
+bool UInventoryDefaultComponent::Pop(const TArray<FPrice>& resources) {
 	SavePoint();
 	bool success = _pop(resources);
 	if (success) {
@@ -195,18 +194,18 @@ bool UInventoryStandardComponent::Pop(const TArray<FPrice>& resources) {
 	return success;
 }
 
-int UInventoryStandardComponent::GetResourceCount(EResource resource) {
+int UInventoryDefaultComponent::GetResourceCount(EResource resource) {
 	if (Resources.Contains(resource)) {
 		return Resources[resource];
 	}
 	return 0;
 }
 
-const TMap<EResource, int>& UInventoryStandardComponent::GetAllResources() {
+const TMap<EResource, int>& UInventoryDefaultComponent::GetAllResources() {
 	return Resources;
 }
 
-TMap<EResource, int> UInventoryStandardComponent::GetOverage() { 
+TMap<EResource, int> UInventoryDefaultComponent::GetOverage() { 
 	TMap<EResource, int> result;
 	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
 		TMap<EResource, int> needs = generator->GetNeeds();
