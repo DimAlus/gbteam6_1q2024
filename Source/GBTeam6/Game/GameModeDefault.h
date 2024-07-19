@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameFramework/GameMode.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameModeDefault.generated.h"
 
@@ -8,10 +9,12 @@
  * 
  */
 UCLASS()
-class GBTEAM6_API AGameModeDefault : public AGameModeBase {
+class GBTEAM6_API AGameModeDefault : public AGameMode {
 	GENERATED_BODY()
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString SaveSlotName;
+
+	virtual void HandleLeavingMap() override;
 };
