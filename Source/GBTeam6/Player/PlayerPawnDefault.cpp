@@ -16,23 +16,14 @@
 APlayerPawnDefault::APlayerPawnDefault()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
-
-	// Set camera pitch min and max
-	MinCameraZoomRotationPitch = -60.f;
-	MaxCameraZoomRotationPitch = -20.f;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	// Create a camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetWorldRotation({MinCameraZoomRotationPitch,0.f,0.f});
+	//CameraBoom->SetWorldRotation({MinCameraZoomRotationPitch,0.f,0.f});
 	CameraBoom->TargetArmLength = 1600.0f;
 	CameraBoom->bDoCollisionTest = false;
-
-	//Set camera zoom default parameters
-	MinCameraBoomLength = 300.f;
-	MaxCameraBoomLength = 4000.f;
-	TargetCameraBoomLength = CameraBoom->TargetArmLength;
 	
 	// Create an isometric camera
 	IsometricViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Isometric Camera"));
@@ -65,7 +56,6 @@ void APlayerPawnDefault::BeginPlay()
 		UE_LOG(LgPlayer, Error, TEXT("'%s' Failed to find PlayerController!"), *GetNameSafe(this));
 	}
 	
-	TargetCameraTurnRotation = RootComponent->GetComponentRotation();
 	InitCamera();
 }
 
@@ -202,13 +192,18 @@ void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectC
 
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
-	float MovementFactor = (CameraTagretHeight - CameraZoomMin) / (CameraZoomMax - CameraZoomMin);
-	float MovementMultiplier = MovementFactor * (CameraMovementFarawaySpeed - CameraMovementNearestSpeed);
-	const FVector2D MovementVector = Value.Get<FVector2D>() * (MovementMultiplier * InputMovementMultiplier);
+	float MovementMaxSpeed = GetCameraMovementMaxSpeed();
+	FVector2D inputValue = Value.Get<FVector2D>();
+	if (inputValue.Length() > 1) {
+		inputValue.Normalize();
+	}
+	const FVector2D MovementVector = inputValue *
+		MovementMaxSpeed *
+		GetWorld()->GetDeltaSeconds();
 
 	const FRotator YawRotator = { 0, CameraTargetRotation, 0 };
 
-	FVector rotatedVector = YawRotator.RotateVector({ MovementVector.X, MovementVector.Y, 0 });
+	FVector rotatedVector = YawRotator.RotateVector({ MovementVector.Y, MovementVector.X, 0 });
 	
 	AddCameraLocation(rotatedVector);
 
@@ -223,20 +218,17 @@ void APlayerPawnDefault::DisableCameraTurnMouse(const FInputActionValue& Value) 
 }
 
 void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value) {
-	AddCameraRotation(Value.Get<float>() * InputRotationMultiplier);
+	AddCameraRotation(Value.Get<float>() * InputRotationMultiplier * CameraRotationMaxSpeed * GetWorld()->GetDeltaSeconds());
 }
 
 void APlayerPawnDefault::CameraTurnMouse(const FInputActionValue& Value) {
 	if (isScrollPressed) {
-		AddCameraRotation(Value.Get<float>() * InputRotationMouseMultiplier);
+		AddCameraRotation(Value.Get<float>() * InputRotationMouseMultiplier * CameraRotationMaxSpeed * GetWorld()->GetDeltaSeconds());
 	}
 }
 
 
 void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnMouseTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnKeyboardTimerHandle);
-	
 	const float ZoomDirection = Value.Get<float>();	
 
 	float zoomDelta = std::max(CameraTagretHeight * CameraZoomScrollDelta, CameraZoomScrollMin);
@@ -283,6 +275,14 @@ void APlayerPawnDefault::SetGamePaused(bool isPaused) {
 }
 
 
+float APlayerPawnDefault::GetCameraMovementMaxSpeed() {
+	return CameraMovementMaxNearestSpeed +
+		(CameraCurrentHeight - CameraZoomMin) /
+		(CameraZoomMax - CameraZoomMin) *
+		(CameraMovementMaxFarawaySpeed - CameraMovementMaxNearestSpeed);
+}
+
+
 void APlayerPawnDefault::InitCamera() {
 	CameraTargetPosition = this->GetActorLocation();
 	CameraCurrentRotation = CameraTargetRotation = 0.f;
@@ -313,10 +313,8 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 	}
 	FVector actorLocation = this->GetActorLocation();
 
-	float CameraMovementMaxSpeed =  (CameraTagretHeight - CameraZoomMin) / 
-									(CameraZoomMax - CameraZoomMin) * 
-									(CameraMovementMaxFarawaySpeed - CameraMovementMaxNearestSpeed);
-
+	float CameraMovementMaxSpeed = GetCameraMovementMaxSpeed();
+	int slow = CameraSlowing.MoveX;
 	CameraCurrentMovementSpeed.X = CalculateSpeed(
 		DeltaTime,
 		actorLocation.X,
@@ -324,8 +322,10 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		CameraCurrentMovementSpeed.X,
 		CameraMovementAcceleration,
 		CameraMovementMaxSpeed,
-		CameraSlowing.MoveX
+		slow
 	);
+	CameraSlowing.MoveX = slow;
+	slow = CameraSlowing.MoveY;
 	CameraCurrentMovementSpeed.Y = CalculateSpeed(
 		DeltaTime,
 		actorLocation.Y,
@@ -333,20 +333,21 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		CameraCurrentMovementSpeed.Y,
 		CameraMovementAcceleration,
 		CameraMovementMaxSpeed,
-		CameraSlowing.MoveY
+		slow
 	);
+	CameraSlowing.MoveY = slow;
 
 	if (CameraCurrentMovementSpeed.X || CameraCurrentMovementSpeed.Y) {
-		actorLocation.X += CameraCurrentMovementSpeed.X;
-		actorLocation.Y += CameraCurrentMovementSpeed.Y;
+		actorLocation.X += CameraCurrentMovementSpeed.X * DeltaTime;
+		actorLocation.Y += CameraCurrentMovementSpeed.Y * DeltaTime;
 		this->SetActorLocation(actorLocation);
 	}
 }
 
 void APlayerPawnDefault::ApplyCameraZoom() {
-	FRotator rot = this->GetActorRotation();
-	rot.Pitch = std::atan(CameraCurrentHeight / CameraDistance);
-	this->SetActorRotation(rot);
+	FRotator rot = CameraBoom->GetRelativeRotation();
+	rot.Pitch = -std::atan(CameraCurrentHeight / CameraDistance) * 180 / PI;
+	CameraBoom->SetRelativeRotation(rot);
 
 	CameraBoom->TargetArmLength = std::sqrt(
 		CameraCurrentHeight * CameraCurrentHeight +
@@ -356,6 +357,7 @@ void APlayerPawnDefault::ApplyCameraZoom() {
 
 void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 	static const float zeroRotation = 0;
+	int slow = CameraSlowing.Zoom;
 	CameraCurrentZoomSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentHeight,
@@ -363,24 +365,26 @@ void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 		CameraCurrentZoomSpeed,
 		CameraZoomAcceleration,
 		CameraZoomMaxSpeed,
-		CameraSlowing.Zoom
+		slow
 	);
+	CameraSlowing.Zoom = slow;
 
 	if (CameraCurrentZoomSpeed) {
-		CameraCurrentHeight += CameraCurrentZoomSpeed;
+		CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
 		
 		ApplyCameraZoom();
 	}
 }
 
 void APlayerPawnDefault::ApplyCameraRotation() {
-	FRotator rot = this->GetActorRotation();
+	FRotator rot = CameraBoom->GetRelativeRotation();
 	rot.Yaw = CameraCurrentRotation;
-	this->SetActorRotation(rot);
+	CameraBoom->SetRelativeRotation(rot);
 }
 
 void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
-	static const FVector zeroVectorRotation = {1, 1, 0};
+	static const FVector zeroVectorRotation = {1, 0, 0};
+	int slow = CameraSlowing.Rotation;
 	CameraCurrentRotationSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentRotation,
@@ -388,18 +392,19 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 		CameraCurrentRotationSpeed,
 		CameraRotationAcceleration,
 		CameraRotationMaxSpeed,
-		CameraSlowing.Rotation
+		slow
 	);
+	CameraSlowing.Rotation = slow;
 
 	if (CameraCurrentRotationSpeed){
 		if (!CameraHasTargetActor) {
-			float an = CameraCurrentRotation;
+			float an = CameraCurrentRotation / 180.f * PI;
 			FVector cameraPositionBefore = FVector(
 				std::cos(an) * zeroVectorRotation.X - std::sin(an) * zeroVectorRotation.Y,
 				std::sin(an) * zeroVectorRotation.X + std::cos(an) * zeroVectorRotation.Y,
 				0
 			) * CameraDistance;
-			an += CameraCurrentRotationSpeed;
+			an += CameraCurrentRotationSpeed * DeltaTime / 180.f * PI;
 			FVector cameraPositionAfter = FVector(
 				std::cos(an) * zeroVectorRotation.X - std::sin(an) * zeroVectorRotation.Y,
 				std::sin(an) * zeroVectorRotation.X + std::cos(an) * zeroVectorRotation.Y,
@@ -407,41 +412,76 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 			) * CameraDistance;
 
 			FVector deltaPosition = cameraPositionAfter - cameraPositionBefore;
-			this->SetActorLocation(this->GetActorLocation() - deltaPosition);
-			CameraTargetPosition -= deltaPosition;
+			this->SetActorLocation(this->GetActorLocation() + deltaPosition);
+			CameraTargetPosition += deltaPosition;
 		}
-		CameraCurrentRotation += CameraCurrentRotationSpeed;
+		CameraCurrentRotation += CameraCurrentRotationSpeed * DeltaTime;
 		ApplyCameraRotation();
 	}
 }
 
-flaot APlayerPawnDefault::CalculateSpeed(flaot DeltaTime, 
+float APlayerPawnDefault::CalculateSpeed(float DeltaTime, 
 										 float currentValue, 
 										 float targetValue, 
 										 float currentSpeed,
 										 float acceleration,
 										 float maxSpeed,
 										 int& currentSlowing) {
+	acceleration *= maxSpeed;
 	int signs = currentSpeed > 0 ? 1 : -1;
+	int signVal = (targetValue - currentValue) > 0 ? 1 : -1;
 	float deltaValue = targetValue - currentValue;
 	if (currentSlowing) {
-		return std::max(0, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
+		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
 	}
 	// if another direction
-	if (deltaValue * currentSpeed < 0) {
+	if (deltaValue * currentSpeed < 0 && std::abs(currentSpeed) > 0.001f) {
 		return currentSpeed - acceleration * signs * DeltaTime;
 	}
 
 	// S = a * t^2 / 2 == v^2 / a / 2
 	float slowingLength = currentSpeed * currentSpeed / acceleration / 2;
-	if (slowingLength <= std::abs(deltaValue)) {
+	if (slowingLength >= std::abs(deltaValue)) {
 		currentSlowing = 1;
-		return std::max(0, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
+		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
 	}
 
 	float maxSpeedToSlowing = std::sqrt(std::abs(deltaValue) * acceleration * 2);
 	return std::min(std::min(maxSpeed, maxSpeedToSlowing), 
-					std::abs(currentSpeed) + acceleration * DeltaTime) * sign;
+					std::abs(currentSpeed) + acceleration * DeltaTime) * signVal;
+}
+
+FVector APlayerPawnDefault::CalculateVectorSpeed(
+												float DeltaTime, 
+												FVector currentValue, 
+												FVector targetValue, 
+												FVector currentSpeed, 
+												float acceleration, 
+												float maxSpeed, 
+												int& currentSlowing) {
+	FVector direction = targetValue - currentValue;
+	FVector normal = FVector(direction.X, -direction.Y, 0);
+	float directionSpeed = 0;
+	float normalSpeed = 0;
+	if (direction.Length() > 0) {
+		direction.Normalize();
+		normal.Normalize();
+		directionSpeed = currentSpeed.Length() * direction.CosineAngle2D(currentSpeed);
+		normalSpeed = currentSpeed.Length() * normal.CosineAngle2D(currentSpeed);
+	}
+	
+	normalSpeed = std::max(0.f, std::abs(normalSpeed) - acceleration * DeltaTime) * (normalSpeed > 0 ? 1 : -1);
+	directionSpeed = CalculateSpeed(
+		DeltaTime,
+		0,
+		(targetValue - currentValue).Length(),
+		directionSpeed,
+		acceleration,
+		maxSpeed,
+		currentSlowing
+	);
+
+	return direction * directionSpeed + normal * normalSpeed;
 }
 
 void APlayerPawnDefault::SetCameraHeight(float newHeight) {
@@ -484,9 +524,9 @@ void APlayerPawnDefault::AddCameraLocation(FVector deltaLocation) {
 	SetCameraLocation(CameraTargetPosition + deltaLocation);
 }
 
-void APlayerPawnDefault::SetCameraTargetActor(AActor* targetActor) {
+void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor) {
 	CameraHasTargetActor = true;
-	CameraTargetActor = targetActor;
+	CameraTargetActor = cameraTargetActor;
 }
 
 void APlayerPawnDefault::UnsetCameraTargetActor() {

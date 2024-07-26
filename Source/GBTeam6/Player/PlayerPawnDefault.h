@@ -114,27 +114,16 @@ protected:
 	/** Change game speed main function */
 	void UpdateGameSpeed();
 
-protected:
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Input")
-	float InputRotationMultiplier = 4.f;	
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Input")
-	float InputRotationMouseMultiplier = 4.f;	
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Input")
-	float InputMovementMultiplier = 1.f;	
-	
 
 /**************** Camera Movement ****************/
 protected:
 	struct CameraSlowingInfo {
-		int MoveX : 1 = 1,
-		int MoveY : 1 = 1,
-		int Zoom : 1 = 1,
-		int Rotation : 1 = 1
+		int MoveX : 1 = 1;
+		int MoveY : 1 = 1;
+		int Zoom : 1 = 1;
+		int Rotation : 1 = 1;
 	};
-	CameraSlowing CameraSlowing;
+	CameraSlowingInfo CameraSlowing;
 
 	FVector CameraTargetPosition;
 	float CameraTargetRotation; // Rotation target can be more 360 deg => Rotator not usable
@@ -149,53 +138,59 @@ protected:
 	float CameraCurrentRotation;
 	float CameraCurrentHeight;
 
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraDistance;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementAcceleration;
 
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMaxNearestSpeed;
 
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMaxFarawaySpeed;
 
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomAcceleration;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomMaxSpeed;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraRotationAcceleration;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraRotationMaxSpeed;
-
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomMin;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomMax;	
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomDefault;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomScrollMin = 20;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
-	float CameraZoomScrollDelta = 0.2f;
-
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
 	float CameraMovementNearestSpeed = 0.2f;
 
-	UPROPERTY(BlueprintReadWrite, BlueprintEditAnywhere, Category="Default|Camera")
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
 	float CameraMovementFarawaySpeed = 1.f;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
+	float CameraRotationAcceleration;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
+	float CameraRotationMaxSpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Rotation")
+	float InputRotationMultiplier = 4.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Rotation")
+	float InputRotationMouseMultiplier = 4.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
+	float CameraDistance;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
+	float CameraZoomAcceleration;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
+	float CameraZoomMaxSpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
+	float CameraZoomMin;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
+	float CameraZoomMax;	
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
+	float CameraZoomDefault;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
+	float CameraZoomScrollMin = 20;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
+	float CameraZoomScrollDelta = 0.2f;
+
 protected:
+	float GetCameraMovementMaxSpeed();
 	void InitCamera();
 	void UpdateCamera(float DeltaTime);
 	void UpdateCameraPosition(float DeltaTime);
@@ -204,13 +199,25 @@ protected:
 	void ApplyCameraRotation();
 	void UpdateCameraRotation(float DeltaTime);
 
-	flaot CalculateSpeed(flaot DeltaTime, 
-						 float currentValue, 
-						 float targetValue,
-						 float currentSpeed,
-						 float acceleration,
-						 float maxSpeed,
-						 int& currentSlowing);
+	float CalculateSpeed(
+		float DeltaTime, 
+		float currentValue, 
+		float targetValue,
+		float currentSpeed,
+		float acceleration,
+		float maxSpeed,
+		int& currentSlowing
+	);
+
+	FVector CalculateVectorSpeed(
+		float DeltaTime, 
+		FVector currentValue, 
+		FVector targetValue,
+		FVector currentSpeed,
+		float acceleration,
+		float maxSpeed,
+		int& currentSlowing
+	);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -232,7 +239,7 @@ public:
 	void AddCameraLocation(FVector deltaLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCameraTargetActor(AActor* targetActor);
+	void SetCameraTargetActor(AActor* cameraTargetActor);
 
 	UFUNCTION(BlueprintCallable)
 	void UnsetCameraTargetActor();
