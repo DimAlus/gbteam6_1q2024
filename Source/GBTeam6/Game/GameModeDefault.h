@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+
+#include "../Lib/Lib.h"
+
 #include "GameModeDefault.generated.h"
 
 /** Default Game Mode for game
@@ -14,4 +17,6 @@ class GBTEAM6_API AGameModeDefault : public AGameModeBase {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString SaveSlotName;
+
+	virtual void StartToLeaveMap() override;
 };
