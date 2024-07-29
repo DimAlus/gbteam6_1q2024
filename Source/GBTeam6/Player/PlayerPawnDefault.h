@@ -2,7 +2,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Misc/Crc.h"
+
 #include "../Lib/Lib.h"
+
 #include "PlayerPawnDefault.generated.h"
 
 class USpringArmComponent;
@@ -54,6 +57,7 @@ protected:
 	FPlayerInputAction PlayerInputAction;
 
 protected:
+	float LastDeltaTime = 0.f;
 
 	bool isScrollPressed = false;
 
@@ -138,6 +142,9 @@ protected:
 	float CameraCurrentRotation;
 	float CameraCurrentHeight;
 
+	TArray<TTuple<float, float>> CameraZoomRotations;
+	TArray<TTuple<float, float>> CameraCurrentRotationBorders;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementAcceleration;
 
@@ -146,12 +153,6 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMaxFarawaySpeed;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
-	float CameraMovementNearestSpeed = 0.2f;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
-	float CameraMovementFarawaySpeed = 1.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
 	float CameraRotationAcceleration;
@@ -166,7 +167,13 @@ protected:
 	float InputRotationMouseMultiplier = 4.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
-	float CameraDistance;
+	float CameraDistanceNearest;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
+	float CameraDistanceFaraway;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
+	TMap<int, float> CameraZoomRotationsPercentsMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
 	float CameraZoomAcceleration;
@@ -191,12 +198,18 @@ protected:
 
 protected:
 	float GetCameraMovementMaxSpeed();
+	float GetCameraHeightPersents();
+	void TouchCameraCurrentRotationBorders();
+	TArray<TTuple<float, float>> CalculateCameraCurrentRotationBorders();
+	float GetCameraPitch();
+	float GetCameraDistance();
 	void InitCamera();
 	void UpdateCamera(float DeltaTime);
 	void UpdateCameraPosition(float DeltaTime);
 	void ApplyCameraZoom();
 	void UpdateCameraZoom(float DeltaTime);
 	void ApplyCameraRotation();
+	void UpdateCameraActorLocationOnRotation(float rotationBefore, float rotationAfter);
 	void UpdateCameraRotation(float DeltaTime);
 
 	float CalculateSpeed(
@@ -221,6 +234,9 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
+	FVector GetCameraLocation();
+
+	UFUNCTION(BlueprintCallable)
 	void SetCameraHeight(float newHeight);
 
 	UFUNCTION(BlueprintCallable)
@@ -231,6 +247,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void AddCameraRotation(float deltaRotation);
+
+	UFUNCTION(BlueprintCallable)
+	void AddCameraRotationForce(float deltaRotation);
 
 	UFUNCTION(BlueprintCallable)
 	void SetCameraLocation(FVector newLocation);
