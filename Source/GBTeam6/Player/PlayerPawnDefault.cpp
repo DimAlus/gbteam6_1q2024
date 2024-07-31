@@ -372,7 +372,7 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 			CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
 		}
 		else {
-			CameraHasTargetActor = false;
+			UnsetCameraTargetActor();
 		}
 	}
 	FVector actorLocation = this->GetActorLocation();
@@ -589,7 +589,7 @@ void APlayerPawnDefault::AddCameraRotationForce(float deltaRotation) {
 }
 
 void APlayerPawnDefault::SetCameraLocation(FVector newLocation) {
-	CameraHasTargetActor = false;
+	UnsetCameraTargetActor();
 	CameraTargetPosition = newLocation;
 	CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
 }
@@ -601,10 +601,12 @@ void APlayerPawnDefault::AddCameraLocation(FVector deltaLocation) {
 void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor) {
 	CameraHasTargetActor = true;
 	CameraTargetActor = cameraTargetActor;
+	CameraBoom->bEnableCameraLag = true;
 }
 
 void APlayerPawnDefault::UnsetCameraTargetActor() {
 	CameraHasTargetActor = false;
+	CameraBoom->bEnableCameraLag = false;
 }
 
 void APlayerPawnDefault::MakeWorkers_Implementation(int WorkersAmount)

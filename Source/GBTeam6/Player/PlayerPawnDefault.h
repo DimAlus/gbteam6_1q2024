@@ -167,12 +167,6 @@ protected:
 	float InputRotationMouseMultiplier = 4.f;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
-	float CameraDistanceNearest;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
-	float CameraDistanceFaraway;
-
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
 	TMap<int, float> CameraZoomRotationsPercentsMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Zoom")
