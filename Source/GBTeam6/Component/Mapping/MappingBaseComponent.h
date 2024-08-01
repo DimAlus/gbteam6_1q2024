@@ -27,24 +27,41 @@ public:
 	virtual void SaveComponent(FMappingSaveData& saveData);
 	virtual void LoadComponent(const FMappingSaveData& saveData);
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Initializer)
-	FMappingComponentInitializer Initializer;
-
-public:
-	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Default|Preview")
 	bool bCanPlace = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
 	bool bIsPlaced = false;
 
 	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	FIntVector currentLocation;
+	FIntVector CurrentLocation;
+
+	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
+	int CurrentRotation = 0;
+
+	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
+	float CurrentActorRelaticveRotation = 0;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|Preview")
+	UStaticMesh* PreviewMesh = Cast<UStaticMesh>(StaticLoadObject(
+		UStaticMesh::StaticClass(),
+		NULL, 
+		TEXT("/Engine/BasicShapes/Cube")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|Preview")
+	UMaterial* PreviewMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(), 
+		NULL, 
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
+	));
 
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace);
+	virtual void SetOwnerLocation(FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetPreviewVisibility(bool isVilible);

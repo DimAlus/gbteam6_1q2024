@@ -6,7 +6,6 @@ UMappingBaseComponent::UMappingBaseComponent() {
 
 
 void UMappingBaseComponent::Initialize(const FMappingComponentInitializer& initializer) {
-	this->Initializer = initializer;
 }
 
 void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
@@ -15,7 +14,7 @@ void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
 void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
 }
 
-void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) {
+void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation) {
 }
 
 void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {

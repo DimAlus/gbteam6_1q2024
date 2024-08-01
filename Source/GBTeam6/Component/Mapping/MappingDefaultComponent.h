@@ -20,31 +20,35 @@ public:
 	virtual void SaveComponent(FMappingSaveData& saveData) override;
 	virtual void LoadComponent(const FMappingSaveData& saveData) override;
 
-private:
+protected:
 	bool wasInitialized = false;
 
-	struct FPreviewInfo {
-		ETileType TileType;
-		UStaticMeshComponent* Preview;
-	};
-	TMap<TTuple<int, int>, FPreviewInfo> previews;
+	FVector ComponentRelativeLocation{};
+	
+	TArray<FMapInfo> MapInfos{};
+
+	TMap<TTuple<int, int>, UStaticMeshComponent*> previews;
 
 	FIntVector tileSize{ 100, 100, 1 };
 
 
 
 protected:
+	void DeletePreviews();
+	void CreatePreviews();
+
 	// Work with meshes
 	void SetMeshTileSize(UStaticMeshComponent* mesh);
 	void SetMeshIsVisible(UStaticMeshComponent* mesh, bool IsVisible);
 	void SetMeshIsEnabled(UStaticMeshComponent* mesh, bool IsEnabled);
 
+	void UpdateActorLocation();
 private:
 	void UpdateCanPlace();
 public:
 
 
-	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) override;
+	virtual void SetOwnerLocation(FVector TargetLocation) override;
 	virtual void SetPreviewVisibility(bool isVilible) override;
 	virtual bool SetIsPlaced(bool isPlaced) override;
 	virtual bool GetIsPlaced() override;

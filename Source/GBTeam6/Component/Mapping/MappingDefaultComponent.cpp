@@ -3,15 +3,13 @@
 #include "../../Service/MappingService.h"
 #include "Components/ShapeComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
+#include "MappingDefaultComponent.h"
 
 
 void UMappingDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	UE_LOG_COMPONENT(Log, "Destroy Component!");
-	SetIsPlaced(false);
-	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
-		iter->Value.Preview->DestroyComponent();
-	}
-	Super::DestroyComponent();
+	void DeletePreviews();
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 
@@ -21,22 +19,60 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 		return;
 	wasInitialized = true;
 	Super::Initialize(initializer);
+	this->ComponentRelativeLocation = initializer.ComponentLocation;
+	this->MapInfos = initializer.MapInfos;
 
-	for (FMapInfo& square : this->Initializer.MapInfos) {
+	for (int i = this->MapInfos.Num() - 1; i >= 0; i--) {
+		FMapInfo& square = this->MapInfos[i];
+
+		if (square.Size.X * square.Size.Y == 0) {
+			this->MapInfos.RemoveAtSwap(i);
+			continue;
+		}
+
+		if (square.Size.X < 0) {
+			square.Size.X *= -1;
+			square.Location.X -= square.Size.X;
+		}
+		if (square.Size.Y < 0) {
+			square.Size.Y *= -1;
+			square.Location.Y -= square.Size.Y;
+		}
+	}	
+
+}
+
+void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Saving!");
+	saveData.MappingLocation = currentLocation;
+}
+
+void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
+	UE_LOG_COMPONENT(Log, "Component Loading!");
+	currentLocation = saveData.MappingLocation;
+	UpdateActorLocation();
+	
+	bIsPlaced = true;
+	OnPlaced.Broadcast(bIsPlaced);
+}
+
+
+void UMappingDefaultComponent::DeletePreviews() {
+	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
+		iter->Value->DestroyComponent();
+	}
+}
+
+void UMappingDefaultComponent::CreatePreviews() {
+	for (FMapInfo& square : this->MapInfos) {
 		TTuple<int, int> pos;
 		FVector loc;
 
-		TArray<UActorComponent*> comps = GetOwner()->GetComponentsByTag(UStaticMeshComponent::StaticClass(), "Preview Mesh");
-		for (int i = 0; i < comps.Num(); i++)
-			comps[i]->DestroyComponent();
-
-		if (square.Size.X < 0) square.Size.X *= -1;
-		if (square.Size.Y < 0) square.Size.Y *= -1;
 		for (int i = square.Location.X; i < square.Location.X + square.Size.X; i++) {
 			for (int j = square.Location.Y; j < square.Location.Y + square.Size.Y; j++) {
 				pos = { i, j };
 				if (!previews.Contains(pos)) {
-					loc = this->Initializer.ComponentLocation + FVector(this->tileSize) * FVector(i, j, 0);
+					loc = this->ComponentRelativeLocation + FVector(this->tileSize) * FVector(i, j, 0);
 
 					UStaticMeshComponent* preview = NewObject<UStaticMeshComponent>(GetOwner());
 					check(preview);
@@ -58,12 +94,12 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 							+ GetOwner()->GetActorLocation()
 							+ FVector(tileSize.X / 2., tileSize.Y / 2., 0)
 						);
-						preview->SetStaticMesh(Initializer.staticMesh);
+						preview->SetStaticMesh(PreviewMesh);
 						previews.Add(pos, { square.TileType , preview });
 
 						this->SetMeshTileSize(preview);
 						this->SetMeshIsEnabled(preview, false);
-						this->SetMeshIsVisible(preview, this->Initializer.IsPreview);
+						this->SetMeshIsVisible(preview, true);
 					}
 					else {
 						UE_LOG_COMPONENT(Error, "Created AMapPreview not Valid!");
@@ -73,78 +109,16 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 		}
 	}
 
-	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
-	{
-		if(GetCore())
-		{
-			UE_LOG_COMPONENT(Log, "CoreIsValid");
-			if (auto Collision =
-					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
-			{
-				Collision->SetCollisionEnabled(bIsPlaced ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::NoCollision);
-			}
-			else
-			{
-				UE_LOG_COMPONENT(Log, "Collision in not");
-			}
-		
-		}
-		else
-		{
-			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::NoCollision on initialize! No Core!");
-		}
-		
-	}));
-	
-
-}
-
-void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
-	UE_LOG_COMPONENT(Log, "Component Saving!");
-	saveData.MappingLocation = currentLocation;
-}
-
-void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
-	UE_LOG_COMPONENT(Log, "Component Loading!");
-	currentLocation = saveData.MappingLocation;
-	this->GetOwner()->SetActorLocation(
-		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
-		false,
-		nullptr,
-		ETeleportType::TeleportPhysics
-	);
-	UpdateCanPlace();
-	if (!SetIsPlaced(true)) {
-		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", currentLocation.X, currentLocation.Y);
-		GetOwner()->Destroy();
-	}
-	bIsPlaced = true;
-	OnPlaced.Broadcast(bIsPlaced);
-	if(GetCore())
-	{
-		if (auto Collision =
-				Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
-		{
-			Collision->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		}
-	}
-	else
-	{
-		UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on LoadComponent! No Core!");
-	}
 }
 
 
 void UMappingDefaultComponent::SetMeshTileSize(UStaticMeshComponent* mesh) {
-	mesh->SetWorldScale3D(FVector(
-		tileSize.X / 100.0 * (1 - Initializer.borderMesh),
-		tileSize.Y / 100.0 * (1 - Initializer.borderMesh),
-		Initializer.heightMesh / 100.0
-	));
+	mesh->SetWorldScale3D(FVector(tileSize.X / 100.0 * (1 - Initializer.borderMesh),
+								  tileSize.Y / 100.0 * (1 - Initializer.borderMesh), Initializer.heightMesh / 100.0));
 }
 
 void UMappingDefaultComponent::SetMeshIsEnabled(UStaticMeshComponent* mesh, bool IsEnabled) {
-	mesh->SetMaterial(0, IsEnabled ? Initializer.enabledMatMesh : Initializer.disabledMatMesh);
+	mesh->SetMaterial(0, PreviewMaterial);
 }
 
 void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool IsVisible) {
@@ -152,12 +126,17 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 }
 
 
+void UMappingDefaultComponent::UpdateActorLocation() {
+	this->GetOwner()->SetActorLocation(
+		FVector(CurrentLocation * this->tileSize) - this->ComponentRelativeLocation * FVector(1, 1, 0),
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+}
+
 void UMappingDefaultComponent::UpdateCanPlace() {
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-	if (!IsValid(gameState)) {
-		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-		return;
-	}
+	/*AGameStateDefault* gameState = GetGameState();
 	UMappingService* mappingService = gameState->GetMappingService();
 	if (!IsValid(mappingService)) {
 		UE_LOG_COMPONENT(Error, "Created UMappingService not Valid!");
@@ -176,30 +155,26 @@ void UMappingDefaultComponent::UpdateCanPlace() {
 		this->SetMeshIsEnabled(iter->Value.Preview, IsCanPlace);
 
 		bCanPlace = bCanPlace && IsCanPlace;
-	}
+	}*/
 }
 
 
 
-void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) {
-	currentLocation = FIntVector((TargetLocation/* + this->Initializer.ComponentLocation */ ) / FVector(this->tileSize));
-	currentLocation += FIntVector(this->Initializer.ComponentLocation.X / tileSize.X, this->Initializer.ComponentLocation.Y / tileSize.Y, 0);
-
-	this->GetOwner()->SetActorLocation(
-		FVector(currentLocation * this->tileSize) - this->Initializer.ComponentLocation * FVector(1, 1, 0),
-		false,
-		nullptr,
-		ETeleportType::TeleportPhysics
+void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
+	CurrentLocation = FIntVector(
+		(TargetLocation + this->ComponentRelativeLocation) / 
+		FVector(this->tileSize) + 
+		FVector(0.5f, 0.5f, 0)
 	);
-	if (bUpdateCanPlace) {
-		UpdateCanPlace();
-	}
+
+	UpdateActorLocation();
 }
 
 
 void UMappingDefaultComponent::SetPreviewVisibility(bool isVilible) {
-	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
-		this->SetMeshIsVisible(iter->Value.Preview, isVilible);
+	DeletePreviews();
+	if (isVisible) {
+		CreatePreviews();
 	}
 }
 
