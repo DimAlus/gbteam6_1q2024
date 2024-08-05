@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 
 #include "MessageService.generated.h"
 
@@ -11,8 +11,12 @@ class IMessageObserver;
 class UGameObjectCore;
 
 UCLASS()
-class GBTEAM6_API UMessageService : public UObject {
+class GBTEAM6_API UMessageService : public UAGameService {
 	GENERATED_BODY()
+
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 private:
 	TMap<EMessageTag, TSet<IMessageObserver*>> Observers{};

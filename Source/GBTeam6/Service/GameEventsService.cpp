@@ -7,7 +7,35 @@
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Service/SocialService.h"
 #include "GBTeam6/Service/SaveService.h"
+
+#include "../Game/GameInstanceDefault.h"
+
 #include "GameEventsService.h"
+
+void UGameEventsService::InitializeService() {
+	UAGameService::InitializeService();
+	bIsPaused = true;
+
+	Events.Reset();
+	GameInstance->GetSaveService()->AddSaveProgressOwner(this);
+	LoadEvents();
+
+	GameInstance->GetWorld()->GetTimerManager().SetTimer(
+		updateTaskTimer,
+		this,
+		&UGameEventsService::Update,
+		UpdateDelay,
+		true,
+		UpdateDelay
+	);
+}
+
+void UGameEventsService::ClearService() {
+	UAGameService::ClearService();
+	bIsPaused = true;
+	Events.Reset();
+	GameInstance->GetWorld()->GetTimerManager().ClearTimer(updateTaskTimer);
+}
 
 void UGameEventsService::Save(FGameProgressSaveData& data) {
 	for (auto evt : this->Events) {
@@ -51,7 +79,7 @@ void UGameEventsService::DoAction(const FQuestAction& Action, FGameEventConext& 
 		ActionRestartQuest(Action, EventContext, ActionContext);
 		break;
 	case EQuestActionType::GameOver:
-		gameState->OnGameOver.Broadcast();
+		GetGameState()->OnGameOver.Broadcast();
 		break;
 	default:
 		break;
@@ -68,7 +96,7 @@ void UGameEventsService::ActionSpawn(const FQuestAction& Action, FGameEventConex
 		for (int i = 0; i < Action.SpawnCount; i++) {
 			FRotator rot;
 			FVector RandVec{ FMath::RandRange(-300.f, 300.f), FMath::RandRange(-300.f, 300.f), 0 };
-			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, ActionContext.SelectedLocation + RandVec, rot, par);
+			AActor* act = GameInstance->GetWorld()->SpawnActor<AActor>(Action.SpawnClass, ActionContext.SelectedLocation + RandVec, rot, par);
 			if (IsValid(act)) {
 				IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
 				UGameObjectCore* core = obj->GetCore_Implementation();//(act);
@@ -120,7 +148,7 @@ void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEve
 		*UEnum::GetValueAsString(Action.SocialTag), *rands);
 #endif
 	if (Action.FindLocationType == EActionFindLocationType::BySocialTag) {
-		const TSet<UGameObjectCore*>& objects = gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag);
+		const TSet<UGameObjectCore*>& objects = GameInstance->GetSocialService()->GetObjectsByTag(Action.SocialTag);
 		if (objects.Num() > 0) {
 			ActionContext.SelectedLocation = objects.begin().ElementIt->Value->GetOwner()->GetActorLocation();
 		}
@@ -146,7 +174,7 @@ void UGameEventsService::ActionFindLocation(const FQuestAction& Action, FGameEve
 void UGameEventsService::ActionWidget(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext) {
 	for (UGameObjectCore* core : ActionContext.SelectedObjects) {
 		if (IsValid(core)) {
-			gameState->AddSelectedWidget.Broadcast(10, true, core->GetOwner(), FVector::Zero());
+			GetGameState()->AddSelectedWidget.Broadcast(10, true, core->GetOwner(), FVector::Zero());
 		}
 	}
 }
@@ -164,7 +192,7 @@ void UGameEventsService::ActionSelect(const FQuestAction& Action, FGameEventCone
 	else if (Action.SelectionType == EActionSelectionType::BySocialTag) {
 		int i;
 		i = 0;
-		for (UGameObjectCore* core : gameState->GetSocialService()->GetObjectsByTag(Action.SocialTag)) {
+		for (UGameObjectCore* core : GameInstance->GetSocialService()->GetObjectsByTag(Action.SocialTag)) {
 			if (Action.Deselect)
 				ActionContext.SelectedObjects.Remove(core);
 			else
@@ -239,7 +267,7 @@ bool UGameEventsService::CheckNeed(const FNeed& need, FGameEventConext& EventCon
 	else if (need.NeedType == ENeedType::Tag) {
 		return EventContext.Tags.Contains(need.Name) == need.Exists;
 	}
-	return gameState->CheckNeed(need);
+	return GetGameState()->CheckNeed(need);
 }
 
 bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventConext& EventContext) {
@@ -270,24 +298,7 @@ bool UGameEventsService::UpdateRow(const FString& QuestName,
 }
 
 void UGameEventsService::ShowPages(const TArray<FQuestPage>& Pages, FGameEventConext& EventContext){
-	gameState->OnShowPages.Broadcast(Pages, EventContext.EventName);
-}
-
-
-void UGameEventsService::SetGameState(AGameStateDefault* gs) {
-	gameState = gs;
-
-	gameState->GetWorld()->GetTimerManager().SetTimer(
-		updateTaskTimer,
-		this,
-		&UGameEventsService::Update,
-		UpdateDelay,
-		true,
-		UpdateDelay
-	);
-
-	gs->GetSaveService()->AddSaveProgressOwner(this);
-	LoadEvents();
+	GetGameState()->OnShowPages.Broadcast(Pages, EventContext.EventName);
 }
 
 
@@ -300,7 +311,7 @@ void UGameEventsService::LoadEvents() {
 	onceAction.AddTag = true;
 
 	this->Events.Empty();
-	for (auto iter : gameState->DT_GameEvents->GetRowMap()) {
+	for (auto iter : GameInstance->DT_GameEvents->GetRowMap()) {
 		FName RowName = iter.Key;
 		FTRGameEvent* evtdata = (FTRGameEvent*)iter.Value;
 
@@ -328,7 +339,7 @@ void UGameEventsService::LoadEvents() {
 
 
 void UGameEventsService::Update() {
-	if (!gameState->isMenuMap) {
+	if (!bIsPaused) {
 		for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
 			FGameEventConext& Context = iter.Value().Context;
 			TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;

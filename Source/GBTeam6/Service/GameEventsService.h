@@ -3,27 +3,28 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 #include "../Interface/CanSaveInterface.h"
 
 #include "GameEventsService.generated.h"
 
-class AGameStateDefault;
 class USaveService;
 /**
  * 
  */
 UCLASS()
-class GBTEAM6_API UGameEventsService : public UObject, public ICanSaveInterface
+class GBTEAM6_API UGameEventsService : public UAGameService, public ICanSaveInterface
 {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 public:
 	virtual void Save(FGameProgressSaveData& data) override;
 	virtual void Load(FGameProgressSaveData& data) override;
 
 private:
-	AGameStateDefault* gameState;
 
 	struct FGameEvent {
 		TMap<FString, FQuestData> QuestDatas{};
@@ -35,6 +36,8 @@ private:
 
 	float UpdateDelay = 1.f;
 	FTimerHandle updateTaskTimer;
+
+	bool bIsPaused = true;
 private:
 	void DoAction(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
 	void ActionSpawn(const FQuestAction& Action, FGameEventConext& EventContext, FEventActionConext& ActionContext);
@@ -54,7 +57,6 @@ private:
 	FORCEINLINE FString GetQuestOnceName(FString name) { return FString::Printf(TEXT("__%s_once"), *name); }
 public:
 
-	void SetGameState(AGameStateDefault* gs);
 	void LoadEvents();
 	void Update();
 };

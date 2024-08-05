@@ -5,6 +5,7 @@
 
 #include "../Lib/Lib.h"
 #include "../Interface/CanSaveInterface.h"
+#include "./GameInstanceDefault.h"
 
 #include "GameStateDefault.generated.h"
 
@@ -15,6 +16,8 @@ class UTaskManagerService;
 class UMessageService;
 class USoundService;
 class UGameEventsService;
+
+class UGameInstanceDefault;
 
 class UGameObjectCore;
 
@@ -33,112 +36,47 @@ UCLASS()
 class GBTEAM6_API AGameStateDefault : public AGameStateBase, public ICanSaveInterface
 {
 	GENERATED_BODY()
-friend class USaveService;
 
 public:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 	virtual void Save(FGameProgressSaveData& data) override;
 	virtual void Load(FGameProgressSaveData& data) override;
 
+
+protected:
+	UFUNCTION(BlueprintCallable)
+	UGameInstanceDefault* GetGameInstance();
+
 public:
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_TileType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_TileTypeTree;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_Config;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_ObjectsData;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_ResourceStack;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_SystemSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_MusicSound;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
-	UDataTable* DT_GameEvents;
-
-private:
-
-
-	UPROPERTY()
-	UMappingService* MappingService;
-	UPROPERTY()
-	USaveService* SaveService;
-	UPROPERTY()
-	UTaskManagerService* TaskManagerService;
-	UPROPERTY()
-	USocialService* SocialService;
-	UPROPERTY()
-	UMessageService* MessageService;
-	UPROPERTY()
-	USoundService* SoundService;
-	UPROPERTY()
-	UGameEventsService* GameEventsService;
-
-	
-public:
-	// Initialize All Services
-	void InitializeServices();
-	// DEstroy All Services
-	void ClearServices();
-
+	/** Returns Mapping Service **/
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class UMappingService* GetMappingService() { return GetGameInstance()->GetMappingService(); }
 
 	/** Returns Mapping Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
-
-	/** Returns Mapping Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class USaveService* GetSaveService() { return GetGameInstance()->GetSaveService(); }
 
 	/** Returns TaskManager Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class UTaskManagerService* GetTaskManagerService() { return GetGameInstance()->GetTaskManagerService(); }
 
 	/** Returns Social Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class USocialService* GetSocialService() { return GetGameInstance()->GetSocialService(); }
 
 	/** Returns Message Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class UMessageService* GetMessageService() { return GetGameInstance()->GetMessageService(); }
 
 	/** Returns Sound Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class USoundService* GetSoundService() { return GetGameInstance()->GetSoundService(); }
 
 	/** Returns GameEvents Service **/
-	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class UGameEventsService* GetGameEventsService() const { return GameEventsService; }
+	UFUNCTION(BlueprintCallable, BlueprintPure = true)
+	FORCEINLINE class UGameEventsService* GetGameEventsService() { return GetGameInstance()->GetGameEventsService(); }
 
-/// Configs
-private:
-	
-	UPROPERTY()
-	TMap<EConfig, FConfig> Configs;
-
-private:
-	void LoadConfig();
-
-	const TMap<EConfig, FConfig>& GetAllConfigs();
-public:
-
-	UFUNCTION(BlueprintCallable)
-	bool GetConfig(EConfig configType, FConfig& config);
-
-	UFUNCTION(BlueprintCallable)
-	bool SetConfig(EConfig configType, FConfig config);
 
 
 public:

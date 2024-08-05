@@ -4,6 +4,16 @@
 #include "Engine/GameInstance.h"
 #include "GameInstanceDefault.generated.h"
 
+/** Services classes */
+class UTaskManagerService;
+class UGameEventsService;
+class UMessageService;
+class UMappingService;
+class USocialService;
+class UConfigService;
+class USoundService;
+class USaveService;
+
 /**
  * 
  */
@@ -14,16 +24,98 @@ class GBTEAM6_API UGameInstanceDefault : public UGameInstance
 public:
 	virtual void Init() override;
 
+	UFUNCTION()
+	void OnChangeMap(UWorld* world);
+
+public:
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString GameSaveSlot;
 
-	virtual void OnSeamlessTravelDuringReplay() override;
+/***************************************
+***    Tables            
+****************************************/
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_TileType;
 
-	virtual void OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_TileTypeTree;
 
-	UFUNCTION()
-	void OnChangeLevel(const FString& levelName);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_Config;
 
-	UFUNCTION()
-	void OnChangeMap(UWorld* world);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_ObjectsData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_ResourceStack;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_SystemSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_MusicSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_GameEvents;
+
+
+/***************************************
+***    Services            
+****************************************/
+private:
+	UPROPERTY()
+	UMappingService* MappingService{ nullptr };
+	UPROPERTY()
+	USaveService* SaveService{ nullptr };
+	UPROPERTY()
+	UTaskManagerService* TaskManagerService{ nullptr };
+	UPROPERTY()
+	USocialService* SocialService{ nullptr };
+	UPROPERTY()
+	UMessageService* MessageService{ nullptr };
+	UPROPERTY()
+	USoundService* SoundService{ nullptr };
+	UPROPERTY()
+	UGameEventsService* GameEventsService{ nullptr };
+	UPROPERTY()
+	UConfigService* ConfigService{ nullptr };
+
+	bool bServicesInitialized = false;
+
+protected:
+	// Initialize All Services
+	void CreateServices();
+	void InitializeServices();
+	// DEstroy All Services
+	void ClearServices();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UGameEventsService* GetGameEventsService() const { return GameEventsService; }
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UConfigService* GetConfigService() const { return ConfigService; }
+
+
+
 };
