@@ -11,6 +11,7 @@
 
 
 class AGameStateDefault;
+class UGameObjectCore;
 
 /** Service manager of map's tiles, its types and busyness
  * 
@@ -27,18 +28,21 @@ public:
 	UMappingService();
 	virtual void BeginDestroy() override;
 
+// Meta Info
 private:
 	// Info about parents of TileType
 	TMap<ETileType, TSet<ETileType>> TileTypesTree;
 	// Info for associate TileSetIndex with TileType
 	TMap<int, ETileType> TileTypes;
 
+private:
 	void InitTileTypes();
 	void InitTileTypesTree();
 	void InitTileTypesTreeRow(TArray<FTRTileTypeTree*>& rows, FTRTileTypeTree* currentRow);
 
 // Unsafe!!!
 private:
+	const FTileInfo voidInfo { ETileType::Nothing, ETileState::Busy };
 	FTileInfo* TileInfoArray;
 	void ClearTileInfoArray();
 	int MapWidth;
@@ -51,8 +55,10 @@ private:
 	/// <param name="tileLayer"> Valid link to PaperTileLayer </param>
 	void GenerateMapByLeyer(UPaperTileLayer* tileLayer);
 
-public:
+private:
+	FORCEINLINE bool InPlace(int x, int y) const { return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight; }
 
+public:
 
 	/// <summary>
 	/// Generate Data of TileInfoArray by TileMap's layer
@@ -72,7 +78,24 @@ public:
 	const FTileInfo& GetTileInfo(int x, int y); 
 	void SetTileBusy(int x, int y, ETileState state);
 	bool GetTileIsParent(ETileType child, ETileType parent);
-private:
-	const FTileInfo voidInfo { ETileType::Nothing, ETileState::Busy };
-	FORCEINLINE bool InPlace(int x, int y) const { return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight; }
+
+protected:
+	UGameObjectCore* LoacatedCore = nullptr;
+	bool CanSetLoacatedCore;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void SetLocatedCore(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LoacatedCore };
+
+	UFUNCTION(BlueprintCallable)
+	void SetLocatedCoreLocation(FVector location);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanSetLocatedCore();
+
+	UFUNCTION(BlueprintCallable)
+	bool InstallLocatedCore();
 };

@@ -161,13 +161,15 @@ void UMappingDefaultComponent::UpdateCanPlace() {
 
 
 void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
-	CurrentLocation = FIntVector(
+	FIntVector newLocation = FIntVector(
 		(TargetLocation + this->ComponentRelativeLocation) / 
 		FVector(this->tileSize) + 
 		FVector(0.5f, 0.5f, 0)
 	);
-
-	UpdateActorLocation();
+	if (CurrentLocation != newLocation) {
+		CurrentLocation = newLocation;
+		UpdateActorLocation();
+	}
 }
 
 

@@ -1,5 +1,6 @@
 #include "./MappingService.h"
 #include "../Game/GameInstanceDefault.h"
+#include "MappingService.h"
 
 
 void UMappingService::InitializeService() {
@@ -13,6 +14,7 @@ void UMappingService::ClearService() {
 	ClearTileInfoArray();
 	this->TileTypesTree.Empty();
 	this->TileTypes.Empty();
+	LoacatedCore = nullptr;
 }
 
 UMappingService::UMappingService() {
@@ -163,4 +165,35 @@ void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
 			}
 		}
 	}
+}
+
+void UMappingService::SetLocatedCore(UGameObjectCore* core) {
+	LoacatedCore = core;
+	CanSetLoacatedCore = false;
+}
+
+void UMappingService::SetLocatedCoreLocation(FVector location) {
+	if (IsValid(LoacatedCore)) {
+		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+			mapping->SetOwnerLocation(location);
+		}
+	}
+}
+
+
+bool UMappingService::CanSetLocatedCore() { 
+	return IsValid(LoacatedCore) && CanSetLoacatedCore;
+}
+
+
+bool UMappingService::InstallLocatedCore() {
+	if (!CanSetLocatedCore()) 
+		return false; 
+
+	if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+		mapping->GetIsPlaced();
+		LoacatedCore = nullptr;
+		return true;
+	}
+	return false;
 }
