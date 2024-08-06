@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "../Game/GameStateDefault.h"
 #include "./MappingService.h"
+#include "./ConfigService.h"
 
 #include "../Lib/Save/SaveDefault.h"
 #include "../Lib/Save/SaveTileMap.h"
@@ -11,6 +12,8 @@
 
 #include "../GameObject/SimpleObject.h"
 #include "../GameObject/MovableObject.h"
+
+#include "../Game/GameInstanceDefault.h"
 
 #include "../Interface/GameObjectInterface.h"
 #include "../Component/Health/HealthBaseComponent.h"
@@ -27,6 +30,15 @@
 #include "./GameEventsService.h"
 
 
+
+void USaveService::InitializeService() {
+	UAGameService::InitializeService();
+}
+
+void USaveService::ClearService() {
+	UAGameService::InitializeService();
+	ProgressSavers.Reset();
+}
 
 USaveDefault* USaveService::CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
 	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::CreateSaveGameObject(saveClass));
@@ -140,20 +152,11 @@ void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* s
 
 /// Saving Loading Config
 void USaveService::SaveConfig(AGameStateDefault* gameState, USaveConfig* saver) {
-	const TMap<EConfig, FConfig>& configs = gameState->GetAllConfigs();
-	for (auto conf : configs) {
-		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
-			saver->Configs.Add(conf);
-		}
-	}
+	GameInstance->GetConfigService()->SaveConfig(saver);
 }
 
 void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) {
-	for (auto conf : saver->Configs) {
-		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
-			gameState->SetConfig(conf.Key, conf.Value);
-		}
-	}
+	GameInstance->GetConfigService()->LoadConfig(saver);
 }
 
 

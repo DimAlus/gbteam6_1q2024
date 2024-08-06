@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 #include "../Interface/CanSaveInterface.h"
 
 #include "SaveService.generated.h"
@@ -21,8 +21,11 @@ class USaveProgress;
  * 
  */
 UCLASS()
-class GBTEAM6_API USaveService : public UObject {
+class GBTEAM6_API USaveService : public UAGameService {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 private:
 	UPROPERTY()

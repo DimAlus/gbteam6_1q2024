@@ -16,23 +16,14 @@
 APlayerPawnDefault::APlayerPawnDefault()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
-
-	// Set camera pitch min and max
-	MinCameraZoomRotationPitch = -60.f;
-	MaxCameraZoomRotationPitch = -20.f;
+	PrimaryActorTick.bCanEverTick = true;
 	
 	// Create a camera boom
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->SetWorldRotation({MinCameraZoomRotationPitch,0.f,0.f});
+	//CameraBoom->SetWorldRotation({MinCameraZoomRotationPitch,0.f,0.f});
 	CameraBoom->TargetArmLength = 1600.0f;
 	CameraBoom->bDoCollisionTest = false;
-
-	//Set camera zoom default parameters
-	MinCameraBoomLength = 300.f;
-	MaxCameraBoomLength = 4000.f;
-	TargetCameraBoomLength = CameraBoom->TargetArmLength;
 	
 	// Create an isometric camera
 	IsometricViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Isometric Camera"));
@@ -65,7 +56,13 @@ void APlayerPawnDefault::BeginPlay()
 		UE_LOG(LgPlayer, Error, TEXT("'%s' Failed to find PlayerController!"), *GetNameSafe(this));
 	}
 	
-	TargetCameraTurnRotation = RootComponent->GetComponentRotation();
+	InitCamera();
+}
+
+void APlayerPawnDefault::Tick(float DeltaTime) {
+	Super::Tick(DeltaTime);
+	LastDeltaTime = DeltaTime;
+	UpdateCamera(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -196,30 +193,21 @@ void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectC
 
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
-	float MovementFactor = (TargetCameraBoomLength-MinCameraBoomLength)/(MaxCameraBoomLength-MinCameraBoomLength);
-	if (MovementFactor < 0.2f)
-		MovementFactor = 0.2f;
-	const FVector2D MovementVector = Value.Get<FVector2D>()*MovementFactor;
-	if (Controller != nullptr) {
-		// find out which way is forward
-		const FRotator Rotation = RootComponent->GetComponentRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		//AddMovementInput(ForwardDirection, MovementVector.Y);
-		//AddMovementInput(RightDirection, MovementVector.X);;
-		auto TargetLocation = GetActorLocation();
-		auto ForwardVector = ForwardDirection*MovementVector.Y;
-		auto RightVector = RightDirection*MovementVector.X;
-		TargetLocation += (ForwardVector + RightVector)*100;
-		SetActorLocation(TargetLocation);
+	float MovementMaxSpeed = GetCameraMovementMaxSpeed();
+	FVector2D inputValue = Value.Get<FVector2D>();
+	if (inputValue.Length() > 1) {
+		inputValue.Normalize();
 	}
+	const FVector2D MovementVector = inputValue *
+		MovementMaxSpeed *
+		LastDeltaTime;
+
+	const FRotator YawRotator = { 0, CameraTargetRotation, 0 };
+
+	FVector rotatedVector = YawRotator.RotateVector({ MovementVector.Y, MovementVector.X, 0 });
+	
+	AddCameraLocation(rotatedVector);
+
 }
 
 void APlayerPawnDefault::EnableCameraTurnMouse(const FInputActionValue& Value) {
@@ -231,84 +219,25 @@ void APlayerPawnDefault::DisableCameraTurnMouse(const FInputActionValue& Value) 
 }
 
 void APlayerPawnDefault::CameraTurn(const FInputActionValue& Value) {
-	FRotator rot = GetActorRotation();
-	rot.Yaw += Value.Get<float>() * 4.f;
-	SetActorRotation(rot);
+	AddCameraRotation(Value.Get<float>() * InputRotationMultiplier * CameraRotationMaxSpeed * LastDeltaTime);
 }
 
 void APlayerPawnDefault::CameraTurnMouse(const FInputActionValue& Value) {
 	if (isScrollPressed) {
-		FRotator rot = GetActorRotation();
-		rot.Yaw += Value.Get<float>() * 4.f;
-		SetActorRotation(rot);
+		AddCameraRotationForce(Value.Get<float>() * InputRotationMouseMultiplier * CameraRotationMaxSpeed * LastDeltaTime);
+		//AddCameraRotation(Value.Get<float>() * InputRotationMouseMultiplier * CameraRotationMaxSpeed * LastDeltaTime);
 	}
 }
 
 
 void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnMouseTimerHandle);
-	GetWorld()->GetTimerManager().ClearTimer(CameraTurnKeyboardTimerHandle);
-	
 	const float ZoomDirection = Value.Get<float>();	
-	
-	TargetCameraBoomLength = std::clamp(
-		TargetCameraBoomLength * (ZoomDirection > 0 ? 1.2f : 0.8f),
-		MinCameraBoomLength,
-		MaxCameraBoomLength
-	);
 
-	float CameraZoomTickTimerRate = GetWorld()->GetDeltaSeconds()*0.02f;
-	if (!CurrentGamePaused)
-		CameraZoomTickTimerRate=CustomTimeDilation*0.02f;
-	
-	if (GetWorld()->GetTimerManager().IsTimerActive(CameraZoomTimerHandle))
-	{
-		auto ActiveZoomTickTimerRate = GetWorld()->GetTimerManager().GetTimerRate(CameraZoomTimerHandle);
-		bool IsCorrectTimerRate = UKismetMathLibrary::InRange_FloatFloat(
-			ActiveZoomTickTimerRate,
-			CameraZoomTickTimerRate*0.5f,
-			CameraZoomTickTimerRate*2.f);
-		if (!IsCorrectTimerRate)
-			GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
-	}
-	
-	if (!(GetWorld()->GetTimerManager().IsTimerActive(CameraZoomTimerHandle))) {
-		GetWorld()->GetTimerManager().SetTimer(
-			CameraZoomTimerHandle,
-			this,
-			&APlayerPawnDefault::CameraZoomTick,
-			CameraZoomTickTimerRate,
-			true
-		);
-	}
+	float zoomDelta = std::max(CameraTagretHeight * CameraZoomScrollDelta, CameraZoomScrollMin);
 
-	
-	FRotator TargetCameraZoomRotation = RootComponent->GetComponentRotation();
-	float PitchFactor = (TargetCameraBoomLength - MinCameraBoomLength)
-					  / (MaxCameraBoomLength - MinCameraBoomLength);
-	PitchFactor = 1 - std::clamp(PitchFactor * 4, 0.f, 1.f);
-	
-	TargetCameraZoomRotation.Pitch = MinCameraZoomRotationPitch +
-		PitchFactor * (MaxCameraZoomRotationPitch - MinCameraZoomRotationPitch);
-
-	SetActorRotation(TargetCameraZoomRotation);
-	
+	AddCameraHeight(zoomDelta * ZoomDirection);
 }
 
-void APlayerPawnDefault::CameraZoomTick() {
-	float InterpStepTime=CustomTimeDilation*0.02f;
-	if (CurrentGamePaused)
-		InterpStepTime*=GetWorld()->GetDeltaSeconds();
-	CameraBoom->TargetArmLength = UKismetMathLibrary::FInterpTo(
-		CameraBoom->TargetArmLength,
-		TargetCameraBoomLength,
-		InterpStepTime,
-		5.f
-		);
-	if (fabs(CameraBoom->TargetArmLength-TargetCameraBoomLength) < 0.1f) {
-		GetWorld()->GetTimerManager().ClearTimer(CameraZoomTimerHandle);
-	}
-}
 
 void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
 	int speed = Value.Get<float>();
@@ -347,6 +276,338 @@ void APlayerPawnDefault::SetGamePaused(bool isPaused) {
 	UpdateGameSpeed();
 }
 
+
+float APlayerPawnDefault::GetCameraMovementMaxSpeed() {
+	return CameraMovementMaxNearestSpeed +
+		GetCameraHeightPersents() *
+		(CameraMovementMaxFarawaySpeed - CameraMovementMaxNearestSpeed);
+}
+
+float APlayerPawnDefault::GetCameraHeightPersents() {
+	return (CameraCurrentHeight - CameraZoomMin) / (CameraZoomMax - CameraZoomMin);
+}
+
+void APlayerPawnDefault::TouchCameraCurrentRotationBorders() {
+	float height = GetCameraHeightPersents();
+	if (height < CameraCurrentRotationBorders[0].Key || height > CameraCurrentRotationBorders[1].Key) {
+		CameraCurrentRotationBorders = CalculateCameraCurrentRotationBorders();
+	}
+}
+
+TArray<TTuple<float, float>> APlayerPawnDefault::CalculateCameraCurrentRotationBorders() {
+	float height = GetCameraHeightPersents();
+	for (int i = 0; i < CameraZoomRotations.Num(); i++) {
+		if (CameraZoomRotations[i].Key >= height) {
+			if (i == 0) {
+				return { CameraZoomRotations[0], CameraZoomRotations[1] };
+			}
+			return { CameraZoomRotations[i - 1], CameraZoomRotations[i] };
+		}
+	}
+	return { 
+		CameraZoomRotations[CameraZoomRotations.Num() - 2],
+		CameraZoomRotations[CameraZoomRotations.Num() - 1]
+	};
+}
+
+float APlayerPawnDefault::GetCameraPitch() {
+	TouchCameraCurrentRotationBorders();
+	float height = GetCameraHeightPersents();
+	const TTuple<float, float>& minbor = CameraCurrentRotationBorders[0];
+	const TTuple<float, float>& maxbor = CameraCurrentRotationBorders[1];
+	
+	return -(minbor.Value + (maxbor.Value - minbor.Value) *
+		(height - minbor.Key) / (maxbor.Key - minbor.Key));
+}
+
+float APlayerPawnDefault::GetCameraDistance() {
+	float angle = GetCameraPitch();
+	return std::abs(CameraCurrentHeight / std::tan(angle / 180 * PI));
+}
+
+
+void APlayerPawnDefault::InitCamera() {
+	CameraTargetPosition = this->GetActorLocation();
+	CameraCurrentRotation = CameraTargetRotation = 0.f;
+	CameraCurrentHeight = CameraTagretHeight = CameraZoomDefault;
+	CameraCurrentMovementSpeed = {};
+	CameraCurrentRotationSpeed = 0.f;
+	CameraCurrentZoomSpeed = 0.f;
+
+	TArray<int> rotationPercents;
+	CameraZoomRotationsPercentsMap.GetKeys(rotationPercents);
+	rotationPercents.Sort();
+	for (auto perc : rotationPercents) {
+		if (perc >= 0 && perc <= 100) {
+			if (CameraZoomRotations.Num() == 0 && perc > 0) {
+				CameraZoomRotations.Add({ 0, CameraZoomRotationsPercentsMap[perc] });
+			}
+			CameraZoomRotations.Add({ perc / 100.f, CameraZoomRotationsPercentsMap[perc] });
+		}
+	}
+
+	if (CameraZoomRotations.Num() == 0) {
+		UE_LOG(LgPlayer, Error, TEXT("<%s>: Failed to load CameraZoomRotations! CameraZoomRotationsPercentsMap not seted"), *GetNameSafe(this));
+		CameraZoomRotations.Add({ 0, 45 });
+	}
+	if (CameraZoomRotations[CameraZoomRotations.Num() - 1].Key < 0.9999) {
+		CameraZoomRotations.Add({ 1, CameraZoomRotations[CameraZoomRotations.Num() - 1].Value });
+	}
+	CameraCurrentRotationBorders = CalculateCameraCurrentRotationBorders();
+
+	ApplyCameraZoom();
+	ApplyCameraRotation();
+}
+
+void APlayerPawnDefault::UpdateCamera(float DeltaTime) {
+	UpdateCameraPosition(DeltaTime);
+	UpdateCameraZoom(DeltaTime);
+	UpdateCameraRotation(DeltaTime);
+}
+
+void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
+	if (CameraHasTargetActor) {
+		if (IsValid(CameraTargetActor)) {
+			CameraTargetPosition = CameraTargetActor->GetActorLocation();
+			CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
+		}
+		else {
+			UnsetCameraTargetActor();
+		}
+	}
+	FVector actorLocation = this->GetActorLocation();
+
+	float CameraMovementMaxSpeed = GetCameraMovementMaxSpeed();
+	int slow = CameraSlowing.MoveX;
+	CameraCurrentMovementSpeed = CalculateVectorSpeed(
+		DeltaTime,
+		actorLocation,
+		CameraTargetPosition,
+		CameraCurrentMovementSpeed,
+		CameraMovementAcceleration,
+		CameraMovementMaxSpeed,
+		slow
+	);
+	CameraSlowing.MoveX = slow;
+
+	if (CameraCurrentMovementSpeed.X || CameraCurrentMovementSpeed.Y) {
+		actorLocation.X += CameraCurrentMovementSpeed.X * DeltaTime;
+		actorLocation.Y += CameraCurrentMovementSpeed.Y * DeltaTime;
+		this->SetActorLocation(actorLocation);
+	}
+}
+
+void APlayerPawnDefault::ApplyCameraZoom() {
+	FRotator rot = CameraBoom->GetRelativeRotation();
+	rot.Pitch = GetCameraPitch();
+	CameraBoom->SetRelativeRotation(rot);
+
+	CameraBoom->TargetArmLength = std::abs(CameraCurrentHeight / std::sin(rot.Pitch / 180 * PI));
+}
+
+void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
+	int slow = CameraSlowing.Zoom;
+	CameraCurrentZoomSpeed = CalculateSpeed(
+		DeltaTime,
+		CameraCurrentHeight,
+		CameraTagretHeight,
+		CameraCurrentZoomSpeed,
+		CameraZoomAcceleration,
+		CameraZoomMaxSpeed,
+		slow
+	);
+	CameraSlowing.Zoom = slow;
+
+	if (CameraCurrentZoomSpeed) {
+		CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
+		
+		ApplyCameraZoom();
+	}
+}
+
+void APlayerPawnDefault::ApplyCameraRotation() {
+	FRotator rot = CameraBoom->GetRelativeRotation();
+	rot.Yaw = CameraCurrentRotation;
+	CameraBoom->SetRelativeRotation(rot);
+}
+
+void APlayerPawnDefault::UpdateCameraActorLocationOnRotation(float rotationBefore, float rotationAfter) {
+	if (!CameraHasTargetActor) {
+		float CameraDistance = GetCameraDistance();
+		rotationBefore *= PI / 180.f;
+		rotationAfter *= PI / 180.f;
+		FVector cameraPositionBefore = FVector(std::cos(rotationBefore), std::sin(rotationBefore), 0) * CameraDistance;
+		
+		FVector cameraPositionAfter = FVector(std::cos(rotationAfter), std::sin(rotationAfter), 0) * CameraDistance;
+
+		FVector deltaPosition = cameraPositionAfter - cameraPositionBefore;
+		this->SetActorLocation(this->GetActorLocation() + deltaPosition);
+		CameraTargetPosition += deltaPosition;
+	}
+}
+
+void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
+	if (isScrollPressed) {
+		return;
+	}
+
+	int slow = CameraSlowing.Rotation;
+	CameraCurrentRotationSpeed = CalculateSpeed(
+		DeltaTime,
+		CameraCurrentRotation,
+		CameraTargetRotation,
+		CameraCurrentRotationSpeed,
+		CameraRotationAcceleration,
+		CameraRotationMaxSpeed,
+		slow
+	);
+	CameraSlowing.Rotation = slow;
+
+	if (CameraCurrentRotationSpeed){
+		UpdateCameraActorLocationOnRotation(
+			CameraCurrentRotation, 
+			CameraCurrentRotation + CameraCurrentRotationSpeed * DeltaTime
+		);
+		CameraCurrentRotation += CameraCurrentRotationSpeed * DeltaTime;
+		ApplyCameraRotation();
+	}
+}
+
+float APlayerPawnDefault::CalculateSpeed(float DeltaTime, 
+										 float currentValue, 
+										 float targetValue, 
+										 float currentSpeed,
+										 float acceleration,
+										 float maxSpeed,
+										 int& currentSlowing) {
+	acceleration *= maxSpeed;
+	int signs = currentSpeed > 0 ? 1 : -1;
+	int signVal = (targetValue - currentValue) > 0 ? 1 : -1;
+	float deltaValue = targetValue - currentValue;
+	if (currentSlowing) {
+		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
+	}
+	// if another direction
+	if (deltaValue * currentSpeed < 0 && std::abs(currentSpeed) > 0.001f) {
+
+		return currentSpeed - acceleration * signs * DeltaTime;
+	}
+
+
+	float maxSpeedToSlowing = std::sqrt(std::abs(deltaValue) * acceleration * 2);
+	float newSpeed = std::min(
+		std::min(maxSpeed, maxSpeedToSlowing),
+		std::abs(currentSpeed) + acceleration * DeltaTime
+	) * signVal;
+
+	// S = a * t^2 / 2 == v^2 / a / 2
+	float slowingLength = newSpeed * newSpeed / acceleration / 2;
+	if (slowingLength >= std::abs(deltaValue)) {
+		currentSlowing = 1;
+		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
+	}
+
+	return newSpeed;
+}
+
+FVector APlayerPawnDefault::CalculateVectorSpeed(
+												float DeltaTime, 
+												FVector currentValue, 
+												FVector targetValue, 
+												FVector currentSpeed, 
+												float acceleration, 
+												float maxSpeed, 
+												int& currentSlowing) {
+	FVector direction = targetValue - currentValue;
+	float directionSpeed = 0;
+	if (direction.Length() > 0) {
+		direction.Normalize();
+		directionSpeed = currentSpeed.Length() * direction.CosineAngle2D(currentSpeed);
+	}
+	
+	directionSpeed = CalculateSpeed(
+		DeltaTime,
+		0,
+		(targetValue - currentValue).Length(),
+		directionSpeed,
+		acceleration,
+		maxSpeed,
+		currentSlowing
+	);
+
+	return direction * directionSpeed;
+}
+
+FVector APlayerPawnDefault::GetCameraLocation() {
+	FVector loc = GetActorLocation();
+	FRotator rot = CameraBoom->GetRelativeRotation();
+	FVector dir = rot.RotateVector({ 1, 0, 0 });
+	return loc - dir * CameraBoom->TargetArmLength;
+}
+
+void APlayerPawnDefault::SetCameraHeight(float newHeight) {
+	CameraTagretHeight = std::clamp(
+		newHeight,
+		CameraZoomMin,
+		CameraZoomMax
+	);
+
+	CameraSlowing.Zoom = 0;
+}
+
+void APlayerPawnDefault::AddCameraHeight(float deltaHeight) {
+	SetCameraHeight(CameraTagretHeight + deltaHeight);
+}
+
+void APlayerPawnDefault::SetCameraRotation(float newRotation) {
+	if (isScrollPressed) {
+		return;
+	}
+	CameraCurrentRotation = CameraCurrentRotation - (int)(CameraCurrentRotation / 360) * 360;
+	CameraTargetRotation = newRotation - (int)(newRotation / 360) * 360;
+	if (std::abs(CameraCurrentRotation - CameraTargetRotation) > 180) {
+		CameraTargetRotation += 360 * (CameraTargetRotation > CameraCurrentRotation ? -1 : 1);
+	}
+
+	CameraSlowing.Rotation = 0;
+}
+
+void APlayerPawnDefault::AddCameraRotation(float deltaRotation) {
+	if (isScrollPressed) {
+		return;
+	}
+	CameraTargetRotation += deltaRotation;
+
+	CameraSlowing.Rotation = 0;
+}
+
+void APlayerPawnDefault::AddCameraRotationForce(float deltaRotation) {
+	UpdateCameraActorLocationOnRotation(CameraCurrentRotation, CameraCurrentRotation + deltaRotation);
+	CameraTargetRotation = CameraCurrentRotation += deltaRotation;
+	CameraSlowing.Rotation = 1;
+	ApplyCameraRotation();
+}
+
+void APlayerPawnDefault::SetCameraLocation(FVector newLocation) {
+	UnsetCameraTargetActor();
+	CameraTargetPosition = newLocation;
+	CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
+}
+
+void APlayerPawnDefault::AddCameraLocation(FVector deltaLocation) {
+	SetCameraLocation(CameraTargetPosition + deltaLocation);
+}
+
+void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor) {
+	CameraHasTargetActor = true;
+	CameraTargetActor = cameraTargetActor;
+	CameraBoom->bEnableCameraLag = true;
+}
+
+void APlayerPawnDefault::UnsetCameraTargetActor() {
+	CameraHasTargetActor = false;
+	CameraBoom->bEnableCameraLag = false;
+}
 
 void APlayerPawnDefault::MakeWorkers_Implementation(int WorkersAmount)
 {
