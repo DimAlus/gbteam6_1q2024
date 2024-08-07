@@ -94,6 +94,8 @@ private:
 
 	
 public:
+	static const TSet<EResource>& GetPlayerResourcesTypes();
+
 	FORCEINLINE const TMap<EResource, int>& GetPlayerResources() const { return PlayerResources; }
 
 	int GetStackSize(EResource resource);

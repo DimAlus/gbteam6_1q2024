@@ -25,7 +25,7 @@ void UGameInstanceDefault::Init() {
 
 void UGameInstanceDefault::OnChangeMap(UWorld* world) {
 	FString mapName;
-	if (world) {
+	/*if (world) {
 		mapName = world->GetMapName();
 		mapName.RemoveFromStart(world->StreamingLevelsPrefix);
 
@@ -33,10 +33,18 @@ void UGameInstanceDefault::OnChangeMap(UWorld* world) {
 			UE_LOG(LgComponent, Error, TEXT("OnChangeMap lvl: %s"), *lvl->GetFullName());
 
 		}
-	}
+	}*/
 	UE_LOG(LgComponent, Error, TEXT("OnChangeMap called: %s"), *mapName);
 	ClearServices();
 	InitializeServices();
+	bool isDevMap = false;
+	if (isDevMap) {
+		// GetMappingService()->GenerateMap()
+		// GetSaveService()->SaveGame(GameSaveSlot, true);
+	}
+	else {
+		GetSaveService()->LoadGame(GameSaveSlot, false);
+	}
 }
 
 

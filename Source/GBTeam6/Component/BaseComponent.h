@@ -9,6 +9,7 @@
 
 class AGameStateDefault;
 class UGameObjectCore;
+class UGameInstanceDefault;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UBaseComponent : public UActorComponent {
@@ -21,6 +22,7 @@ private:
 	friend class UGameObjectCore;
 protected:
 	AGameStateDefault* GetGameState();
+	UGameInstanceDefault* GetGameInstance();
 	UGameObjectCore* GetCore();
 
 	// Pre init of component

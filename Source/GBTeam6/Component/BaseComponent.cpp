@@ -1,5 +1,6 @@
 #include "./BaseComponent.h"
 #include "../Game/GameStateDefault.h"
+#include "../Game/GameInstanceDefault.h"
 #include "../Interface/GameObjectCore.h"
 #include "../Interface/GameObjectInterface.h"
 
@@ -9,6 +10,14 @@ AGameStateDefault* UBaseComponent::GetGameState() {
 	}
 	UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!")
 	return nullptr; 
+}
+
+UGameInstanceDefault* UBaseComponent::GetGameInstance() {
+	if (auto* instance = Cast<UGameInstanceDefault>(GetWorld()->GetGameInstance())) {
+		return instance;
+	}
+	UE_LOG_COMPONENT(Error, "UGameInstanceDefault not Valid!")
+	return nullptr;
 }
 
 

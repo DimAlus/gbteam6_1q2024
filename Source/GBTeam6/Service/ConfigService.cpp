@@ -8,6 +8,7 @@
 
 void UConfigService::InitializeService() {
 	UAGameService::InitializeService();
+	GameInstance->GetSaveService()->LoadConfigPublic();
 }
 
 void UConfigService::ClearService() {

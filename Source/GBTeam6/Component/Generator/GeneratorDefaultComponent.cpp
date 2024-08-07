@@ -101,12 +101,11 @@ void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer
 
 		info.HasSocialTagNeeds = false;
 		bool HasPlayerResources = false;
-		auto gameState = GetGameState();
 		for (const auto& prc : info.Barter.Price) {
 			if (prc.Resource == EResource::SocialTag) {
 				info.HasSocialTagNeeds = true;
 			}
-			if (gameState->GetPlayerResources().Contains(prc.Resource)) {
+			if (AGameStateDefault::GetPlayerResourcesTypes().Contains(prc.Resource)) {
 				HasPlayerResources = true;
 			}
 		}

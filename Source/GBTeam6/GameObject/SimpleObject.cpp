@@ -27,6 +27,31 @@ ASimpleObject::ASimpleObject() {
 	//OnDestroyed.AddDynamic(this, &ASimpleObject::DestroyGameObject);
 }
 
+void ASimpleObject::CreateCore_Implementation() {
+	if (!this->GameObjectCore) {
+		this->GameObjectCore = NewObject<UGameObjectCore>();
+		this->GameObjectCore->SetOwner(this);
+
+		this->GameObjectCore->BindComponentNoRegister(
+			EGameComponentType::Mapping,
+			MappingComponent
+		);
+
+		this->GameObjectCore->BindComponentNoRegister(
+			EGameComponentType::Collision,
+			ObjectSelectCollision
+		);
+		this->GameObjectCore->InitDataByName(ObjectName);
+
+		/** On resource generated */
+		auto GeneratorComponent = Cast<UGeneratorBaseComponent>(
+			this->GameObjectCore->GetComponent(EGameComponentType::Generator));
+		GeneratorComponent->OnResourceGenerated.AddDynamic(this, &ASimpleObject::OnResourceGeneratedBehaviour);
+
+		this->GameObjectCore->SetIsCreated();
+	}
+}
+
 void ASimpleObject::Destroyed() {
 	if (GameObjectCore) {
 		GameObjectCore->DestroyOwner();
@@ -36,26 +61,7 @@ void ASimpleObject::Destroyed() {
 
 void ASimpleObject::BeginPlay() {
 
-	this->GameObjectCore = NewObject<UGameObjectCore>();
-	this->GameObjectCore->SetOwner(this);
-
-	this->GameObjectCore->BindComponentNoRegister(
-		EGameComponentType::Mapping,
-		MappingComponent
-	);
-
-	this->GameObjectCore->BindComponentNoRegister(
-		EGameComponentType::Collision,
-		ObjectSelectCollision
-	);
-	this->GameObjectCore->InitDataByName(ObjectName);
-
-	/** On resource generated */
-	auto GeneratorComponent = Cast<UGeneratorBaseComponent>(
-	this->GameObjectCore->GetComponent(EGameComponentType::Generator));
-	GeneratorComponent->OnResourceGenerated.AddDynamic(this, &ASimpleObject::OnResourceGeneratedBehaviour);
-	
-	this->GameObjectCore->SetIsCreated();
+	this->CreateCore_Implementation();
 	Super::BeginPlay();
 
 }
