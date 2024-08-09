@@ -24,14 +24,44 @@ protected:
 	bool wasInitialized = false;
 
 	FVector ComponentRelativeLocation{};
-	
 	TArray<FMapInfo> MapInfos{};
 
-	TMap<TTuple<int, int>, UStaticMeshComponent*> previews;
+	bool bIsPlaced = false;
 
+	FIntVector CurrentLocation;
+	int CurrentRotation = 0;
+	float CurrentActorRelaticveRotation = 0;
+
+protected:
+	void UpdateActorLocation();
+
+public:
+	virtual void SetOwnerLocation(FVector TargetLocation) override;
+	virtual bool SetIsPlaced(bool isPlaced) override;
+	virtual bool GetIsPlaced() override;
+	virtual TArray<FMapInfo> GetMapInfo() override;
+	virtual FIntVector GetCurrentMapLocation() override;
+
+
+/****************  PREVIEW   ****************/ 
+protected:
+	TMap<TTuple<int, int>, UStaticMeshComponent*> previews;
 	FIntVector tileSize{ 100, 100, 1 };
 
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|Preview")
+	UStaticMesh* PreviewMesh = Cast<UStaticMesh>(StaticLoadObject(
+		UStaticMesh::StaticClass(),
+		NULL, 
+		TEXT("/Engine/BasicShapes/Cube")
+	));
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|Preview")
+	UMaterial* PreviewMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(), 
+		NULL, 
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
+	));
 
 protected:
 	void DeletePreviews();
@@ -42,14 +72,7 @@ protected:
 	void SetMeshIsVisible(UStaticMeshComponent* mesh, bool IsVisible);
 	void SetMeshIsEnabled(UStaticMeshComponent* mesh, bool IsEnabled);
 
-	void UpdateActorLocation();
-private:
-	void UpdateCanPlace();
 public:
-
-
-	virtual void SetOwnerLocation(FVector TargetLocation) override;
 	virtual void SetPreviewVisibility(bool isVilible) override;
-	virtual bool SetIsPlaced(bool isPlaced) override;
-	virtual bool GetIsPlaced() override;
+
 };

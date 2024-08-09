@@ -57,6 +57,111 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 }
 
 
+void UMappingDefaultComponent::UpdateActorLocation() {
+	this->GetOwner()->SetActorLocation(
+		FVector(CurrentLocation * this->tileSize) - this->ComponentRelativeLocation * FVector(1, 1, 0),
+		false,
+		nullptr,
+		ETeleportType::TeleportPhysics
+	);
+}
+
+
+void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
+	FIntVector newLocation = FIntVector(
+		(TargetLocation + this->ComponentRelativeLocation) / 
+		FVector(this->tileSize) + 
+		FVector(0.5f, 0.5f, 0)
+	);
+	if (CurrentLocation != newLocation) {
+		CurrentLocation = newLocation;
+		UpdateActorLocation();
+	}
+}
+
+bool UMappingDefaultComponent::SetIsPlaced(bool isPlaced) {
+	if (bIsPlaced ^ isPlaced) {
+		if (isPlaced && !bCanPlace) {
+			return false;
+		}
+
+		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
+		if (!IsValid(gameState)) {
+			UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
+			return false;
+		}
+		UMappingService* mappingService = gameState->GetMappingService();
+		if (!IsValid(mappingService)) {
+			UE_LOG_COMPONENT(Error, "UMappingService not Valid!");
+			return false;
+		}
+
+
+		SetPreviewVisibility(false);
+
+		for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
+			int x = currentLocation.X + iter.Key().Key;
+			int y = currentLocation.Y + iter.Key().Value;
+
+			mappingService->SetTileBusy(x, y, isPlaced ? ETileState::Busy : ETileState::Free);
+		}
+		bIsPlaced = isPlaced;
+		OnPlaced.Broadcast(isPlaced);
+		
+		if(GetCore())
+		{
+			if (auto Collision =
+					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
+			{
+				Collision->SetCollisionEnabled(isPlaced ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
+			}
+		}
+		else
+		{
+			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on SetIsPlaced! No Core!");
+		}
+		
+		return true;
+	}
+	return false;
+}
+
+bool UMappingDefaultComponent::GetIsPlaced() {
+	return bIsPlaced;
+}
+
+TArray<FMapInfo> UMappingDefaultComponent::GetMapInfo() {
+	static TArray<TPair<int, int>> signer = {{1, 1}, {1, -1}, {-1, -1}, {-1, 1}}
+
+	TArray<FMapInfo> result;
+	for (conts FMapInfo& info : MapInfos) {
+		result.Add(info);
+		FMapInfo& curr = result[result.Num() - 1];
+
+		if (CurrentRotation == 1 || CurrentRotation == 2) 
+			curr.Y += curr.Size.Y;
+		if (CurrentRotation == 2 || CurrentRotation == 3) 
+			curr.X += curr.Size.X;
+
+		curr.X *= signer[CurrentRotation].Key;
+		curr.Y *= signer[CurrentRotation].Value;
+
+		if (CurrentRotation % 2 == 1) {
+			curr.Size.X = info.Size.Y;
+			curr.Size.Y = info.Size.X;
+
+			int x = curr.X;
+			curr.X = curr.Y;
+			curr.Y = x;
+		}
+	}
+	return result; 
+}
+
+FIntVector UMappingDefaultComponent::GetCurrentMapLocation() { 
+	return CurrentLocation; 
+}
+
 void UMappingDefaultComponent::DeletePreviews() {
 	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
 		iter->Value->DestroyComponent();
@@ -125,108 +230,9 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 	mesh->SetVisibility(IsVisible);
 }
 
-
-void UMappingDefaultComponent::UpdateActorLocation() {
-	this->GetOwner()->SetActorLocation(
-		FVector(CurrentLocation * this->tileSize) - this->ComponentRelativeLocation * FVector(1, 1, 0),
-		false,
-		nullptr,
-		ETeleportType::TeleportPhysics
-	);
-}
-
-void UMappingDefaultComponent::UpdateCanPlace() {
-	/*AGameStateDefault* gameState = GetGameState();
-	UMappingService* mappingService = gameState->GetMappingService();
-	if (!IsValid(mappingService)) {
-		UE_LOG_COMPONENT(Error, "Created UMappingService not Valid!");
-		return;
-	}
-	bCanPlace = true;
-
-	for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
-		int x = currentLocation.X + iter.Key().Key;
-		int y = currentLocation.Y + iter.Key().Value;
-		const FTileInfo& info = mappingService->GetTileInfo(x, y);
-
-		bool IsCanPlace = info.state == ETileState::Free
-			&& mappingService->GetTileIsParent(info.type, iter->Value.TileType);
-
-		this->SetMeshIsEnabled(iter->Value.Preview, IsCanPlace);
-
-		bCanPlace = bCanPlace && IsCanPlace;
-	}*/
-}
-
-
-
-void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
-	FIntVector newLocation = FIntVector(
-		(TargetLocation + this->ComponentRelativeLocation) / 
-		FVector(this->tileSize) + 
-		FVector(0.5f, 0.5f, 0)
-	);
-	if (CurrentLocation != newLocation) {
-		CurrentLocation = newLocation;
-		UpdateActorLocation();
-	}
-}
-
-
 void UMappingDefaultComponent::SetPreviewVisibility(bool isVilible) {
 	DeletePreviews();
 	if (isVisible) {
 		CreatePreviews();
 	}
-}
-
-bool UMappingDefaultComponent::SetIsPlaced(bool isPlaced) {
-	if (bIsPlaced ^ isPlaced) {
-		if (isPlaced && !bCanPlace) {
-			return false;
-		}
-
-		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-		if (!IsValid(gameState)) {
-			UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-			return false;
-		}
-		UMappingService* mappingService = gameState->GetMappingService();
-		if (!IsValid(mappingService)) {
-			UE_LOG_COMPONENT(Error, "UMappingService not Valid!");
-			return false;
-		}
-
-
-		SetPreviewVisibility(false);
-
-		for (auto iter = this->previews.begin(); iter != previews.end(); ++iter) {
-			int x = currentLocation.X + iter.Key().Key;
-			int y = currentLocation.Y + iter.Key().Value;
-
-			mappingService->SetTileBusy(x, y, isPlaced ? ETileState::Busy : ETileState::Free);
-		}
-		bIsPlaced = isPlaced;
-		OnPlaced.Broadcast(isPlaced);
-		
-		if(GetCore())
-		{
-			if (auto Collision =
-					Cast<UShapeComponent>(GetCore()->GetComponent(EGameComponentType::Collision)))
-			{
-				Collision->SetCollisionEnabled(isPlaced ? ECollisionEnabled::QueryAndPhysics : ECollisionEnabled::QueryOnly);
-			}
-		}
-		else
-		{
-			UE_LOG_COMPONENT(Log, "Can not set ECollisionEnabled::QueryOnly on SetIsPlaced! No Core!");
-		}
-		
-		return true;
-	}
-	return false;
-}
-
-bool UMappingDefaultComponent::GetIsPlaced() {
-	return bIsPlaced;
 }

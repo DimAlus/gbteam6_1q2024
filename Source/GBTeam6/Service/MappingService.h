@@ -83,7 +83,16 @@ protected:
 	UGameObjectCore* LoacatedCore = nullptr;
 	bool CanSetLoacatedCore;
 
+	bool currentTileViewVisibility = false;
+
+protected:
+	void UpdateTiles();
+	void SetShowTileView (bool isShowTileView);
+
 public:
+	UFUNCTION(BlueprintCallable)
+	bool CanPlaceAtWorld(UGameObjectCore* core);
+
 	UFUNCTION(BlueprintCallable)
 	void SetLocatedCore(UGameObjectCore* core);
 

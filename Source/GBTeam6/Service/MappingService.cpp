@@ -167,6 +167,38 @@ void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
 	}
 }
 
+void UMappingService::UpdateTiles() {
+
+}
+
+void UMappingService::SetShowTileView(bool isShowTileView) {
+	if (currentTileViewVisibility != isShowTileView) {
+		currentTileViewVisibility = isShowTileView;
+	}
+}
+
+bool UMappingService::CanPlaceAtWorld(UGameObjectCore* core) {
+	auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))
+	if (!mapping) {
+		return false; 
+	}
+	FIntVector loc = mapping->GetCurrentLocation();
+	for (const FMapInfo& rect : mapping->GetMapInfo()) {
+		for (int i = 0; i < rect.Size.X; i++) {
+			for (int j = 0; j < rect.Size.Y; j++) 
+			{
+				const FTileInfo& info = this->GetTileInfo(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y);
+				bool isCanPlace = info.state == ETileState::Free
+					&& this->GetTileIsParent(info.type, rect.TileType);
+				if (!isCanPlace){
+					return false;
+				}
+			}
+		}
+	}
+	return true;
+}
+
 void UMappingService::SetLocatedCore(UGameObjectCore* core) {
 	LoacatedCore = core;
 	CanSetLoacatedCore = false;
@@ -175,8 +207,15 @@ void UMappingService::SetLocatedCore(UGameObjectCore* core) {
 void UMappingService::SetLocatedCoreLocation(FVector location) {
 	if (IsValid(LoacatedCore)) {
 		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+			FIntVector currentLocation = mapping->GetCurrentLocation();
 			mapping->SetOwnerLocation(location);
+			if (mapping->GetCurrentLocation() != currentLocation){
+				CanSetLoacatedCore = CanPlaceAtWorld(LoacatedCore);
+			}
 		}
+	}
+	else {
+		SetShowTileView(false);
 	}
 }
 
