@@ -6,6 +6,7 @@
 #include "InputAction.h"
 #include "./Enuming.h"
 #include "Typing.generated.h"
+DECLARE_LOG_CATEGORY_EXTERN(LgGame, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);

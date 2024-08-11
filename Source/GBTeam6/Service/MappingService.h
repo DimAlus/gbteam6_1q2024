@@ -5,7 +5,7 @@
 #include "PaperTileMap.h"
 #include "PaperTileLayer.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 
 #include "MappingService.generated.h"
 
@@ -16,9 +16,13 @@ class AGameStateDefault;
  * 
  */
 UCLASS()
-class GBTEAM6_API UMappingService : public UObject
+class GBTEAM6_API UMappingService : public UAGameService
 {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
+
 public:
 	UMappingService();
 	virtual void BeginDestroy() override;
@@ -29,8 +33,8 @@ private:
 	// Info for associate TileSetIndex with TileType
 	TMap<int, ETileType> TileTypes;
 
-	void InitTileTypes(AGameStateDefault* GameState);
-	void InitTileTypesTree(AGameStateDefault* GameState);
+	void InitTileTypes();
+	void InitTileTypesTree();
 	void InitTileTypesTreeRow(TArray<FTRTileTypeTree*>& rows, FTRTileTypeTree* currentRow);
 
 // Unsafe!!!
@@ -48,18 +52,6 @@ private:
 	void GenerateMapByLeyer(UPaperTileLayer* tileLayer);
 
 public:
-	/// <summary>
-	/// Initialization of service by data of GameState.
-	/// Set data of tables TileTypesTree and TileTypes
-	/// </summary>
-	/// <param name="gameState"> GameState with DataTables for TileTypesTree and TileTypes </param>
-	void Initialize(AGameStateDefault* gameState);
-
-
-	/// <summary>
-	/// Clear all data of service
-	/// </summary>
-	void DestroyService();
 
 
 	/// <summary>

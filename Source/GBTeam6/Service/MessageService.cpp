@@ -3,6 +3,15 @@
 #include "../Interface/GameObjectInterface.h"
 #include "../Interface/MessageObserver.h"
 
+void UMessageService::InitializeService() {
+	UAGameService::InitializeService();
+}
+
+void UMessageService::ClearService() {
+	UAGameService::ClearService();
+	Observers.Reset();
+}
+
 void UMessageService::AddObserver(UObject* observer, TSet<EMessageTag> tags) {
 	if (IMessageObserver* obj = Cast<IMessageObserver>(observer)) {
 		AddObserver(obj, tags);

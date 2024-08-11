@@ -36,6 +36,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnCreatingAfter;
 
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnBeginPlay;
+
 public:
 	UGameObjectCore();
 

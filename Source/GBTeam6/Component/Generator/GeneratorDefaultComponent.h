@@ -21,6 +21,7 @@ public:
 protected:
 	virtual void OnCoreCreatedBefore() override;
 
+	virtual void OnCoreBeginPlay() override;
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
