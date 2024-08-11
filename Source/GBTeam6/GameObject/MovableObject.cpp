@@ -65,6 +65,7 @@ void AMovableObject::Destroyed() {
 // Called when the game starts or when spawned
 void AMovableObject::BeginPlay() {
 	CreateCore_Implementation();
+	this->GameObjectCore->OnBeginPlay.Broadcast();
 	Super::BeginPlay();
 }
 

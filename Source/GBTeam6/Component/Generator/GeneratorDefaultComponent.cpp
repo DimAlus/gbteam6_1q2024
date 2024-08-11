@@ -22,6 +22,10 @@ void UGeneratorDefaultComponent::OnCoreCreatedBefore() {
 	if (auto inventory = GetInventory()) {
 		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorDefaultComponent::OnInventoryChanging);
 	}
+}
+
+void UGeneratorDefaultComponent::OnCoreBeginPlay() {
+	Super::OnCoreBeginPlay();
 	if (auto gameState = GetGameState()) {
 		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorDefaultComponent::OnPlayerInventoryChanging);
 	}

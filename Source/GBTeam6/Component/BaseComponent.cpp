@@ -41,6 +41,10 @@ void UBaseComponent::OnCoreCreatedAfter() {
 	GameObjectCore->OnCreatingAfter.RemoveDynamic(this, &UBaseComponent::OnCoreCreatedAfter);
 }
 
+void UBaseComponent::OnCoreBeginPlay() {
+	GameObjectCore->OnBeginPlay.RemoveDynamic(this, &UBaseComponent::OnCoreBeginPlay);
+}
+
 void UBaseComponent::SetCore(UGameObjectCore* Core) {
 	GameObjectCore = Core;
 	Core->OnCreatingBefore
@@ -49,4 +53,6 @@ void UBaseComponent::SetCore(UGameObjectCore* Core) {
 		.AddDynamic(this, &UBaseComponent::OnCoreCreated);
 	Core->OnCreatingAfter
 		.AddDynamic(this, &UBaseComponent::OnCoreCreatedAfter);
+	Core->OnBeginPlay
+		.AddDynamic(this, &UBaseComponent::OnCoreBeginPlay);
 }

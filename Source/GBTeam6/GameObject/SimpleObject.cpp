@@ -60,8 +60,8 @@ void ASimpleObject::Destroyed() {
 }
 
 void ASimpleObject::BeginPlay() {
-
 	this->CreateCore_Implementation();
+	this->GameObjectCore->OnBeginPlay.Broadcast();
 	Super::BeginPlay();
 
 }

@@ -34,5 +34,8 @@ protected:
 	// Init of component when other components needed
 	UFUNCTION()
 	virtual void OnCoreCreatedAfter();
+	// Begin Play When core inited and gameState exists
+	UFUNCTION()
+	virtual void OnCoreBeginPlay();
 
 };

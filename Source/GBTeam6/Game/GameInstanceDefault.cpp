@@ -19,6 +19,7 @@ void UGameInstanceDefault::Init() {
 	FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* world) { this->OnChangeMap(world); }
 	);
+	
 	this->OnChangeMap(GetWorld());
 }
 
@@ -43,7 +44,9 @@ void UGameInstanceDefault::OnChangeMap(UWorld* world) {
 		// GetSaveService()->SaveGame(GameSaveSlot, true);
 	}
 	else {
-		GetSaveService()->LoadGame(GameSaveSlot, false);
+		world->GetTimerManager().SetTimerForNextTick([this]() {
+			this->GetSaveService()->LoadGame(GameSaveSlot, false);
+		});
 	}
 }
 
