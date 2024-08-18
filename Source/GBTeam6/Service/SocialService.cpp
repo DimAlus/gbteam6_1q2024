@@ -2,6 +2,16 @@
 
 
 
+void USocialService::InitializeService() {
+	UAGameService::InitializeService();
+}
+
+void USocialService::ClearService() {
+	UAGameService::ClearService();
+	ObjectsByTags.Reset();
+	ObjectsByTeams.Reset();
+}
+
 const TMap<ESocialTeam, TMap<ERelations, TSet<ESocialTeam>>>& USocialService::GetRelations() {
 	static TMap<ESocialTeam, TMap<ERelations, TSet<ESocialTeam>>> relations = {
 		{ 

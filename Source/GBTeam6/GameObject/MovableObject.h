@@ -21,6 +21,8 @@ class GBTEAM6_API AMovableObject : public ACharacter, public IGameObjectInterfac
 public:
 	AMovableObject();
 
+	virtual void CreateCore_Implementation() override;
+
 	virtual void Destroyed() override;
 protected:
 	virtual void BeginPlay() override;

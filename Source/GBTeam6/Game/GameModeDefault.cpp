@@ -1,7 +1,6 @@
 #include "./GameModeDefault.h"
+#include "./GameInstanceDefault.h"
 
-void AGameModeDefault::HandleLeavingMap()
-{
-	Super::HandleLeavingMap();
-	UE_LOG(LogGameMode, Warning, TEXT("'%s' running HandleLeavingMap!"), *GetNameSafe(this));
+void AGameModeDefault::StartToLeaveMap() {
+	// Cast<UGameInstanceDefault>(GetGameInstance())->ClearServices();
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include <regex>
 
+DEFINE_LOG_CATEGORY(LgGame);
 DEFINE_LOG_CATEGORY(LgPlayer);
 DEFINE_LOG_CATEGORY(LgService);
 DEFINE_LOG_CATEGORY(LgComponent);
