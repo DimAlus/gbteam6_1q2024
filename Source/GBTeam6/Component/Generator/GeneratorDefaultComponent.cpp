@@ -22,6 +22,10 @@ void UGeneratorDefaultComponent::OnCoreCreatedBefore() {
 	if (auto inventory = GetInventory()) {
 		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorDefaultComponent::OnInventoryChanging);
 	}
+}
+
+void UGeneratorDefaultComponent::OnCoreBeginPlay() {
+	Super::OnCoreBeginPlay();
 	if (auto gameState = GetGameState()) {
 		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorDefaultComponent::OnPlayerInventoryChanging);
 	}
@@ -101,12 +105,11 @@ void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer
 
 		info.HasSocialTagNeeds = false;
 		bool HasPlayerResources = false;
-		auto gameState = GetGameState();
 		for (const auto& prc : info.Barter.Price) {
 			if (prc.Resource == EResource::SocialTag) {
 				info.HasSocialTagNeeds = true;
 			}
-			if (gameState->GetPlayerResources().Contains(prc.Resource)) {
+			if (AGameStateDefault::GetPlayerResourcesTypes().Contains(prc.Resource)) {
 				HasPlayerResources = true;
 			}
 		}

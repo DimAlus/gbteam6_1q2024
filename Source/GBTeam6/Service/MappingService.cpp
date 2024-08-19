@@ -1,6 +1,19 @@
 #include "./MappingService.h"
-#include "../Game/GameStateDefault.h"
+#include "../Game/GameInstanceDefault.h"
 
+
+void UMappingService::InitializeService() {
+	UAGameService::InitializeService();
+	InitTileTypes();
+	InitTileTypesTree();
+}
+
+void UMappingService::ClearService() {
+	UAGameService::ClearService();
+	ClearTileInfoArray();
+	this->TileTypesTree.Empty();
+	this->TileTypes.Empty();
+}
 
 UMappingService::UMappingService() {
 	this->TileInfoArray = nullptr;
@@ -22,8 +35,8 @@ void UMappingService::ClearTileInfoArray() {
 	}
 }
 
-void UMappingService::InitTileTypes(AGameStateDefault* GameState) {
-	UDataTable* dt = GameState->DT_TileType;
+void UMappingService::InitTileTypes() {
+	UDataTable* dt = GameInstance->DT_TileType;
 	if (IsValid(dt)) {
 		TArray<FTRTileType*> DataTableRowInfos;
 		dt->GetAllRows<FTRTileType>(TEXT("ReadDTTileTypeContext"), DataTableRowInfos);
@@ -36,8 +49,8 @@ void UMappingService::InitTileTypes(AGameStateDefault* GameState) {
 	}
 }
 
-void UMappingService::InitTileTypesTree(AGameStateDefault* GameState) {
-	UDataTable* dt = GameState->DT_TileTypeTree;
+void UMappingService::InitTileTypesTree() {
+	UDataTable* dt = GameInstance->DT_TileTypeTree;
 	if (IsValid(dt)) {
 		this->TileTypesTree.Add(ETileType::Any, { ETileType::Any });
 		this->TileTypesTree.Add(ETileType::Nothing, { });
@@ -78,25 +91,6 @@ void UMappingService::InitTileTypesTreeRow(TArray<FTRTileTypeTree*>& rows, FTRTi
 	}
 }
 
-void UMappingService::Initialize(AGameStateDefault* gameState) {
-	UE_LOG_SERVICE(Log, "Initialize");
-
-	if (IsValid(gameState)) {
-		InitTileTypes(gameState);
-		InitTileTypesTree(gameState);
-	}
-	else {
-		UE_LOG_SERVICE(Error, "Failed to find an AGameStateDefault!");
-	}
-}
-
-void UMappingService::DestroyService() {
-	UE_LOG_SERVICE(Log, "DestroyService");
-
-	ClearTileInfoArray();
-	this->TileTypesTree.Empty();
-	this->TileTypes.Empty();
-}
 
 void UMappingService::GenerateMap(UPaperTileMap* tileMap, FString layerName) {
 	UE_LOG_SERVICE(Log, "GenerateMap '%s' with layer '%s'", *GetNameSafe(tileMap), *layerName);

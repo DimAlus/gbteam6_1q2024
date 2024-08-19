@@ -1,6 +1,7 @@
 #include "./MappingDefaultComponent.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Service/MappingService.h"
+#include "../../Game/GameInstanceDefault.h"
 #include "Components/ShapeComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
 
@@ -153,12 +154,7 @@ void UMappingDefaultComponent::SetMeshIsVisible(UStaticMeshComponent* mesh, bool
 
 
 void UMappingDefaultComponent::UpdateCanPlace() {
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-	if (!IsValid(gameState)) {
-		UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-		return;
-	}
-	UMappingService* mappingService = gameState->GetMappingService();
+	UMappingService* mappingService = GetGameInstance()->GetMappingService();
 	if (!IsValid(mappingService)) {
 		UE_LOG_COMPONENT(Error, "Created UMappingService not Valid!");
 		return;
@@ -209,12 +205,7 @@ bool UMappingDefaultComponent::SetIsPlaced(bool isPlaced) {
 			return false;
 		}
 
-		AGameStateDefault* gameState = Cast<AGameStateDefault>(GetWorld()->GetGameState());
-		if (!IsValid(gameState)) {
-			UE_LOG_COMPONENT(Error, "AGameStateDefault not Valid!");
-			return false;
-		}
-		UMappingService* mappingService = gameState->GetMappingService();
+		UMappingService* mappingService = GetGameInstance()->GetMappingService();
 		if (!IsValid(mappingService)) {
 			UE_LOG_COMPONENT(Error, "UMappingService not Valid!");
 			return false;
