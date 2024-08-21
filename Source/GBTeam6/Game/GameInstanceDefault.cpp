@@ -88,6 +88,11 @@ void UGameInstanceDefault::InitializeServices() {
 	Cast<UAGameService>(this->MappingService)->InitializeService();
 	Cast<UAGameService>(this->TaskManagerService)->InitializeService();
 	Cast<UAGameService>(this->GameEventsService)->InitializeService();
+
+	if (IsValid(GameTimerManager)) {
+		GameTimerManager->Destroy();
+	}
+	GameTimerManager = GetWorld()->SpawnActor<AGameTimerManager>();
 }
 
 void UGameInstanceDefault::ClearServices() {
@@ -103,4 +108,9 @@ void UGameInstanceDefault::ClearServices() {
 	Cast<UAGameService>(this->MappingService)->ClearService();
 	Cast<UAGameService>(this->TaskManagerService)->ClearService();
 	Cast<UAGameService>(this->GameEventsService)->ClearService();
+
+	if (IsValid(GameTimerManager)) {
+		GameTimerManager->Destroy();
+	}
+	GameTimerManager = nullptr;
 }

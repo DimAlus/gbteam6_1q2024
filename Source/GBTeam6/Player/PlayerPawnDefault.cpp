@@ -261,8 +261,10 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
 	}
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
-	if (TimeDilation >= 0.0001f)
-		CustomTimeDilation = 1/TimeDilation;
+	if (TimeDilation >= 0.0001f) {
+		Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()->CustomTimeDilation =
+			CustomTimeDilation = 1/TimeDilation;
+	}
 	OnGameSpeedChanged.Broadcast();
 }
 
@@ -584,7 +586,7 @@ void APlayerPawnDefault::AddCameraRotation(float deltaRotation) {
 void APlayerPawnDefault::AddCameraRotationForce(float deltaRotation) {
 	UpdateCameraActorLocationOnRotation(CameraCurrentRotation, CameraCurrentRotation + deltaRotation);
 	CameraTargetRotation = CameraCurrentRotation += deltaRotation;
-	CameraSlowing.Rotation = 1;
+	CameraSlowing.Rotation = -1;
 	ApplyCameraRotation();
 }
 
