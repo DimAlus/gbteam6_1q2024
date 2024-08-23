@@ -143,7 +143,7 @@ enum class ESocialTag : uint8 {
 
 UENUM(BlueprintType)
 enum class EAIState : uint8 {
-	None			UMETA(DisplayName = "None"),
+	Default			UMETA(DisplayName = "Default"),
 	Passive			UMETA(DisplayName = "Passive"),
 	Work			UMETA(DisplayName = "Work"),
 	Combat			UMETA(DisplayName = "Combat"),
