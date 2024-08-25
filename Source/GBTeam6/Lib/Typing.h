@@ -82,6 +82,20 @@ public:
 	/** Set game speed lower action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* SetGameSpeedAction {nullptr};
+
+	/** Set game roatate building action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* RotateBuildingAction {nullptr};
+
+
+	/** Set game  quick save action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SaveGameAction {nullptr};
+
+	/** Set game quick load action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* LoadGameAction {nullptr};
+
 };
 
 struct FTileInfo {

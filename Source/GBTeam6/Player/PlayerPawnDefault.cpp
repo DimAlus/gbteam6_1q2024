@@ -103,6 +103,13 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Set game speed action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::SetGameSpeedInput);
+		
+		// Set game save action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SaveGameAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::QuickSave);
+		// Set game load action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.LoadGameAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::QuickLoad);
 	}
 	else
 	{
@@ -189,6 +196,14 @@ void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectC
 	//		}
 	//	}
 	//}
+}
+
+void APlayerPawnDefault::QuickSave(const FInputActionValue& Value) {
+	OnQuickSave.Broadcast();
+}
+
+void APlayerPawnDefault::QuickLoad(const FInputActionValue& Value) {
+	OnQuickLoad.Broadcast();
 }
 
 

@@ -83,8 +83,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CheckNeed(const FNeed& need);
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool isMenuMap;
 
 /// Player Resources
 private:

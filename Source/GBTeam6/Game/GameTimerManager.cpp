@@ -24,7 +24,7 @@ void FGameTimerHandle::Tick(float DeltaTime, float TimeDilation, bool GamePaused
 		DeltaTime *= TimeDilation;
 	}
 	if ((Value -= DeltaTime) < 0) {
-		Callback.Execute();
+		Callback.ExecuteIfBound();
 		Value += LoopDelay;
 		if (LoopDelay <= 0) {
 			Invalidate();
