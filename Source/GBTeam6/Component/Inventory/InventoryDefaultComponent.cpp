@@ -58,9 +58,11 @@ bool UInventoryDefaultComponent::_pop(const TArray<FPrice>& resources) {
 		if (GetIgnoreResources().Contains(res.Resource)) {
 			continue;
 		}
-		if (Resources.Contains(res.Resource)
-			&& Resources[res.Resource] >= res.Count) {
-			Resources[res.Resource] -= res.Count;
+		int cnt = 0;
+		if (Resources.Contains(res.Resource)) 
+			cnt = Resources[res.Resource];
+		if (cnt >= res.Count) {
+			Resources.Add(res.Resource, cnt - res.Count);
 		}
 		else {
 			return false;
