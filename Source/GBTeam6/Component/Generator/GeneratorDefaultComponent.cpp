@@ -48,7 +48,6 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				UGameObjectCore* core = thread.AttachedCores[i];
 
 				if (IsValid(core)) {
-					UE_LOG_COMPONENT(Warning, "Core at 44 line is %s", *GetNameSafe(core));
 					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 						DeltaPower += gen->GetWorkPower() * info.WorkMultiplier;
 					}
