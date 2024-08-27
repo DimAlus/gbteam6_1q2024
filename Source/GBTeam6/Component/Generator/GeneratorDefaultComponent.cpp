@@ -65,6 +65,7 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				ApplyWork(thread.GeneratorName);
 				FString save = thread.GeneratorName;
 				thread.GeneratorName = "";
+				TouchGeneratorSocialTagNeeds(save);
 				OnGeneratorChanging.Broadcast(save, info);
 			}
 
@@ -192,11 +193,11 @@ void UGeneratorDefaultComponent::TouchGeneratorSocialTagNeeds(const FString& gen
 	if (!info.HasSocialTagNeeds) {
 		return;
 	}
-	if (((GeneratorSelected(generatorName) || thread.GeneratorName == generatorName)
+	bool CurrentWaitSocialTags = (GeneratorSelected(generatorName) || thread.GeneratorName == generatorName)
 		&& !HasConstraintByResultActors(generatorName)
-		&& !HasConstraintByInventory(generatorName))
-		!= context.WaitSocialTags) {
-		context.WaitSocialTags = !context.WaitSocialTags;
+		&& !HasConstraintByInventory(generatorName);
+	if (CurrentWaitSocialTags != context.WaitSocialTags) {
+		context.WaitSocialTags = CurrentWaitSocialTags;
 		CurrentThreadNeedSocialTagsActual = false;
 		IsActualCurrentSocialTagNeeds = false;
 	}

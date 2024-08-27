@@ -257,7 +257,8 @@ void USaveService::LoadGame(FString SlotName, bool isDevMap) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start LoadGame from slot '%s'"), *GetNameSafe(this), *SlotName);
 	if (!isDevMap) {
 		FString playerName = TEXT("player");
-		FString mapName = GetLevelName(GameInstance->GetWorld()->GetCurrentLevel());
+		UWorld* world = GameInstance->GetWorld();
+		FString mapName = GetLevelName(world->GetCurrentLevel());
 
 		/// Load TileMap
 		USaveTileMap* saveTileMap = Cast<USaveTileMap>(LoadSave(

@@ -93,6 +93,9 @@ protected:
 	void OnCommand(FVector Location, UGameObjectCore* Core, bool IsObject);
 	void OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
 
+	void QuickSave(const FInputActionValue& Value);
+	void QuickLoad(const FInputActionValue& Value);
+
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
@@ -279,6 +282,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnGameSpeedChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnQuickSave;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnQuickLoad;
 
 public:
 	//Console commands
