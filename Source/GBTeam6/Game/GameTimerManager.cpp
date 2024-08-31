@@ -7,7 +7,7 @@ void FGameTimerHandle::Initialize(bool WorkAtPause, bool GameTimeInfluence, FTou
 		MaxHandle = 0;
 	}
 	Handle = (WorkAtPause ? BitWorkAtPause : 0)
-		| (GameTimeInfluence ? BitGameTimeNotInfluence : 0)
+		| (GameTimeInfluence ? 0 : BitGameTimeNotInfluence)
 		| (++MaxHandle << HandleShift);
 	Callback = callback;
 	LoopDelay = loopDelay;
@@ -20,8 +20,8 @@ void FGameTimerHandle::Tick(float DeltaTime, float TimeDilation, bool GamePaused
 	if (GamePaused && !GetWorkAtPause()) {
 		DeltaTime = 0;
 	}
-	else if (!GetTimeInfluence()) {
-		DeltaTime *= TimeDilation;
+	else if (GetTimeInfluence()) {
+		DeltaTime /= TimeDilation;
 	}
 	if ((Value -= DeltaTime) < 0) {
 		Callback.ExecuteIfBound();
