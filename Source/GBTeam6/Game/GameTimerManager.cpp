@@ -17,6 +17,10 @@ void FGameTimerHandle::Initialize(bool WorkAtPause, bool GameTimeInfluence, FTou
 void FGameTimerHandle::Tick(float DeltaTime, float TimeDilation, bool GamePaused) {
 	if (!IsValid())
 		return;
+	if (!Callback.GetUObject()->IsValidLowLevel()) {
+		Invalidate();
+		return;
+	}
 	if (GamePaused && !GetWorkAtPause()) {
 		DeltaTime = 0;
 	}
