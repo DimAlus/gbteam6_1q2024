@@ -628,6 +628,9 @@ struct FQuestPage {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText AddText{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag TagToView{ ESocialTag::None };
 };
 
 

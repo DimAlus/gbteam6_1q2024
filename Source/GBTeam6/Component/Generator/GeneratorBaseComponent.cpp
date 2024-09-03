@@ -25,6 +25,10 @@ TMap<EResource, int> UGeneratorBaseComponent::GetNeeds() {
 	return TMap<EResource, int>();
 }
 
+TMap<EResource, int> UGeneratorBaseComponent::GetPlayerResourcesNeeds() {
+	return TMap<EResource, int>();
+}
+
 void UGeneratorBaseComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
 }
 

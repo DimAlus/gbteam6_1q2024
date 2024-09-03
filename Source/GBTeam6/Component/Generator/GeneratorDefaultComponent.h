@@ -57,6 +57,7 @@ private:
 
 
 	TMap<EResource, int> CurrentNeeds;
+	TMap<EResource, int> CurrentPlayerNeeds;
 private:
 
 	UInventoryBaseComponent* GetInventory();
@@ -101,6 +102,7 @@ public:
 	virtual float GetWorkPower() override;
 
 	virtual TMap<EResource, int> GetNeeds() override;
+	virtual TMap<EResource, int> GetPlayerResourcesNeeds() override;
 	
 	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) override;
 	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;

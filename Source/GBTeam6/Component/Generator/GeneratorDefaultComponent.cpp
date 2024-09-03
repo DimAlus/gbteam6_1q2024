@@ -457,6 +457,7 @@ void UGeneratorDefaultComponent::ApplyNotInventoriableResources(const TArray<FPr
 
 TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 	TMap<EResource, int> needs;
+	CurrentPlayerNeeds.Reset();
 
 	TArray<FString> keys;
 	this->GeneratorsContext.GetKeys(keys);
@@ -471,6 +472,9 @@ TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 			}
 			if (count > 0) {
 				for (const FPrice& price : info.Barter.Price) {
+					if (GetGameState()->GetPlayerResources().Contains(price.Resource)) {
+						CurrentPlayerNeeds.Add(price.Resource, price.Count * count);
+					}
 					if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
 						continue;
 					}
@@ -512,6 +516,10 @@ float UGeneratorDefaultComponent::GetWorkPower() {
 
 TMap<EResource, int> UGeneratorDefaultComponent::GetNeeds() {
 	return CurrentNeeds;
+}
+
+TMap<EResource, int> UGeneratorDefaultComponent::GetPlayerResourcesNeeds() {
+	return CurrentPlayerNeeds;
 }
 
 

@@ -290,7 +290,8 @@ bool UGameEventsService::UpdateRow(const FString& QuestName,
 			for (auto act : QuestData.Actions) {
 				DoAction(act, EventContext, CurrentActionContext);
 			}
-			ShowPages(QuestData.Pages, EventContext);
+			if (QuestData.Pages.Num() > 0)
+				ShowPages(QuestData.Pages, EventContext);
 			return true;
 		}
 	}

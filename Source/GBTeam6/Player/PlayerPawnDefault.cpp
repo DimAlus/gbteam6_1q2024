@@ -387,6 +387,13 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		if (IsValid(CameraTargetActor)) {
 			CameraTargetPosition = CameraTargetActor->GetActorLocation();
 			CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
+			if (
+				bFastMove 
+				&& ((this->GetActorLocation() - CameraTargetActor->GetActorLocation()).Length() < 300)
+			) {
+				bFastMove = false;
+				SetCameraHeight(saveCameraHeight);
+			}
 		}
 		else {
 			UnsetCameraTargetActor();
@@ -615,13 +622,19 @@ void APlayerPawnDefault::AddCameraLocation(FVector deltaLocation) {
 	SetCameraLocation(CameraTargetPosition + deltaLocation);
 }
 
-void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor) {
+void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove) {
+	bFastMove = fastMove;
 	CameraHasTargetActor = true;
 	CameraTargetActor = cameraTargetActor;
 	CameraBoom->bEnableCameraLag = true;
+	if (bFastMove) {
+		saveCameraHeight = CameraTagretHeight;
+		SetCameraHeight(CameraZoomMax);
+	}
 }
 
 void APlayerPawnDefault::UnsetCameraTargetActor() {
+	bFastMove = false;
 	CameraHasTargetActor = false;
 	CameraBoom->bEnableCameraLag = false;
 }
