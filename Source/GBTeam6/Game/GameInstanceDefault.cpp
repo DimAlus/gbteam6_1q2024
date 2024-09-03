@@ -103,6 +103,7 @@ void UGameInstanceDefault::GameLoading() {
 		}
 		else {
 			this->GetSaveService()->LoadGame(GameSaveSlot, false);
+			GameEventsService->bIsPaused = false;
 		}
 	}
 	GameLoaded = true;

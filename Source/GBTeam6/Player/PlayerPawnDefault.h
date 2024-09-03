@@ -67,6 +67,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadOnly)
 	AActor* TargetActor = nullptr;
+
+	bool bFastMove = false;
+	float saveCameraHeight;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector PointOfInterest;
@@ -255,7 +258,7 @@ public:
 	void AddCameraLocation(FVector deltaLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCameraTargetActor(AActor* cameraTargetActor);
+	void SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove = false);
 
 	UFUNCTION(BlueprintCallable)
 	void UnsetCameraTargetActor();

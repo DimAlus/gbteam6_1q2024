@@ -9,6 +9,7 @@
 #include "GameEventsService.generated.h"
 
 class USaveService;
+class UGameInstanceDefault;
 /**
  * 
  */
@@ -16,6 +17,7 @@ UCLASS()
 class GBTEAM6_API UGameEventsService : public UAGameService, public ICanSaveInterface
 {
 	GENERATED_BODY()
+	friend class UGameInstanceDefault;
 protected:
 	virtual void InitializeService() override;
 	virtual void ClearService() override;

@@ -71,6 +71,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual TMap<EResource, int> GetNeeds();
 
+	UFUNCTION(BlueprintCallable)
+	virtual TMap<EResource, int> GetPlayerResourcesNeeds();
+
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive);
