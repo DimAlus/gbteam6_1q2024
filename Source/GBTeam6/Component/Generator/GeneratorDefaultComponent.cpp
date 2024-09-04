@@ -532,8 +532,8 @@ void UGeneratorDefaultComponent::ChangeGenerationPassiveWork(const FString& gene
 	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
 	ResetCurrentNeeds();
 	this->TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -642,8 +642,8 @@ void UGeneratorDefaultComponent::AddTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -657,8 +657,8 @@ void UGeneratorDefaultComponent::RemoveTask(FString generatorName) {
 		UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
 		ResetCurrentNeeds();
 		TouchGenerator(generatorName);
-		OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 		IsActualCurrentSocialTagNeeds = false;
+		OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 
 	}
 }
