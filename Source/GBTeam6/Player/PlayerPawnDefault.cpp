@@ -374,6 +374,8 @@ void APlayerPawnDefault::InitCamera() {
 
 	ApplyCameraZoom();
 	ApplyCameraRotation();
+	CameraDefaultZ = GetActorLocation().Z;
+	UpdateCameraPositionZ();
 }
 
 void APlayerPawnDefault::UpdateCamera(float DeltaTime) {
@@ -418,6 +420,26 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		actorLocation.X += CameraCurrentMovementSpeed.X * DeltaTime;
 		actorLocation.Y += CameraCurrentMovementSpeed.Y * DeltaTime;
 		this->SetActorLocation(actorLocation);
+		UpdateCameraPositionZ();
+	}
+}
+
+void APlayerPawnDefault::UpdateCameraPositionZ() {
+	FHitResult Hit;	
+	FVector actorLocation = GetActorLocation();
+	FVector startTrace = actorLocation;
+	startTrace.Z = 5000;
+	GetWorld()->LineTraceSingleByChannel(
+		HitResult, 
+		startTrace, 
+		startTrace + FVector(0, 0, -8000), 
+		ECC_GameTraceChannel2
+	);
+
+	float newZ = std::max(CameraDefaultZ, HitResult.Location.Z + CameraMovementMinLandscapeHeight);
+	if (newZ != actorLocation.Z) {
+		actorLocation.Z = newZ;
+		SetActorLocation(actorLocation);
 	}
 }
 
