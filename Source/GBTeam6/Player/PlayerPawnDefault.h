@@ -148,6 +148,8 @@ protected:
 	float CameraCurrentRotation;
 	float CameraCurrentHeight;
 
+	float CameraDefaultZ;
+
 	TArray<TTuple<float, float>> CameraZoomRotations;
 	TArray<TTuple<float, float>> CameraCurrentRotationBorders;
 
@@ -159,6 +161,9 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMaxFarawaySpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementMinLandscapeHeight = 100;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
 	float CameraRotationAcceleration;
@@ -206,6 +211,7 @@ protected:
 	void InitCamera();
 	void UpdateCamera(float DeltaTime);
 	void UpdateCameraPosition(float DeltaTime);
+	void UpdateCameraPositionZ();
 	void ApplyCameraZoom();
 	void UpdateCameraZoom(float DeltaTime);
 	void ApplyCameraRotation();
