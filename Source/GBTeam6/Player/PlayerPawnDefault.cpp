@@ -430,13 +430,13 @@ void APlayerPawnDefault::UpdateCameraPositionZ() {
 	FVector startTrace = actorLocation;
 	startTrace.Z = 5000;
 	GetWorld()->LineTraceSingleByChannel(
-		HitResult, 
+		Hit,
 		startTrace, 
 		startTrace + FVector(0, 0, -8000), 
-		ECC_GameTraceChannel2
+		ECC_GameTraceChannel6
 	);
 
-	float newZ = std::max(CameraDefaultZ, HitResult.Location.Z + CameraMovementMinLandscapeHeight);
+	float newZ = std::max(CameraDefaultZ, (float)(Hit.Location.Z + CameraMovementMinLandscapeHeight));
 	if (newZ != actorLocation.Z) {
 		actorLocation.Z = newZ;
 		SetActorLocation(actorLocation);
