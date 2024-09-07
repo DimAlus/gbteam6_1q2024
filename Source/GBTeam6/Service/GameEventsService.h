@@ -31,6 +31,7 @@ private:
 	struct FGameEvent {
 		TMap<FString, FQuestData> QuestDatas{};
 		FGameEventConext Context;
+		bool Status;
 	};
 
 	TMap<FString, FGameEvent> Events;

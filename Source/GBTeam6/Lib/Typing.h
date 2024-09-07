@@ -205,6 +205,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMaterialInstance* ConstructionMaterial{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UMaterialInstance* ConstructionFullMaterial{};
 	
 };
 
@@ -639,6 +642,9 @@ struct FQuestData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	bool Status{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	bool StartOnce{ true };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
@@ -659,6 +665,8 @@ struct FTRGameEvent : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FString, FQuestData> QuestData{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Status{ true };
 };
 
 USTRUCT()
