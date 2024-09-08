@@ -39,6 +39,9 @@ public:
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) {return false;}
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SetSocialTeam(ESocialTeam NewSocialTeam);
+	
+	UFUNCTION(BlueprintCallable)
 	virtual ESocialTeam GetSocialTeam() {return ESocialTeam::None;}
 
 	UFUNCTION(BlueprintCallable)
