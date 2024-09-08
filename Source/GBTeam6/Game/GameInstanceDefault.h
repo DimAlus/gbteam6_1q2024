@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
-#include "../Game/GameTimerManager.h"
+
+#include "../Lib/Lib.h"
+
 #include "GameInstanceDefault.generated.h"
 
 /** Services classes */
@@ -13,6 +15,7 @@ class UMappingService;
 class USocialService;
 class UConfigService;
 class USoundService;
+class UTimerService;
 class USaveService;
 
 /**
@@ -113,7 +116,7 @@ private:
 	UPROPERTY()
 	UConfigService* ConfigService{ nullptr };
 	UPROPERTY()
-	AGameTimerManager* GameTimerManager{ nullptr };
+	UTimerService* TimerService{ nullptr };
 
 	bool bServicesInitialized = false;
 
@@ -150,7 +153,7 @@ public:
 	FORCEINLINE class UConfigService* GetConfigService() const { return ConfigService; }
 	
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE class AGameTimerManager* GetGameTimerManager() const { return GameTimerManager; }
+	FORCEINLINE class UTimerService* GetGameTimerManager() const { return TimerService; }
 
 
 

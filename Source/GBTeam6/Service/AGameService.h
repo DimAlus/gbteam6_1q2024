@@ -9,12 +9,15 @@ class AGameStateDefault;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UAGameService : public UObject
 {
 	GENERATED_BODY()
 
 	friend class UGameInstanceDefault;
+
+protected:
+	bool Initialized{ false };
 
 protected:
 	UGameInstanceDefault* GameInstance;

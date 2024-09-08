@@ -1,20 +1,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "UObject/NoExportTypes.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 
-#include "GameTimerManager.generated.h"
+#include "TimerService.generated.h"
 
-
-class AGameTimerManager;
 
 USTRUCT(BlueprintType)
 struct FGameTimerHandle {
 	GENERATED_BODY()
 
-	friend class AGameTimerManager;
+	friend class UTimerService;
 
 	FGameTimerHandle() : Handle(0), Value(0) {}
 
@@ -33,7 +31,7 @@ struct FGameTimerHandle {
 	FString ToString() const {
 		return FString::Printf(TEXT("%llu"), Handle);
 	}
-	
+
 private:
 	static constexpr uint64 BitWorkAtPause = 0x1;
 	static constexpr uint64 BitGameTimeNotInfluence = 0x2;
@@ -59,21 +57,31 @@ private:
 };
 
 
-UCLASS()
-class GBTEAM6_API AGameTimerManager : public AActor
-{
-	GENERATED_BODY()
-	
-public:	
-	AGameTimerManager();
 
+UCLASS(BlueprintType)
+class GBTEAM6_API UTimerService : public UAGameService, public FTickableGameObject {
+	GENERATED_BODY()
+public:
+	UTimerService();
 protected:
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
+	
+public:
+	void Tick(float DeltaTime) override;
+	bool IsTickable() const override { return true; };
+	bool IsTickableInEditor() const override { return false; };
+	bool IsTickableWhenPaused() const override { return true; };
+	TStatId GetStatId() const override { return TStatId(); };
+
+	UWorld* GetWorld() const override { return GetOuter()->GetWorld(); };
 
 protected:
 	UPROPERTY()
 	TArray<FGameTimerHandle> Handles;
+
+public:
+	float CustomTimeDilation = 1.f;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -83,6 +91,10 @@ public:
 								float FirstDelay = -1.F,
 								bool TimeInfluence = true,
 								bool WorkAtPause = false);
+
 	UFUNCTION(BlueprintCallable)
 	void InvalidateTimer(UPARAM(ref) FGameTimerHandle& Handle);
+	
 };
+
+

@@ -15,6 +15,7 @@
 #include "../Service/SoundService.h"
 #include "../Service/GameEventsService.h"
 #include "../Service/ConfigService.h"
+#include "../Service/TimerService.h"
 
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
@@ -130,6 +131,7 @@ void UGameInstanceDefault::MainMenu() {
 
 void UGameInstanceDefault::CreateServices() {
 	UE_LOG(LgGame, Log, TEXT("<%s>: <ServiceManager>: Creating Services"), *GetNameSafe(this));
+	this->TimerService = NewObject<UTimerService>();
 	this->SaveService = NewObject<USaveService>();
 	this->ConfigService = NewObject<UConfigService>();
 	this->MessageService = NewObject<UMessageService>();
@@ -148,6 +150,7 @@ void UGameInstanceDefault::CreateServices() {
 	this->GameEventsService = NewObject<UGameEventsService>(this, "GameEventsService", EObjectFlags::RF_MarkAsRootSet);*/
 
 	Cast<UAGameService>(this->SaveService)->GameInstance
+		= Cast<UAGameService>(this->TimerService)->GameInstance
 		= Cast<UAGameService>(this->ConfigService)->GameInstance
 		= Cast<UAGameService>(this->MessageService)->GameInstance
 		= Cast<UAGameService>(this->SoundService)->GameInstance
@@ -165,6 +168,7 @@ void UGameInstanceDefault::InitializeServices() {
 
 	UE_LOG(LgGame, Log, TEXT("<%s>: <ServiceManager>: Initialization Services"), *GetNameSafe(this));
 
+	Cast<UAGameService>(this->TimerService)->InitializeService();
 	Cast<UAGameService>(this->SaveService)->InitializeService();
 	Cast<UAGameService>(this->ConfigService)->InitializeService();
 	Cast<UAGameService>(this->MessageService)->InitializeService();
@@ -173,11 +177,6 @@ void UGameInstanceDefault::InitializeServices() {
 	Cast<UAGameService>(this->MappingService)->InitializeService();
 	Cast<UAGameService>(this->TaskManagerService)->InitializeService();
 	Cast<UAGameService>(this->GameEventsService)->InitializeService();
-
-	if (IsValid(GameTimerManager)) {
-		GameTimerManager->Destroy();
-	}
-	GameTimerManager = GetWorld()->SpawnActor<AGameTimerManager>();
 }
 
 void UGameInstanceDefault::ClearServices() {
@@ -193,9 +192,5 @@ void UGameInstanceDefault::ClearServices() {
 	if (auto s = Cast<UAGameService>(this->MappingService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->TaskManagerService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->GameEventsService)) s->ClearService();
-
-	if (IsValid(GameTimerManager)) {
-		GameTimerManager->Destroy();
-	}
-	GameTimerManager = nullptr;
+	if (auto s = Cast<UAGameService>(this->TimerService)) s->ClearService();
 }
