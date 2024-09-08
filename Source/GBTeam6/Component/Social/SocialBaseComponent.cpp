@@ -16,3 +16,8 @@ void USocialBaseComponent::SaveComponent(FSocialSaveData& saveData)
 void USocialBaseComponent::LoadComponent(const FSocialSaveData& saveData)
 {
 }
+
+void USocialBaseComponent::SetSocialTeam(ESocialTeam NewSocialTeam)
+{
+	SocialTeam = NewSocialTeam;
+}
