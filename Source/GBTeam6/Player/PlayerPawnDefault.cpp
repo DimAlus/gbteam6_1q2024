@@ -8,6 +8,7 @@
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
 #include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/TimerService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -424,6 +425,11 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 	);
 	if (changeTarget) {
 		CameraTargetPosition = actorLocation + deltaMovement;
+		CameraTargetPosition = {
+			std::clamp(CameraTargetPosition.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(CameraTargetPosition.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			CameraTargetPosition.Z,
+		};
 	}
 	CameraSlowing.MoveX = slow;
 
@@ -506,8 +512,15 @@ void APlayerPawnDefault::UpdateCameraActorLocationOnRotation(float rotationBefor
 		FVector cameraPositionAfter = FVector(std::cos(rotationAfter), std::sin(rotationAfter), 0) * CameraDistance;
 
 		FVector deltaPosition = cameraPositionAfter - cameraPositionBefore;
-		this->SetActorLocation(this->GetActorLocation() + deltaPosition);
-		CameraTargetPosition += deltaPosition;
+		FVector newPosition = this->GetActorLocation() + deltaPosition;
+		FVector endPosition = {
+			std::clamp(newPosition.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(newPosition.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			newPosition.Z,
+		};
+		CameraTargetPosition += endPosition - this->GetActorLocation();
+		this->SetActorLocation(endPosition);
+		UpdateCameraPositionZ();
 	}
 }
 
@@ -677,7 +690,11 @@ void APlayerPawnDefault::AddCameraRotationForce(float deltaRotation) {
 
 void APlayerPawnDefault::SetCameraLocation(FVector newLocation) {
 	UnsetCameraTargetActor();
-	CameraTargetPosition = newLocation;
+	CameraTargetPosition = {
+			std::clamp(newLocation.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(newLocation.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			newLocation.Z,
+	};
 	CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
 }
 

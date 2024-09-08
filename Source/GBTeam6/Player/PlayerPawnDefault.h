@@ -154,6 +154,12 @@ protected:
 	TArray<TTuple<float, float>> CameraCurrentRotationBorders;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	FVector CameraMovementMinCoordinate{ 1000,1000,0 };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	FVector CameraMovementMaxCoordinate{ 18000,18000,0 };
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementAcceleration;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
