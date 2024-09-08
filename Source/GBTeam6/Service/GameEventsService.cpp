@@ -282,7 +282,9 @@ bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventCo
 bool UGameEventsService::UpdateRow(const FString& QuestName,
 								   const FQuestData& QuestData,
 								   FGameEventConext& EventContext) {
-
+	if (!QuestData.Status) {
+		return false;
+	}
 	for (const FNeedArray& needs : QuestData.Requirements) {
 		if (CheckNeedArray(needs.Needs, EventContext)) {
 			UE_LOG_SERVICE(Log, "Event '%s'.'%s' Complete needs", *EventContext.EventName, *QuestName);
@@ -317,6 +319,7 @@ void UGameEventsService::LoadEvents() {
 		FTRGameEvent* evtdata = (FTRGameEvent*)iter.Value;
 
 		FGameEvent evt;
+		evt.Status = evtdata->Status;
 		evt.QuestDatas = evtdata->QuestData;
 		evt.Context.EventName = RowName.ToString();
 
@@ -342,6 +345,9 @@ void UGameEventsService::LoadEvents() {
 void UGameEventsService::Update() {
 	if (!bIsPaused) {
 		for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
+			if (!iter.Value().Status) {
+				continue;
+			}
 			FGameEventConext& Context = iter.Value().Context;
 			TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
 
