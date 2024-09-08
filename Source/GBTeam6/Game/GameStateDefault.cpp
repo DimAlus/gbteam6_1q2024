@@ -58,6 +58,10 @@ int AGameStateDefault::GetStackSize(EResource resource) {
 	return 1;
 }
 
+bool AGameStateDefault::IsPlayerResource(EResource resource) {
+	return GetPlayerResourcesTypes().Contains(resource);
+}
+
 int AGameStateDefault::GetResourceCount(EResource resource) {
 	if (PlayerResources.Contains(resource)) {
 		return PlayerResources[resource];

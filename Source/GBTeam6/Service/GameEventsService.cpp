@@ -363,3 +363,14 @@ void UGameEventsService::Update() {
 		}
 	}
 }
+
+void UGameEventsService::UpdateTag(FString EventName, FString TagName, bool IsSetTag) {
+	if (Events.Contains(EventName)) {
+		if (IsSetTag) {
+			Events[EventName].Context.Tags.Add(TagName);
+		}
+		else {
+			Events[EventName].Context.Tags.Remove(TagName);
+		}
+	}
+}

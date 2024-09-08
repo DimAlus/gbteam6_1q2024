@@ -62,4 +62,9 @@ public:
 
 	void LoadEvents();
 	void Update();
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTag(FString EventName, FString TagName, bool IsSetTag);
 };
