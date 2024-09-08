@@ -279,8 +279,10 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 	}
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
 	if (TimeDilation >= 0.0001f) {
-		Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()->CustomTimeDilation =
-			CustomTimeDilation = 1/TimeDilation;
+		CustomTimeDilation = 1 / TimeDilation;
+		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
+			timerManager->CustomTimeDilation = CustomTimeDilation;
+		}			
 	}
 	OnGameSpeedChanged.Broadcast();
 }
