@@ -208,13 +208,15 @@ void APlayerPawnDefault::QuickLoad(const FInputActionValue& Value) {
 
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
+	CameraTargetPosition = CameraTargetPosition -
+		(GetActorLocation() - CameraTargetPosition) * CameraMovementSpeedInputInfluence * LastDeltaTime;
 	float MovementMaxSpeed = GetCameraMovementMaxSpeed();
 	FVector2D inputValue = Value.Get<FVector2D>();
 	if (inputValue.Length() > 1) {
 		inputValue.Normalize();
 	}
 	const FVector2D MovementVector = inputValue *
-		MovementMaxSpeed *
+		MovementMaxSpeed * CameraMovementSpeedInputMultiplier *
 		LastDeltaTime;
 
 	const FRotator YawRotator = { 0, CameraTargetRotation, 0 };
@@ -405,6 +407,8 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 
 	float CameraMovementMaxSpeed = GetCameraMovementMaxSpeed();
 	int slow = CameraSlowing.MoveX;
+	FVector deltaMovement;
+	bool changeTarget;
 	CameraCurrentMovementSpeed = CalculateVectorSpeed(
 		DeltaTime,
 		actorLocation,
@@ -412,8 +416,13 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		CameraCurrentMovementSpeed,
 		CameraMovementAcceleration,
 		CameraMovementMaxSpeed,
-		slow
+		slow,
+		deltaMovement,
+		changeTarget
 	);
+	if (changeTarget) {
+		CameraTargetPosition = actorLocation + deltaMovement;
+	}
 	CameraSlowing.MoveX = slow;
 
 	if (CameraCurrentMovementSpeed.X || CameraCurrentMovementSpeed.Y) {
@@ -453,6 +462,8 @@ void APlayerPawnDefault::ApplyCameraZoom() {
 
 void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 	int slow = CameraSlowing.Zoom;
+	float deltaZoom;
+	bool changeTarget;
 	CameraCurrentZoomSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentHeight,
@@ -460,13 +471,19 @@ void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 		CameraCurrentZoomSpeed,
 		CameraZoomAcceleration,
 		CameraZoomMaxSpeed,
-		slow
+		slow,
+		deltaZoom,
+		changeTarget
 	);
+	if (changeTarget) {
+		CameraTagretHeight = CameraCurrentHeight + deltaZoom;
+	}
 	CameraSlowing.Zoom = slow;
 
 	if (CameraCurrentZoomSpeed) {
-		CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
-		
+		//CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
+		CameraCurrentHeight = std::clamp(CameraCurrentHeight + CameraCurrentZoomSpeed * DeltaTime,
+											CameraZoomMin, CameraZoomMax);
 		ApplyCameraZoom();
 	}
 }
@@ -498,6 +515,8 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 	}
 
 	int slow = CameraSlowing.Rotation;
+	float deltaRotation;
+	bool changeTarget;
 	CameraCurrentRotationSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentRotation,
@@ -505,9 +524,14 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 		CameraCurrentRotationSpeed,
 		CameraRotationAcceleration,
 		CameraRotationMaxSpeed,
-		slow
+		slow,
+		deltaRotation,
+		changeTarget
 	);
 	CameraSlowing.Rotation = slow;
+	if (changeTarget) {
+		CameraTargetRotation = CameraCurrentRotation + deltaRotation;
+	}
 
 	if (CameraCurrentRotationSpeed){
 		UpdateCameraActorLocationOnRotation(
@@ -525,17 +549,21 @@ float APlayerPawnDefault::CalculateSpeed(float DeltaTime,
 										 float currentSpeed,
 										 float acceleration,
 										 float maxSpeed,
-										 int& currentSlowing) {
+										 int& currentSlowing,
+										 float& newTargetOffset,
+										 bool& needChangeTarget) {
+	needChangeTarget = false;
 	acceleration *= maxSpeed;
 	int signs = currentSpeed > 0 ? 1 : -1;
 	int signVal = (targetValue - currentValue) > 0 ? 1 : -1;
 	float deltaValue = targetValue - currentValue;
 	if (currentSlowing) {
+		needChangeTarget = true;
+		newTargetOffset = 0;// -currentSpeed * currentSpeed / 2.f / acceleration * signs;
 		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
 	}
 	// if another direction
 	if (deltaValue * currentSpeed < 0 && std::abs(currentSpeed) > 0.001f) {
-
 		return currentSpeed - acceleration * signs * DeltaTime;
 	}
 
@@ -563,7 +591,10 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 												FVector currentSpeed, 
 												float acceleration, 
 												float maxSpeed, 
-												int& currentSlowing) {
+												int& currentSlowing,
+												FVector& newTargetOffset,
+												bool& needChangeTarget) {
+	needChangeTarget = false;
 	FVector direction = targetValue - currentValue;
 	float directionSpeed = 0;
 	if (direction.Length() > 0) {
@@ -571,6 +602,8 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 		directionSpeed = currentSpeed.Length() * direction.CosineAngle2D(currentSpeed);
 	}
 	
+	float targetOffset;
+	bool needChangeT;
 	directionSpeed = CalculateSpeed(
 		DeltaTime,
 		0,
@@ -578,8 +611,14 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 		directionSpeed,
 		acceleration,
 		maxSpeed,
-		currentSlowing
+		currentSlowing,
+		targetOffset,
+		needChangeT
 	);
+	if (needChangeT) {
+		needChangeTarget = true;
+		newTargetOffset = direction * newTargetOffset;
+	}
 
 	return direction * directionSpeed;
 }
