@@ -25,7 +25,6 @@ void UTimerService::Tick(float DeltaTime) {
 				Handles.RemoveAtSwap(i);
 			}
 		}
-		GEngine->AddOnScreenDebugMessage(0, 0, FColor::Green, FString("Test"));
 	}
 }
 
