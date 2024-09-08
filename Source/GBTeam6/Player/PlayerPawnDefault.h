@@ -163,6 +163,12 @@ protected:
 	float CameraMovementMaxFarawaySpeed;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementSpeedInputMultiplier{ 1.f };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementSpeedInputInfluence{ 1.f };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMinLandscapeHeight = 100;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
@@ -225,7 +231,9 @@ protected:
 		float currentSpeed,
 		float acceleration,
 		float maxSpeed,
-		int& currentSlowing
+		int& currentSlowing,
+		float& newTargetOffset,
+		bool& needChangeTarget
 	);
 
 	FVector CalculateVectorSpeed(
@@ -235,7 +243,9 @@ protected:
 		FVector currentSpeed,
 		float acceleration,
 		float maxSpeed,
-		int& currentSlowing
+		int& currentSlowing,
+		FVector& newTargetOffset,
+		bool& needChangeTarget
 	);
 
 public:
