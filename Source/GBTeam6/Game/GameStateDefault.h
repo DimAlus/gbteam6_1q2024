@@ -99,6 +99,9 @@ public:
 	int GetStackSize(EResource resource);
 
 	UFUNCTION(BlueprintCallable)
+	bool IsPlayerResource(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
 
 	UFUNCTION(BlueprintCallable)
