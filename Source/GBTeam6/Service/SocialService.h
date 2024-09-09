@@ -9,7 +9,7 @@
 
 class UGameObjectCore;
 
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API USocialService : public UAGameService
 {
 	GENERATED_BODY()

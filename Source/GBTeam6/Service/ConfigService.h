@@ -12,7 +12,7 @@ class USaveConfig;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UConfigService : public UAGameService
 {
 	GENERATED_BODY()
