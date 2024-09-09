@@ -32,7 +32,8 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	virtual void RegisterObjectInService() {};
+	virtual void RegisterObjectInService();
+	virtual void UnRegisterObjectInService();
 
 public:
 	UFUNCTION(BlueprintCallable)

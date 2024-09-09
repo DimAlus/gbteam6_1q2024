@@ -21,9 +21,6 @@ protected:
 	virtual void LoadComponent(const FSocialSaveData& saveData) override;
 
 protected:
-	virtual void RegisterObjectInService() override;
-	void UnRegisterObjectInService();
-
 	UFUNCTION()
 	void OnPlacedRegister(bool IsPlaced);
 public:
