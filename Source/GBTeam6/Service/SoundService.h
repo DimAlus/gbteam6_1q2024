@@ -9,7 +9,7 @@
 #include "SoundService.generated.h"
 
 
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API USoundService : public UAGameService, public IMessageObserver
 {
 	GENERATED_BODY()

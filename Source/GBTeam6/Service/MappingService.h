@@ -15,7 +15,7 @@ class AGameStateDefault;
 /** Service manager of map's tiles, its types and busyness
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UMappingService : public UAGameService
 {
 	GENERATED_BODY()

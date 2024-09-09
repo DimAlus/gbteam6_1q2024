@@ -13,7 +13,7 @@ class UGameInstanceDefault;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UGameEventsService : public UAGameService, public ICanSaveInterface
 {
 	GENERATED_BODY()

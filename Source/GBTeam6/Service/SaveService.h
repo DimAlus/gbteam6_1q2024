@@ -20,7 +20,7 @@ class USaveProgress;
 /** Service to Save or Load data
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API USaveService : public UAGameService {
 	GENERATED_BODY()
 protected:
