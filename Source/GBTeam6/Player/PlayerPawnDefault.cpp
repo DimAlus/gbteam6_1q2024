@@ -155,16 +155,41 @@ void APlayerPawnDefault::CallSelect() {
 }
 
 void APlayerPawnDefault::OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
-	if (IsObject) {
-		SelectedActor = Core->GetOwner();
-
-		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
-			GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+	if (bAltSelectMode)
+	{
+		if (IsObject) {
+			TargetActor = Core->GetOwner();
+		}
+		else {
+			TargetActor = nullptr;
 		}
 	}
-	else {
-		SelectedActor = nullptr;
+	else
+	{
+		if (IsObject) {
+			SelectedActor = Core->GetOwner();
+
+			if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
+				GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+			}
+		}
+		else {
+			SelectedActor = nullptr;
+		}
 	}
+}
+
+void APlayerPawnDefault::SetAltSelectMode(bool AltSelectModeState)
+{
+	if (AltSelectModeState)	{
+		PlayerController->CurrentMouseCursor = EMouseCursor::Crosshairs;
+	}
+	else {
+		PlayerController->CurrentMouseCursor = EMouseCursor::Default;
+	}
+	TargetActor = nullptr;
+	bAltSelectMode = AltSelectModeState;
+	OnAltSelectModeChanges.Broadcast(bAltSelectMode);
 }
 
 void APlayerPawnDefault::CallCommand() {
@@ -182,6 +207,7 @@ void APlayerPawnDefault::CallCommand() {
 
 void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
 	PointOfInterest = Location;
+	SetAltSelectMode(false);
 
 	//if (IsObject) {
 	//	TSet<EMessageTag> MessageTags{};

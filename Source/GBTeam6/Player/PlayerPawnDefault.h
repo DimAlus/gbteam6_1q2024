@@ -15,6 +15,8 @@ class UInputAction;
 class IGameObjectInterface;
 struct FInputActionValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAltSelectModeSignature, bool, AltSelectModeState);
+
 UCLASS()
 class GBTEAM6_API APlayerPawnDefault : public APawn
 {
@@ -61,11 +63,14 @@ protected:
 
 	bool isScrollPressed = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bAltSelectMode = false;
+
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadWrite)
 	AActor* SelectedActor = nullptr;
 	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	AActor* TargetActor = nullptr;
 
 	bool bFastMove = false;
@@ -88,7 +93,10 @@ protected:
 	void OnSelect(FVector Location, UGameObjectCore* Core, bool IsObject);
 	void OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
 
-
+	UPROPERTY(BlueprintAssignable)
+	FAltSelectModeSignature OnAltSelectModeChanges;
+	UFUNCTION(BlueprintCallable)
+	void SetAltSelectMode(bool AltSelectModeState);
 
 	/** Command object function*/
 	void CallCommand();

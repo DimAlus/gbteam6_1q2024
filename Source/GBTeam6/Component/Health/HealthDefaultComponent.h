@@ -53,7 +53,7 @@ protected:
 	void GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info);
 	UFUNCTION()
 	void GeneratorSuccess(const FString& generatorName, const FGeneratorElementInfo& info);
-
+	UFUNCTION(BlueprintCallable)
 	void ChangeHealth(float deltaHealth);
 public:
 	
