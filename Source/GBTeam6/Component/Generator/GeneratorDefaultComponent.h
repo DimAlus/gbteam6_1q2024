@@ -76,9 +76,6 @@ private:
 
 	bool GeneratorSelected(const FString& generatorName);
 
-	bool HasAllSocialTags(const FString& generatorName);
-	bool HasConstraintByResultActors(const FString& generatorName);
-	bool HasConstraintByInventory(const FString& generatorName);
 	bool CanGenerate(const FString& generatorName);
 
 	bool HireWorkers(const FString& generatorName);
@@ -110,6 +107,10 @@ public:
 	virtual TArray<FString> GetGenerators(FString threadName) override;
 	virtual float GetProgress(FString threadName) override;
 	virtual float GetProgressPercents(FString threadName) override;
+
+	virtual bool HasAllSocialTags(const FString& generatorName) override;
+	virtual bool HasConstraintByResultActors(const FString& generatorName) override;
+	virtual bool HasConstraintByInventory(const FString& generatorName) override;
 
 	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists) override;
 	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists) override;

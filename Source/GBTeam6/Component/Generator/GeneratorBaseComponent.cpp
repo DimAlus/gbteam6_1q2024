@@ -47,6 +47,18 @@ float UGeneratorBaseComponent::GetProgressPercents(FString threadName) {
 	return 0.0f;
 }
 
+bool UGeneratorBaseComponent::HasAllSocialTags(const FString& generatorName) {
+	return true;
+}
+
+bool UGeneratorBaseComponent::HasConstraintByResultActors(const FString& generatorName) {
+	return false;
+}
+
+bool UGeneratorBaseComponent::HasConstraintByInventory(const FString& generatorName) {
+	return false;
+}
+
 const FGeneratorThread& UGeneratorBaseComponent::GetThread(FString threadName, bool& exists) {
 	static FGeneratorThread EmptyThread;
 	exists = false;

@@ -93,6 +93,16 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
+	virtual bool HasAllSocialTags(const FString& generatorName);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool HasConstraintByResultActors(const FString& generatorName);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool HasConstraintByInventory(const FString& generatorName);
+
+
+	UFUNCTION(BlueprintCallable)
 	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists);
 
 	UFUNCTION(BlueprintCallable)
