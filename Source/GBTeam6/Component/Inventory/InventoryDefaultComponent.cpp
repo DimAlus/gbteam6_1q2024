@@ -184,7 +184,7 @@ bool UInventoryDefaultComponent::Pop(const TArray<FPrice>& resources) {
 			AGameStateDefault* gameState = GetGameState();
 			UGameObjectCore* core = GetCore();
 			for (const FPrice& prc : resources) {
-				if (ShowChagingIgnore.Contains(prc.Resource)) {
+				if (!ShowChagingIgnore.Contains(prc.Resource)) {
 					FPrice cprc = prc;
 					cprc.Count *= -1;
 					gameState->OnShowInventoryChanging.Broadcast(core, cprc);
