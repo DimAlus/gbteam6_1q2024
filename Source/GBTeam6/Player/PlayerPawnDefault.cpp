@@ -118,19 +118,13 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
-void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const
-{
+void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const {
 	FVector MouseWorldLocation, MouseWorldDirection;
 	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
+	//MouseWorldLocation = this->GetCameraLocation();
 
-	const FVector LookPointPosition =
-	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
-	
-	FVector TraceStart = LookPointPosition-500*MouseWorldDirection;
-	FVector TraceEnd = LookPointPosition+5000*MouseWorldDirection;
 	FCollisionQueryParams QueryParams;
-	
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel);
+	GetWorld()->LineTraceSingleByChannel(HitResult, MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * 15000, CollisionChannel);
 }
 
 void APlayerPawnDefault::Select(const FInputActionValue& Value) {
@@ -460,8 +454,8 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 	CameraSlowing.MoveX = slow;
 
 	if (CameraCurrentMovementSpeed.X || CameraCurrentMovementSpeed.Y) {
-		actorLocation.X += CameraCurrentMovementSpeed.X * DeltaTime;
-		actorLocation.Y += CameraCurrentMovementSpeed.Y * DeltaTime;
+		actorLocation.X = std::clamp(actorLocation.X + CameraCurrentMovementSpeed.X * DeltaTime, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X);
+		actorLocation.Y = std::clamp(actorLocation.Y + CameraCurrentMovementSpeed.Y * DeltaTime, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y);
 		this->SetActorLocation(actorLocation);
 		UpdateCameraPositionZ();
 	}
