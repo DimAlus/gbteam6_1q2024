@@ -84,7 +84,9 @@ enum class EResource : uint8 {
 	Potion		UMETA(DisplayName = "Potion"),
 	Infusion	UMETA(DisplayName = "Infusion"),
 	Decoction	UMETA(DisplayName = "Decoction"),
-	Herb		UMETA(DisplayName = "Herb")
+	Herb		UMETA(DisplayName = "Herb"),
+
+	Heal		UMETA(DisplayName = "Heal")
 };
 
 UENUM(BlueprintType)
