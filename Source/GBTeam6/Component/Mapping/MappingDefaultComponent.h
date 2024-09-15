@@ -41,6 +41,7 @@ protected:
 
 private:
 	void UpdateCanPlace();
+	void UpdateAllPreviewRotation();
 public:
 
 
