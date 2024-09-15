@@ -76,6 +76,7 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 
 	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]()
 	{
+			UpdateAllPreviewRotation();
 		if(GetCore())
 		{
 			UE_LOG_COMPONENT(Log, "CoreIsValid");
@@ -172,6 +173,12 @@ void UMappingDefaultComponent::UpdateCanPlace() {
 		this->SetMeshIsEnabled(iter->Value.Preview, IsCanPlace);
 
 		bCanPlace = bCanPlace && IsCanPlace;
+	}
+}
+
+void UMappingDefaultComponent::UpdateAllPreviewRotation() {
+	for (auto prev : previews) {
+		prev.Value.Preview->SetWorldRotation(FRotator());
 	}
 }
 
