@@ -221,6 +221,15 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
 	float CameraZoomScrollDelta = 0.2f;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveFarawayZoom = 5000.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveDistanceFarawayZoom = 2000.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveDistanceNearestZoom = 500.f;
+
 protected:
 	float GetCameraMovementMaxSpeed();
 	float GetCameraHeightPersents();

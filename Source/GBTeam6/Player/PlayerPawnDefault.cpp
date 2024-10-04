@@ -414,12 +414,22 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		if (IsValid(CameraTargetActor)) {
 			CameraTargetPosition = CameraTargetActor->GetActorLocation();
 			CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
-			if (
-				bFastMove 
-				&& ((this->GetActorLocation() - CameraTargetActor->GetActorLocation()).Length() < 300)
-			) {
-				bFastMove = false;
-				SetCameraHeight(saveCameraHeight);
+			if (bFastMove) {
+				float delta = ((this->GetActorLocation() - CameraTargetActor->GetActorLocation())
+					* FVector(1, 1, 0)).Length();
+				if (delta < CameraFastMoveDistanceNearestZoom) {
+					bFastMove = false;
+					SetCameraHeight(saveCameraHeight);
+				}
+				else {
+					SetCameraHeight(
+						(
+							std::clamp(delta, CameraFastMoveDistanceNearestZoom, CameraFastMoveDistanceFarawayZoom) 
+							- CameraFastMoveDistanceNearestZoom
+						) / (CameraFastMoveDistanceFarawayZoom - CameraFastMoveDistanceNearestZoom)
+						  * (CameraFastMoveFarawayZoom - saveCameraHeight)
+					);
+				}
 			}
 		}
 		else {
@@ -729,7 +739,6 @@ void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor, bool fa
 	CameraBoom->bEnableCameraLag = true;
 	if (bFastMove) {
 		saveCameraHeight = CameraTagretHeight;
-		SetCameraHeight(CameraZoomMax);
 	}
 }
 
