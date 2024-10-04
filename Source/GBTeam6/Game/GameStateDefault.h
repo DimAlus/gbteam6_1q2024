@@ -184,4 +184,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FTouchSignature OnPlayerInventoryChanging;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FTouchSignature OnSpiritEatingFail;
 };
