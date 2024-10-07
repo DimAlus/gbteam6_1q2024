@@ -7,6 +7,7 @@
 #include "../Component/UI/UIBaseComponent.h"
 #include "../Component/Sound/SoundBaseComponent.h"
 #include "../Game/GameStateDefault.h"
+#include "../Game/GameInstanceDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
 }
@@ -43,22 +44,26 @@ void UGameObjectCore::LoadActor(const FActorSaveData& saveData) {
 
 void UGameObjectCore::SetIsCreated() {
 	isCreated = true;
+	OnCreatingBefore.Broadcast();
+	OnCreating.Broadcast();
+	OnCreatingAfter.Broadcast();
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {
 	UE_LOG_COMPONENT(Log, "Actor Initialization!");
 	OwnerName = ObjectName.ToString();
-	AGameStateDefault* gameState = Cast<AGameStateDefault>(GetOwner()->GetWorld()->GetGameState());
-	if (!gameState) {
-		UE_LOG_COMPONENT(Error, "Failed to get AGameStateDefault at InitDataByName!");
+	
+	UGameInstanceDefault* gameInstance = Cast<UGameInstanceDefault>(GetOwner()->GetGameInstance());
+	if (!gameInstance) {
+		UE_LOG_COMPONENT(Error, "Failed to get UGameInstanceDefault at InitDataByName!");
 		return;
 	}
-	if (!gameState->DT_ObjectsData) {
+	if (!gameInstance->DT_ObjectsData) {
 		UE_LOG_COMPONENT(Error, "Failed to get DT_ObjectsData!");
 		return;
 	}
 	
-	if (const FGameObjectInitData* InitDataRow = gameState->DT_ObjectsData->FindRow<FGameObjectInitData>(ObjectName, "")) {
+	if (const FGameObjectInitData* InitDataRow = gameInstance->DT_ObjectsData->FindRow<FGameObjectInitData>(ObjectName, "")) {
 		FGameObjectInitData InitData = *InitDataRow;
 		GenerateComponentSetRuntime(*InitDataRow);
 	}
@@ -142,6 +147,9 @@ void UGameObjectCore::BindComponentNoRegister(EGameComponentType ComponentType, 
 		UnbindComponent(ComponentType);
 	}
 	ExistingComponents.Add(ComponentType, NewComponent);
+	if (UBaseComponent* comp = Cast<UBaseComponent>(NewComponent)) {
+		comp->SetCore(this);
+	}
 }
 
 void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComponent* NewComponent) {
@@ -151,6 +159,9 @@ void UGameObjectCore::BindComponent(EGameComponentType ComponentType, UActorComp
 	}
 	ExistingComponents.Add(ComponentType, NewComponent);
 	NewComponent->RegisterComponent();
+	if (UBaseComponent* comp = Cast<UBaseComponent>(NewComponent)) {
+		comp->SetCore(this);
+	}
 }
 
 void UGameObjectCore::UnbindComponent(EGameComponentType ComponentType) {

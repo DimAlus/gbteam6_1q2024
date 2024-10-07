@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "../Lib/Lib.h"
+
+#include "./AGameService.h"
+
 #include "TaskManagerService.generated.h"
 
 
@@ -13,10 +15,13 @@ struct ClientNeeds;
 /**
  * 
  */
-UCLASS()
-class GBTEAM6_API UTaskManagerService : public UObject
+UCLASS(BlueprintType)
+class GBTEAM6_API UTaskManagerService : public UAGameService
 {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 private:
 	FGameTask NoneTask;
@@ -24,8 +29,6 @@ private:
 
 	TMap<UGameObjectCore*, TMap<EResource, int>> ReserverResources;
 	TMap<UGameObjectCore*, FGameTask> CurrentTasks;
-
-	AGameStateDefault* gameState;
 
 	float WorkerStackMultiplyer;
 	int MaxStackSize = 20;
@@ -39,8 +42,6 @@ private:
 	TArray<FGameTask> FindTaskByNeedsOvers(TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& needsMap,
 										   TMap<EResource, TArray<TPair<UGameObjectCore*, int>>>& oversMap);
 public:
-
-	void SetGameState(AGameStateDefault* ownerGameState);
 
 	TArray<FGameTask> FindTaskByTags(const FGameTaskFindData& findData);
 	TArray<FGameTask> FindTaskForPerformer(const FGameTaskFindData& findData);

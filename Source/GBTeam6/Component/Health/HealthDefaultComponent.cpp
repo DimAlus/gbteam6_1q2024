@@ -7,22 +7,29 @@ UHealthDefaultComponent::UHealthDefaultComponent() {
 	bDead = false;
 }
 
+void UHealthDefaultComponent::OnCoreCreatedBefore() {
+	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
+}
+
+
+void UHealthDefaultComponent::OnCoreCreatedAfter() {
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		bool exists;
+		const auto& gen = generator->GetGenerator(FString("Construction"), exists);
+		if (exists) {
+			this->CurrentHealth = 1;
+			generator->OnGeneratorProgress.AddDynamic(this, &UHealthDefaultComponent::GeneratorProgress);
+			generator->OnGeneratorSuccess.AddDynamic(this, &UHealthDefaultComponent::GeneratorSuccess);
+		}
+	}
+}
+
+
 void UHealthDefaultComponent::Initialize(const FHealthComponentInitializer& Initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	MaxHealth = Initializer.MaxHealth;
 	CurrentHealth = MaxHealth;
 	DeadTime = Initializer.DeadTime;
-
-	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateWeakLambda(this, [this]() {
-		if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
-			bool exists;
-			const auto& gen = generator->GetGenerator(FString("Construction"), exists);
-			if (exists) {
-				this->CurrentHealth = 1;
-				generator->OnGeneratorProgress.AddDynamic(this, &UHealthDefaultComponent::GeneratorProgress);
-			}
-		}
-	}));
 }
 
 void UHealthDefaultComponent::SaveComponent(FHealthSaveData& saveData) {
@@ -48,11 +55,6 @@ void UHealthDefaultComponent::LoadComponent(const FHealthSaveData& saveData) {
 	}
 }
 
-void UHealthDefaultComponent::BeginPlay() {
-	Super::BeginPlay();
-	
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
-}
 
 void UHealthDefaultComponent::TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
 										 class AController* InstigatedBy, AActor* DamageCauser) {
@@ -72,6 +74,15 @@ void UHealthDefaultComponent::GeneratorProgress(const FString& generatorName, co
 
 				}
 			}
+		}
+	}
+}
+
+void UHealthDefaultComponent::GeneratorSuccess(const FString& generatorName, const FGeneratorElementInfo& info) {
+	if (generatorName == "Construction") {
+		if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+			generator->OnGeneratorProgress.RemoveDynamic(this, &UHealthDefaultComponent::GeneratorProgress);
+			generator->OnGeneratorSuccess.RemoveDynamic(this, &UHealthDefaultComponent::GeneratorSuccess);
 		}
 	}
 }

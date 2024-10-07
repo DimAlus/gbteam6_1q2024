@@ -13,6 +13,8 @@ UCLASS()
 class GBTEAM6_API UTaskerDefaultComponent : public UTaskerBaseComponent {
 	GENERATED_BODY()
 
+protected:
+	virtual void OnCoreCreatedBefore();
 public:
 	virtual void Initialize(const FTaskerComponentInitializer& initializer) override;
 

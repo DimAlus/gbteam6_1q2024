@@ -16,14 +16,16 @@ public:
 	// Sets default values for this component's properties
 	UHealthDefaultComponent();
 
+protected:
+	virtual void OnCoreCreatedBefore() override;
+	virtual void OnCoreCreatedAfter() override;
+
+public:
 	virtual void Initialize(const FHealthComponentInitializer& Initializer) override;
 
 	virtual void SaveComponent(FHealthSaveData& saveData) override;
 	virtual void LoadComponent(const FHealthSaveData& saveData) override;
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
 
 protected:
 
@@ -49,7 +51,9 @@ protected:
 	float LastGeneratorProgress = 0;
 	UFUNCTION()
 	void GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info);
-
+	UFUNCTION()
+	void GeneratorSuccess(const FString& generatorName, const FGeneratorElementInfo& info);
+	UFUNCTION(BlueprintCallable)
 	void ChangeHealth(float deltaHealth);
 public:
 	

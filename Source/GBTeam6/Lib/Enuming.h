@@ -84,7 +84,9 @@ enum class EResource : uint8 {
 	Potion		UMETA(DisplayName = "Potion"),
 	Infusion	UMETA(DisplayName = "Infusion"),
 	Decoction	UMETA(DisplayName = "Decoction"),
-	Herb		UMETA(DisplayName = "Herb")
+	Herb		UMETA(DisplayName = "Herb"),
+
+	Heal		UMETA(DisplayName = "Heal")
 };
 
 UENUM(BlueprintType)
@@ -143,7 +145,7 @@ enum class ESocialTag : uint8 {
 
 UENUM(BlueprintType)
 enum class EAIState : uint8 {
-	None			UMETA(DisplayName = "None"),
+	Default			UMETA(DisplayName = "Default"),
 	Passive			UMETA(DisplayName = "Passive"),
 	Work			UMETA(DisplayName = "Work"),
 	Combat			UMETA(DisplayName = "Combat"),

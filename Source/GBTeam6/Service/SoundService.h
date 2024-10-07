@@ -1,24 +1,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Interface/MessageObserver.h"
 #include "UObject/NoExportTypes.h"
-#include "../Lib/Lib.h"
+
+#include "./AGameService.h"
+#include "../Interface/MessageObserver.h"
+
 #include "SoundService.generated.h"
 
 
-UCLASS()
-class GBTEAM6_API USoundService : public UObject, public IMessageObserver
+UCLASS(BlueprintType)
+class GBTEAM6_API USoundService : public UAGameService, public IMessageObserver
 {
 	GENERATED_BODY()
-
-public:
-	void Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable);
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 protected:
-
-	UPROPERTY()
-	const AGameStateBase* GameState = nullptr;
 
 	UPROPERTY()
 	FSystemSound SystemSound{};

@@ -1,5 +1,7 @@
 #include "./SoundService.h"
 
+#include "../Game/GameInstanceDefault.h"
+#include "./MessageService.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/GameStateBase.h"
 #include "GBTeam6/Component/Sound/SoundBaseComponent.h"
@@ -7,46 +9,32 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 
-void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable* SystemSoundDataTable, const UDataTable* MusicSoundDataTable)
-{
-	if (OwnerGameState)
-	{
-		GameState = OwnerGameState;
-	}
-	else
-	{
-		UE_LOG_SERVICE(Error, "OwnerGameState is not valid!");
-	}
+void USoundService::InitializeService() {
+	UAGameService::InitializeService();
 	
 	const FString Context{};
 	TArray<FSystemSound*> SystemSoundData{};
 	TArray<FMusicSound*> MusicSoundData{};
 
-	if (IsValid(SystemSoundDataTable))
-	{
-		SystemSoundDataTable->GetAllRows(Context, SystemSoundData);
+	if (IsValid(GameInstance->DT_SystemSound)) {
+		GameInstance->DT_SystemSound->GetAllRows(Context, SystemSoundData);
 	}
 
-	if (IsValid(MusicSoundDataTable))
-	{
-		MusicSoundDataTable->GetAllRows(Context, MusicSoundData);
+	if (IsValid(GameInstance->DT_MusicSound)) {
+		GameInstance->DT_MusicSound->GetAllRows(Context, MusicSoundData);
 	}
 
-	if (!SystemSoundData.IsEmpty())
-	{
+	if (!SystemSoundData.IsEmpty()) {
 		SystemSound = *SystemSoundData[0];
 	}
-	else
-	{
+	else {
 		UE_LOG_SERVICE(Error, "Can't find valid SystemSound!");
 	}
 
-	if (!MusicSoundData.IsEmpty())
-	{
+	if (!MusicSoundData.IsEmpty()) {
 		MusicSound = *MusicSoundData[0];
 	}
-	else
-	{
+	else {
 		UE_LOG_SERVICE(Error, "Can't find valid MusicSound!");
 	}
 
@@ -55,27 +43,34 @@ void USoundService::Initialize(AGameStateBase* OwnerGameState, const UDataTable*
 	/********************	Subscibing on messages	**************************/
 	/*************************************************************************/
 	
-	//GLB messages
-	SubscriberMessageTags.Add(EMessageTag::GLBGameStart);
-	SubscriberMessageTags.Add(EMessageTag::GLBEnterPlayMap);
-	SubscriberMessageTags.Add(EMessageTag::GLBDay);
-	SubscriberMessageTags.Add(EMessageTag::GLBNight);
+	SubscriberMessageTags.Append({
+		//GLB messages
+		EMessageTag::GLBGameStart,
+		EMessageTag::GLBEnterPlayMap,
+		EMessageTag::GLBDay,
+		EMessageTag::GLBNight,
+		//GOA messages
+		EMessageTag::GOASelect,
+		EMessageTag::GOACommand,
+		EMessageTag::GOAHit,
+		EMessageTag::GOASpawn,
+		EMessageTag::GOADamage,
+		EMessageTag::GOADeath,
+		//UIE messages
+		EMessageTag::UIEButton,
+		EMessageTag::UIESliderEffectVolume,
+		EMessageTag::UIESliderVoiceVolume,
+	});
 
-	//GOA messages
-	SubscriberMessageTags.Add(EMessageTag::GOASelect);
-	SubscriberMessageTags.Add(EMessageTag::GOACommand);
-	SubscriberMessageTags.Add(EMessageTag::GOAHit);
-	SubscriberMessageTags.Add(EMessageTag::GOASpawn);
-	SubscriberMessageTags.Add(EMessageTag::GOADamage);
-	SubscriberMessageTags.Add(EMessageTag::GOADeath);
+	GameInstance->GetMessageService()->AddObserver(
+		Cast<UObject>(this),
+		this->GetSubscriberMessageTags()
+	);
+}
 
-	//UIE messages
-	SubscriberMessageTags.Add(EMessageTag::UIEButton);
-	SubscriberMessageTags.Add(EMessageTag::UIESliderEffectVolume);
-	SubscriberMessageTags.Add(EMessageTag::UIESliderVoiceVolume);
-	
-	/*************************************************************************/
-	/*************************************************************************/
+void USoundService::ClearService() {
+	UAGameService::ClearService();
+	SubscriberMessageTags.Reset();
 }
 
 TSet<EMessageTag> USoundService::GetSubscriberMessageTags()
@@ -100,7 +95,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 				{
 					SelectCommandAudioComponent =
 					UGameplayStatics::SpawnSoundAtLocation(
-						GameState->GetWorld(),
+						GameInstance->GetWorld(),
 						ObjectSound.Select,
 						sender->GetOwner()->GetActorLocation()
 						);
@@ -115,7 +110,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 				{
 					SelectCommandAudioComponent =
 					UGameplayStatics::SpawnSoundAtLocation(
-						GameState->GetWorld(),
+						GameInstance->GetWorld(),
 						ObjectSound.Command,
 						sender->GetOwner()->GetActorLocation()
 						);
@@ -125,7 +120,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 			if (ObjectSound.Spawn && tags.Contains(EMessageTag::GOASpawn))
 			{
 				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
+					GameInstance->GetWorld(),
 					ObjectSound.Spawn,
 					sender->GetOwner()->GetActorLocation()
 					);
@@ -134,7 +129,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 			if (ObjectSound.Hit && tags.Contains(EMessageTag::GOAHit))
 			{
 				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
+					GameInstance->GetWorld(),
 					ObjectSound.Hit,
 					sender->GetOwner()->GetActorLocation()
 					);
@@ -143,7 +138,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 			if (ObjectSound.Damage && tags.Contains(EMessageTag::GOADamage))
 			{
 				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
+					GameInstance->GetWorld(),
 					ObjectSound.Damage,
 					sender->GetOwner()->GetActorLocation()
 					);
@@ -152,7 +147,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 			if (ObjectSound.Death && tags.Contains(EMessageTag::GOADeath))
 			{
 				UGameplayStatics::PlaySoundAtLocation(
-					GameState->GetWorld(),
+					GameInstance->GetWorld(),
 					ObjectSound.Death,
 					sender->GetOwner()->GetActorLocation()
 					);
@@ -169,7 +164,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		if (MusicAudioComponent) {
 			MusicAudioComponent->SetActive(false);
 		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicMainMenu);
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicMainMenu);
 		MusicAudioComponent->Play();
 	}
 	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
@@ -179,7 +174,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		if (MusicAudioComponent) {
 			MusicAudioComponent->SetActive(false);
 		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeaceful);
 		MusicAudioComponent->Play();
 	}
 	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
@@ -189,7 +184,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		if (MusicAudioComponent) {
 			MusicAudioComponent->SetActive(false);
 		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeaceful);
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeaceful);
 		MusicAudioComponent->Play();
 	}
 	else UE_LOG_SERVICE(Error, "TestSoundEffect sound is not valid!");
@@ -199,7 +194,7 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		if (MusicAudioComponent) {
 			MusicAudioComponent->SetActive(false);
 		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameState->GetWorld(), MusicSound.MusicPeacefulNight);
+		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeacefulNight);
 		MusicAudioComponent->Play();
 	}
 	else UE_LOG_SERVICE(Error, "TestSoundVoice sound is not valid!");
@@ -209,19 +204,19 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 	
 	if (SystemSound.PressButton && tags.Contains(EMessageTag::UIEButton))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.PressButton);
+		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.PressButton);
 	}
 	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
 
 	if (SystemSound.TestSoundEffect && tags.Contains(EMessageTag::UIESliderEffectVolume))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundEffect);
+		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.TestSoundEffect);
 	}
 	else UE_LOG_SERVICE(Error, "TestSoundEffect sound is not valid!");
 
 	if (SystemSound.TestSoundVoice && tags.Contains(EMessageTag::UIESliderVoiceVolume))
 	{
-		UGameplayStatics::PlaySound2D(GameState->GetWorld(), SystemSound.TestSoundVoice);
+		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.TestSoundVoice);
 	}
 	else UE_LOG_SERVICE(Error, "TestSoundVoice sound is not valid!");
 	

@@ -4,9 +4,24 @@
 #include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
 #include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 #include "./SocialService.h"
+#include "./ConfigService.h"
 #include "TaskManagerService.h"
 
+
+void UTaskManagerService::InitializeService() {
+	UAGameService::InitializeService();
+	FConfig conf;
+	conf.FloatValue = 1.f;
+	GameInstance->GetConfigService()->GetConfig(EConfig::F_WorkerStackMultiplyer, conf);
+	WorkerStackMultiplyer = conf.FloatValue;
+}
+
+void UTaskManagerService::ClearService() {
+	UAGameService::ClearService();
+	CurrentTasks.Reset();
+}
 
 TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> UTaskManagerService::GetNeedsByCores(TSet<UGameObjectCore*> cores) {
 	TMap<EResource, TArray<TPair<UGameObjectCore*, int>>> result;
@@ -86,22 +101,13 @@ TArray<FGameTask> UTaskManagerService::FindTaskByNeedsOvers(TMap<EResource, TArr
 	return tasks;
 }
 
-void UTaskManagerService::SetGameState(AGameStateDefault* ownerGameState) {
-
-	gameState = ownerGameState;
-	FConfig conf;
-	conf.FloatValue = 1.f;
-	gameState->GetConfig(EConfig::F_WorkerStackMultiplyer, conf);
-	WorkerStackMultiplyer = conf.FloatValue;
-}
-
 
 TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& findData) {
 	if (findData.ForPerformer) {
 		return FindTaskForPerformer(findData);
 	}
 	UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
-	USocialService* social = gameState->GetSocialService();
+	USocialService* social = GameInstance->GetSocialService();
 	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
 	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
 
@@ -135,7 +141,7 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 
 TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindData& findData) { 
 	UE_LOG_SERVICE(Log, "Start FindTaskForPerformer for <%s>", *findData.Performer->GetOwnerName());
-	USocialService* social = gameState->GetSocialService();
+	USocialService* social = GameInstance->GetSocialService();
 	
 	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
 

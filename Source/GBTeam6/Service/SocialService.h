@@ -1,16 +1,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Lib/Lib.h"
 #include "UObject/NoExportTypes.h"
+
+#include "./AGameService.h"
+
 #include "SocialService.generated.h"
 
 class UGameObjectCore;
 
-UCLASS()
-class GBTEAM6_API USocialService : public UObject
+UCLASS(BlueprintType)
+class GBTEAM6_API USocialService : public UAGameService
 {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 	
 private:
 	TMap<ESocialTag, TSet<UGameObjectCore*>> ObjectsByTags{};
@@ -18,7 +23,9 @@ private:
 	
 	const TSet<UGameObjectCore*> EmptyObjectsArray{};
 
+private:
 	const TMap<ESocialTeam, TMap<ERelations, TSet<ESocialTeam>>>& GetRelations();
+
 public:
 
 	UFUNCTION(BlueprintCallable)

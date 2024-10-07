@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
-#include "../Lib/Lib.h"
+#include "./AGameService.h"
 #include "../Interface/CanSaveInterface.h"
 
 #include "SaveService.generated.h"
@@ -20,9 +20,12 @@ class USaveProgress;
 /** Service to Save or Load data
  * 
  */
-UCLASS()
-class GBTEAM6_API USaveService : public UObject {
+UCLASS(BlueprintType)
+class GBTEAM6_API USaveService : public UAGameService {
 	GENERATED_BODY()
+protected:
+	virtual void InitializeService() override;
+	virtual void ClearService() override;
 
 private:
 	UPROPERTY()
@@ -30,36 +33,36 @@ private:
 
 private:
 
-	USaveDefault* CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
-	USaveDefault* LoadSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
+	USaveDefault* CreateSave(TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
+	USaveDefault* LoadSave(TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);
 	void SaveSave(USaveDefault* saver);
 
-	void SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver);
-	void LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver);
+	void SaveTileMap(USaveTileMap* saver);
+	void LoadTileMap(USaveTileMap* saver);
 
-	void SaveObjects(AGameStateDefault* gameState, USaveGameObjects* saver);
-	void LoadObjects(AGameStateDefault* gameState, USaveGameObjects* saver);
+	void SaveObjects(USaveGameObjects* saver);
+	void LoadObjects(USaveGameObjects* saver);
 
-	void SaveConfig(AGameStateDefault* gameState, USaveConfig* saver);
-	void LoadConfig(AGameStateDefault* gameState, USaveConfig* saver);
+	void SaveConfig(USaveConfig* saver);
+	void LoadConfig(USaveConfig* saver);
 
-	void SaveProgress(AGameStateDefault* gameState, USaveProgress* saver);
-	void LoadProgress(AGameStateDefault* gameState, USaveProgress* saver);
+	void SaveProgress(USaveProgress* saver);
+	void LoadProgress(USaveProgress* saver);
 public:
 
 	UFUNCTION(BlueprintCallable)
-	void SaveConfigPublic(AGameStateDefault* gameState);
+	void SaveConfigPublic();
 	UFUNCTION(BlueprintCallable)
-	void LoadConfigPublic(AGameStateDefault* gameState);
+	void LoadConfigPublic();
 
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
+	void SaveGame(FString SlotName, bool isDevMap = false);
 	UFUNCTION(BlueprintCallable)
-	void LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap = false);
+	void LoadGame(FString SlotName, bool isDevMap = false);
 
 	UFUNCTION(BlueprintCallable)
-	TArray<FString>GetSaveNames(AGameStateDefault* gameState, FString MapName);
+	TArray<FString>GetSaveNames(FString MapName);
 
 private:
 	void AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData);

@@ -11,6 +11,9 @@
 #include "../Service/MessageService.h"
 #include "../Service/SoundService.h"
 #include "../Service/GameEventsService.h"
+#include "../Service/ConfigService.h"
+
+#include "./GameInstanceDefault.h"
 
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Interface/GameObjectInterface.h"
@@ -18,69 +21,34 @@
 #include "GameStateDefault.h"
 
 
-void AGameStateDefault::LoadConfig() {
-	Configs = {
-		{ EConfig::FV_TileSize, {} }
-	};
-	Configs[EConfig::FV_TileSize].VectorValue = { 100.f, 100.f, 1.f };
 
-	if (DT_Config) {
-		FString context;
-		TArray<FTRConfig*> data;
-		DT_Config->GetAllRows(context, data);
-		for (FTRConfig* row : data) {
-			//if (!USaveConfig::ConfigIgnore().Contains(row->Value.ConfigType)) {
-				if (Configs.Contains(row->Value.ConfigType))
-					Configs[row->Value.ConfigType] = row->Value;
-				else
-					Configs.Add(row->Value.ConfigType, row->Value);
-			//}
-		}
+UGameInstanceDefault* AGameStateDefault::GetGameInstance() {
+	UWorld* world = GetWorld();
+	if (!IsValid(world)) {
+		UE_LOG(LgService, Error, TEXT("<%s>: Failed to get World at GetGameInstance()!"), *GetNameSafe(this));
+		return nullptr;
 	}
-	else {
-		UE_LOG(LgService, Error, TEXT("<%s>: Failed to get DT_Config!"), *GetNameSafe(this));
+	if (auto instance = Cast<UGameInstanceDefault>(GetWorld()->GetGameInstance())) {
+		return instance;
 	}
+	UE_LOG(LgService, Error, TEXT("<%s>: Failed to get UGameInstanceDefault at GetGameInstance()!"), *GetNameSafe(this));
+	return nullptr;
 }
 
 void AGameStateDefault::LoadSizeStacks() {
 	FString context;
 	TArray<FTRResourceStack*> data;
-	DT_ResourceStack->GetAllRows(context, data);
+	GetGameInstance()->DT_ResourceStack->GetAllRows(context, data);
 	for (FTRResourceStack* row : data) {
 		StackSizes.Add(row->Resource, row->Size);
 	}
 }
 
-void AGameStateDefault::InitializeServices() {
-	UE_LOG(LgService, Log, TEXT("<%s>: Initialization Services"), *GetNameSafe(this));
-	this->MessageService = NewObject<UMessageService>();
-
-	this->MappingService = NewObject<UMappingService>();
-	this->MappingService->Initialize(this);
-
-	this->SaveService = NewObject<USaveService>();
-	this->TaskManagerService = NewObject<UTaskManagerService>();
-	this->TaskManagerService->SetGameState(this);
-	this->SocialService = NewObject<USocialService>();
-
-	this->SoundService = NewObject<USoundService>();
-	this->SoundService->Initialize(this, DT_SystemSound, DT_MusicSound);
-	this->MessageService->AddObserver(Cast<UObject>(SoundService),
-		SoundService->GetSubscriberMessageTags());
-
-	if (!isMenuMap) {
-		this->GameEventsService = NewObject<UGameEventsService>();
-		this->GameEventsService->SetGameState(this);
-	}
-}
-
-void AGameStateDefault::ClearServices()
-{
-	UE_LOG(LgService, Log, TEXT("<%s>: Clearing Services"), *GetNameSafe(this));
-	if (this->MappingService->IsValidLowLevel()) {
-		this->MappingService->DestroyService();
-	}
-	this->MappingService = nullptr;
+const TSet<EResource>& AGameStateDefault::GetPlayerResourcesTypes() {
+	static TSet<EResource> resources = {
+		EResource::Spirit
+	};
+	return resources;
 }
 
 int AGameStateDefault::GetStackSize(EResource resource) {
@@ -90,6 +58,10 @@ int AGameStateDefault::GetStackSize(EResource resource) {
 	return 1;
 }
 
+bool AGameStateDefault::IsPlayerResource(EResource resource) {
+	return GetPlayerResourcesTypes().Contains(resource);
+}
+
 int AGameStateDefault::GetResourceCount(EResource resource) {
 	if (PlayerResources.Contains(resource)) {
 		return PlayerResources[resource];
@@ -97,9 +69,12 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 	int cnt = 0;
 	const TSet<UGameObjectCore*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
 	for (auto core : actors) {
-		cnt += Cast<UInventoryBaseComponent>(
+		auto overs = Cast<UInventoryBaseComponent>(
 			core->GetComponent(EGameComponentType::Inventory)
-		)->GetResourceCount(resource);
+		)->GetOverage();
+		if (overs.Contains(resource)) {
+			cnt += overs[resource];
+		}
 	}
 	return cnt;
 }
@@ -107,6 +82,7 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
 	if (PlayerResources.Contains(resource)) {
 		PlayerResources[resource] += count;
+		OnPlayerInventoryChanging.Broadcast();
 	}
 	return true;
 }
@@ -115,9 +91,21 @@ bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
 	if (PlayerResources.Contains(resource)) {
 		if (PlayerResources[resource] >= count) {
 			PlayerResources[resource] -= count;
+			OnPlayerInventoryChanging.Broadcast();
 			return true;
 		}
 		return false;
+	}
+	return true;
+}
+
+bool AGameStateDefault::CanPushPlayerResource(EResource resource, int count) {
+	return true;
+}
+
+bool AGameStateDefault::CanPopPlayerResource(EResource resource, int count) {
+	if (PlayerResources.Contains(resource)) {
+		return PlayerResources[resource] >= count;
 	}
 	return true;
 }
@@ -166,15 +154,29 @@ void AGameStateDefault::SendMessageDayStateChange(bool IsDay)
 	}
 }
 
-
-void AGameStateDefault::DayChangingLoop(){
-	CurrentDayTime += DayChangingDelay;
+void AGameStateDefault::SetCurrentDayTime(float dayTimePercent) {
 	FConfig conf;
-	if (!GetConfig(EConfig::F_DayTime, conf)) {
+	
+	if (!GetGameInstance()->GetConfigService()->GetConfig(EConfig::F_DayTime, conf)) {
 		return;
 	}
 	float dayLength = conf.FloatValue;
-	if (!GetConfig(EConfig::FV_DayPeriod, conf)) {
+
+	CurrentDayTime = dayLength * dayTimePercent;
+	DayChangingLoop();
+}
+
+
+void AGameStateDefault::DayChangingLoop(){
+	if (DayChagingEnable) {
+		CurrentDayTime += DayChangingDelay;
+	}
+	FConfig conf;
+	if (!GetGameInstance()->GetConfigService()->GetConfig(EConfig::F_DayTime, conf)) {
+		return;
+	}
+	float dayLength = conf.FloatValue;
+	if (!GetGameInstance()->GetConfigService()->GetConfig(EConfig::FV_DayPeriod, conf)) {
 		return;
 	}
 	FVector dayPeriod = conf.VectorValue;
@@ -206,19 +208,17 @@ void AGameStateDefault::DayChangingLoop(){
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
-	PlayerResources = {
-		{ EResource::Spirit, 0 }
-	};
+	PlayerResources = {};
+	for (auto res : GetPlayerResourcesTypes()){
+		PlayerResources.Add(res, 0);
+	}
 	LoadConfig();
 	LoadSizeStacks();
-	InitializeServices();
 
-	SaveService->AddSaveProgressOwner(this);
-
-	GetSaveService()->LoadConfigPublic(this);
+	GetSaveService()->AddSaveProgressOwner(this);
 
 	FConfig conf;
-	GetConfig(EConfig::F_StartGameTime, conf);
+	GetGameInstance()->GetConfigService()->GetConfig(EConfig::F_StartGameTime, conf);
 	CurrentDayTime = conf.FloatValue;
 	GetWorld()->GetTimerManager().SetTimer(
 		DayChangingTimer,
@@ -233,10 +233,6 @@ void AGameStateDefault::BeginPlay() {
 	OnDayStateChanging.AddDynamic(this, &AGameStateDefault::SendMessageDayStateChange);
 }
 
-void AGameStateDefault::EndPlay(const EEndPlayReason::Type EndPlayReason) {
-	ClearServices();
-	Super::EndPlay(EndPlayReason);
-}
 
 void AGameStateDefault::Save(FGameProgressSaveData& data) {
 	data.GameStateData.PlayerResources = this->PlayerResources;
@@ -250,27 +246,6 @@ void AGameStateDefault::Load(FGameProgressSaveData& data) {
 	this->CurrentDayTime = data.GameStateData.CurrentDayTime;
 	this->CurrentIsDay = data.GameStateData.IsDay;
 	this->CurrentDayNum = data.GameStateData.DayNumber;
-}
-
-bool AGameStateDefault::GetConfig(EConfig configType, FConfig& config) {
-	if (Configs.Contains(configType)) {
-		config = Configs[configType];
-		return true;
-	}
-	return false;
-}
-
-bool AGameStateDefault::SetConfig(EConfig configType, FConfig config) {
-	if (USaveConfig::ConfigIgnore().Contains(configType)) {
-		return false;
-	}
-	if (Configs.Contains(configType)) {
-		Configs[configType] = config;
-	}
-	else {
-		Configs.Add(configType, config);
-	}
-	return true;
 }
 
 bool AGameStateDefault::CheckNeed(const FNeed& need) { 
@@ -294,5 +269,3 @@ bool AGameStateDefault::CheckNeed(const FNeed& need) {
 		return true;
 	}
 }
-
-const TMap<EConfig, FConfig>& AGameStateDefault::GetAllConfigs() { return Configs; }

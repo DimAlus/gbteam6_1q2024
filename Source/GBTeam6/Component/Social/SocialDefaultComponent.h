@@ -12,6 +12,8 @@ class GBTEAM6_API USocialDefaultComponent : public USocialBaseComponent
 
 public:	
 	virtual void DestroyComponent(bool bPromoteChildren = false) override;
+protected:
+	virtual void OnCoreCreatedAfter();
 
 	virtual void Initialize(const FSocialComponentInitializer& Initializer) override;
 
@@ -19,9 +21,6 @@ public:
 	virtual void LoadComponent(const FSocialSaveData& saveData) override;
 
 protected:
-	virtual void RegisterObjectInService() override;
-	void UnRegisterObjectInService();
-
 	UFUNCTION()
 	void OnPlacedRegister(bool IsPlaced);
 public:

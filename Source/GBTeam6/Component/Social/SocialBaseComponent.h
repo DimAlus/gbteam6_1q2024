@@ -32,12 +32,16 @@ public:
 
 protected:
 	UFUNCTION(BlueprintCallable)
-	virtual void RegisterObjectInService() {};
+	virtual void RegisterObjectInService();
+	virtual void UnRegisterObjectInService();
 
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsHostile(ESocialTeam CallerSocialTeam) {return false;}
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetSocialTeam(ESocialTeam NewSocialTeam);
+	
 	UFUNCTION(BlueprintCallable)
 	virtual ESocialTeam GetSocialTeam() {return ESocialTeam::None;}
 

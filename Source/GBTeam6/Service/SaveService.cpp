@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "../Game/GameStateDefault.h"
 #include "./MappingService.h"
+#include "./ConfigService.h"
 
 #include "../Lib/Save/SaveDefault.h"
 #include "../Lib/Save/SaveTileMap.h"
@@ -11,6 +12,8 @@
 
 #include "../GameObject/SimpleObject.h"
 #include "../GameObject/MovableObject.h"
+
+#include "../Game/GameInstanceDefault.h"
 
 #include "../Interface/GameObjectInterface.h"
 #include "../Component/Health/HealthBaseComponent.h"
@@ -28,19 +31,28 @@
 
 
 
-USaveDefault* USaveService::CreateSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
+void USaveService::InitializeService() {
+	UAGameService::InitializeService();
+}
+
+void USaveService::ClearService() {
+	UAGameService::InitializeService();
+	ProgressSavers.Reset();
+}
+
+USaveDefault* USaveService::CreateSave(TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
 	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::CreateSaveGameObject(saveClass));
 	if (!IsValid(save)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: '%s' not Valid!"), *GetNameSafe(this), *GetNameSafe(saveClass));
 		return nullptr;
 	}
-	FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
+	FString mapName = GetLevelName(GameInstance->GetWorld()->GetCurrentLevel());
 
 	save->SetParams(playerName, 0, slotName, mapName, isDevMap);
 	return save;
 }
 
-USaveDefault* USaveService::LoadSave(AGameStateDefault* gameState, TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
+USaveDefault* USaveService::LoadSave(TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap) {
 	USaveDefault* save = Cast<USaveDefault>(UGameplayStatics::LoadGameFromSlot(slotName, 0));
 	if (!IsValid(save)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: '%s' at slot '%s' not Valid!"),
@@ -63,9 +75,9 @@ void USaveService::SaveSave(USaveDefault* saver) {
 
 
 /// Saving Loading TileMap
-void USaveService::SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
+void USaveService::SaveTileMap(USaveTileMap* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save TileMap"), *GetNameSafe(this));
-	UMappingService* mappingService = gameState->GetMappingService();
+	UMappingService* mappingService = GameInstance->GetMappingService();
 	if (!IsValid(mappingService)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
 		return;
@@ -81,9 +93,9 @@ void USaveService::SaveTileMap(AGameStateDefault* gameState, USaveTileMap* saver
 		saver->TileTypes[i] = tiles[i].type;
 }
 
-void USaveService::LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver) {
+void USaveService::LoadTileMap(USaveTileMap* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start load TileMap"), *GetNameSafe(this));
-	UMappingService* mappingService = gameState->GetMappingService();
+	UMappingService* mappingService = GameInstance->GetMappingService();
 	if (!IsValid(mappingService)) {
 		UE_LOG(LgService, Error, TEXT("<%s>: UMappingService not Valid!"), *GetNameSafe(this));
 		return;
@@ -98,25 +110,26 @@ void USaveService::LoadTileMap(AGameStateDefault* gameState, USaveTileMap* saver
 
 
 /// Saving Loading Objects
-void USaveService::SaveObjects(AGameStateDefault* gameState, USaveGameObjects* saver) {
+void USaveService::SaveObjects(USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save GameObjects"), *GetNameSafe(this));
 
 	TArray<AActor*> objects;
-	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), ASimpleObject::StaticClass(), objects);
+	UGameplayStatics::GetAllActorsOfClass(GameInstance->GetWorld(), ASimpleObject::StaticClass(), objects);
 	AddObjectsToSave(objects, saver->Objects);
 	objects.Empty();
-	UGameplayStatics::GetAllActorsOfClass(gameState->GetWorld(), AMovableObject::StaticClass(), objects);
+	UGameplayStatics::GetAllActorsOfClass(GameInstance->GetWorld(), AMovableObject::StaticClass(), objects);
 	AddObjectsToSave(objects, saver->Objects);
 }
 
 
-void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* saver) {
+void USaveService::LoadObjects(USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start load GameObjects"), *GetNameSafe(this));
 	
 	for (FGameObjectSaveData& saveData : saver->Objects) {
 		if (saveData.ObjectClass) {
-			AActor* act = gameState->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
+			AActor* act = GameInstance->GetWorld()->SpawnActor<AActor>(saveData.ObjectClass);
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
+			obj->CreateCore_Implementation();
 			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 			if (!(IsValid(act) && obj)) {
 				UE_LOG(LgService, Error, TEXT("<%s>: spawned AActor of class '%s' uncorrect!"), *GetNameSafe(this), *GetNameSafe(saveData.ObjectClass));
@@ -139,26 +152,17 @@ void USaveService::LoadObjects(AGameStateDefault* gameState, USaveGameObjects* s
 
 
 /// Saving Loading Config
-void USaveService::SaveConfig(AGameStateDefault* gameState, USaveConfig* saver) {
-	const TMap<EConfig, FConfig>& configs = gameState->GetAllConfigs();
-	for (auto conf : configs) {
-		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
-			saver->Configs.Add(conf);
-		}
-	}
+void USaveService::SaveConfig(USaveConfig* saver) {
+	GameInstance->GetConfigService()->SaveConfig(saver);
 }
 
-void USaveService::LoadConfig(AGameStateDefault* gameState, USaveConfig* saver) {
-	for (auto conf : saver->Configs) {
-		if (!USaveConfig::ConfigIgnore().Contains(conf.Key)) {
-			gameState->SetConfig(conf.Key, conf.Value);
-		}
-	}
+void USaveService::LoadConfig(USaveConfig* saver) {
+	GameInstance->GetConfigService()->LoadConfig(saver);
 }
 
 
 /// Saving Loading Progress
-void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* saver) {
+void USaveService::SaveProgress(USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
 		if (IsValid(ptr->_getUObject())) {
 			ptr->Save(saver->GameProgressSaveData);
@@ -167,7 +171,7 @@ void USaveService::SaveProgress(AGameStateDefault* gameState, USaveProgress* sav
 	}
 }
 
-void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* saver) {
+void USaveService::LoadProgress(USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
 		if (IsValid(ptr->_getUObject())) {
 			ptr->Load(saver->GameProgressSaveData);
@@ -177,142 +181,123 @@ void USaveService::LoadProgress(AGameStateDefault* gameState, USaveProgress* sav
 
 
 /// Saving Loading Config Public
-void USaveService::SaveConfigPublic(AGameStateDefault* gameState) {
+void USaveService::SaveConfigPublic() {
 	USaveConfig* saveConfig = Cast<USaveConfig>(CreateSave(
-		gameState,
 		USaveConfig::StaticClass(),
 		TEXT("player"),
 		TEXT(""),
 		false
 	));
 	if (IsValid(saveConfig)) {
-		SaveConfig(gameState, saveConfig);
+		SaveConfig(saveConfig);
 		SaveSave(saveConfig);
 	}
 }
 
-void USaveService::LoadConfigPublic(AGameStateDefault* gameState) {
+void USaveService::LoadConfigPublic() {
 	USaveConfig* saveConfig = Cast<USaveConfig>(LoadSave(
-		gameState,
 		USaveConfig::StaticClass(),
 		TEXT("player"),
 		USaveConfig::GetSlotName(TEXT("player"), TEXT(""), TEXT(""), false),
 		false
 	));
 	if (IsValid(saveConfig)) {
-		LoadConfig(gameState, saveConfig);
+		LoadConfig(saveConfig);
 	}
 }
 
 
 /// Saving Loading Game
-void USaveService::SaveGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
+void USaveService::SaveGame(FString SlotName, bool isDevMap) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start SaveGame to slot '%s'"), *GetNameSafe(this), *SlotName);
-	if (!IsValid(gameState)) {
-		UE_LOG(LgService, Error, TEXT("<%s>: AGameStateDefault not Valid!"), *GetNameSafe(this));
-		return;
-	}
 	FString playerName = TEXT("player");
 
 	/// Save TileMap
 	if (isDevMap) {
 		USaveTileMap* saveTileMap = Cast<USaveTileMap>(CreateSave(
-			gameState, 
 			USaveTileMap::StaticClass(),
 			playerName,
 			SlotName,
 			isDevMap
 		));
 		if (IsValid(saveTileMap)) {
-			SaveTileMap(gameState, saveTileMap);
+			SaveTileMap(saveTileMap);
 			SaveSave(saveTileMap);
 		}
 	}
 
 	/// Save GameObjects
 	USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(CreateSave(
-		gameState,
 		USaveGameObjects::StaticClass(),
 		playerName,
 		SlotName,
 		isDevMap
 	));
 	if (IsValid(saveGameObjects)) {
-		SaveObjects(gameState, saveGameObjects);
+		SaveObjects(saveGameObjects);
 		SaveSave(saveGameObjects);
-	}
-
-	/// Save Config
-	if (!isDevMap) {
-		SaveConfigPublic(gameState);
 	}
 
 	/// Save Progress
 	if (!isDevMap) {
 		USaveProgress* saveProgress = Cast<USaveProgress>(CreateSave(
-			gameState,
 			USaveProgress::StaticClass(),
 			playerName,
 			SlotName,
 			isDevMap
 		));
 		if (IsValid(saveProgress)) {
-			SaveProgress(gameState, saveProgress);
+			SaveProgress(saveProgress);
 			SaveSave(saveProgress);
 		}
 	}
 }
 
-void USaveService::LoadGame(AGameStateDefault* gameState, FString SlotName, bool isDevMap) {
+void USaveService::LoadGame(FString SlotName, bool isDevMap) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start LoadGame from slot '%s'"), *GetNameSafe(this), *SlotName);
 	if (!isDevMap) {
 		FString playerName = TEXT("player");
-		FString mapName = GetLevelName(gameState->GetWorld()->GetCurrentLevel());
+		UWorld* world = GameInstance->GetWorld();
+		FString mapName = GetLevelName(world->GetCurrentLevel());
 
 		/// Load TileMap
 		USaveTileMap* saveTileMap = Cast<USaveTileMap>(LoadSave(
-			gameState,
 			USaveTileMap::StaticClass(),
 			playerName,
 			USaveTileMap::GetSlotName(playerName, SlotName, mapName, isDevMap),
 			isDevMap
 		));
 		if (IsValid(saveTileMap)) {
-			LoadTileMap(gameState, saveTileMap);
+			LoadTileMap(saveTileMap);
 		}
 
 		UE_LOG(LgService, Log, TEXT("<%s>: slot '%s'"), *GetNameSafe(this), *USaveGameObjects::GetSlotName(playerName, SlotName, mapName, isDevMap));
 
 		/// Load GameObjects
 		USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(LoadSave(
-			gameState,
 			USaveGameObjects::StaticClass(),
 			playerName,
 			USaveGameObjects::GetSlotName(playerName, SlotName, mapName, isDevMap),
 			isDevMap
 		));
 		if (IsValid(saveGameObjects)) {
-			LoadObjects(gameState, saveGameObjects);
+			LoadObjects(saveGameObjects);
 		}
-
-		/// Load Config
-		LoadConfigPublic(gameState);
 
 		/// Load Progress
 		USaveProgress* saveProgress = Cast<USaveProgress>(LoadSave(
-			gameState,
 			USaveProgress::StaticClass(),
 			playerName,
 			USaveProgress::GetSlotName(playerName, SlotName, mapName, isDevMap),
 			isDevMap
 		));
 		if (IsValid(saveProgress)) {
-			LoadProgress(gameState, saveProgress);
+			LoadProgress(saveProgress);
 		}
 	}
 }
 
-TArray<FString> USaveService::GetSaveNames(AGameStateDefault* gameState, FString MapName) {
+TArray<FString> USaveService::GetSaveNames(FString MapName) {
 	TArray<FString> result = {
 		FString("save1"),
 		FString("save2"),
@@ -323,7 +308,6 @@ TArray<FString> USaveService::GetSaveNames(AGameStateDefault* gameState, FString
 	FString playerName = FString("player");
 	for (int i = result.Num() - 1; i >= 0; i--) {
 		USaveGameObjects* saveGameObjects = Cast<USaveGameObjects>(LoadSave(
-			gameState,
 			USaveGameObjects::StaticClass(),
 			playerName,
 			USaveGameObjects::GetSlotName(playerName, result[i], MapName, false),
@@ -334,7 +318,6 @@ TArray<FString> USaveService::GetSaveNames(AGameStateDefault* gameState, FString
 		}
 		else {
 			USaveProgress* saveProgress = Cast<USaveProgress>(LoadSave(
-				gameState,
 				USaveProgress::StaticClass(),
 				playerName,
 				USaveProgress::GetSlotName(playerName, result[i], MapName, false),
