@@ -15,6 +15,8 @@ class UInputAction;
 class IGameObjectInterface;
 struct FInputActionValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FAltSelectModeSignature, bool, AltSelectModeState);
+
 UCLASS()
 class GBTEAM6_API APlayerPawnDefault : public APawn
 {
@@ -61,12 +63,18 @@ protected:
 
 	bool isScrollPressed = false;
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bAltSelectMode = false;
+
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadWrite)
 	AActor* SelectedActor = nullptr;
 	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadWrite)
 	AActor* TargetActor = nullptr;
+
+	bool bFastMove = false;
+	float saveCameraHeight;
 	
 	UPROPERTY(BlueprintReadOnly)
 	FVector PointOfInterest;
@@ -85,13 +93,19 @@ protected:
 	void OnSelect(FVector Location, UGameObjectCore* Core, bool IsObject);
 	void OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
 
-
+	UPROPERTY(BlueprintAssignable)
+	FAltSelectModeSignature OnAltSelectModeChanges;
+	UFUNCTION(BlueprintCallable)
+	void SetAltSelectMode(bool AltSelectModeState);
 
 	/** Command object function*/
 	void CallCommand();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	void OnCommand(FVector Location, UGameObjectCore* Core, bool IsObject);
 	void OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
+
+	void QuickSave(const FInputActionValue& Value);
+	void QuickLoad(const FInputActionValue& Value);
 
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
@@ -142,9 +156,17 @@ protected:
 	float CameraCurrentRotation;
 	float CameraCurrentHeight;
 
+	float CameraDefaultZ;
+
 	TArray<TTuple<float, float>> CameraZoomRotations;
 	TArray<TTuple<float, float>> CameraCurrentRotationBorders;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	FVector CameraMovementMinCoordinate{ 1000,1000,0 };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	FVector CameraMovementMaxCoordinate{ 18000,18000,0 };
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementAcceleration;
 
@@ -153,6 +175,15 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
 	float CameraMovementMaxFarawaySpeed;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementSpeedInputMultiplier{ 1.f };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementSpeedInputInfluence{ 1.f };
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Movement")
+	float CameraMovementMinLandscapeHeight = 100;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Rotation")
 	float CameraRotationAcceleration;
@@ -190,6 +221,15 @@ protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Camera|Zoom")
 	float CameraZoomScrollDelta = 0.2f;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveFarawayZoom = 5000.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveDistanceFarawayZoom = 2000.f;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Camera|Movement")
+	float CameraFastMoveDistanceNearestZoom = 500.f;
+
 protected:
 	float GetCameraMovementMaxSpeed();
 	float GetCameraHeightPersents();
@@ -200,6 +240,7 @@ protected:
 	void InitCamera();
 	void UpdateCamera(float DeltaTime);
 	void UpdateCameraPosition(float DeltaTime);
+	void UpdateCameraPositionZ();
 	void ApplyCameraZoom();
 	void UpdateCameraZoom(float DeltaTime);
 	void ApplyCameraRotation();
@@ -213,7 +254,9 @@ protected:
 		float currentSpeed,
 		float acceleration,
 		float maxSpeed,
-		int& currentSlowing
+		int& currentSlowing,
+		float& newTargetOffset,
+		bool& needChangeTarget
 	);
 
 	FVector CalculateVectorSpeed(
@@ -223,7 +266,9 @@ protected:
 		FVector currentSpeed,
 		float acceleration,
 		float maxSpeed,
-		int& currentSlowing
+		int& currentSlowing,
+		FVector& newTargetOffset,
+		bool& needChangeTarget
 	);
 
 public:
@@ -252,7 +297,7 @@ public:
 	void AddCameraLocation(FVector deltaLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCameraTargetActor(AActor* cameraTargetActor);
+	void SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove = false);
 
 	UFUNCTION(BlueprintCallable)
 	void UnsetCameraTargetActor();
@@ -279,6 +324,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnGameSpeedChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnQuickSave;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnQuickLoad;
 
 public:
 	//Console commands

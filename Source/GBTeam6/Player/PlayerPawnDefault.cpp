@@ -8,6 +8,7 @@
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
 #include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/TimerService.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -103,6 +104,13 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Set game speed action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
 			&APlayerPawnDefault::SetGameSpeedInput);
+		
+		// Set game save action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SaveGameAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::QuickSave);
+		// Set game load action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.LoadGameAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::QuickLoad);
 	}
 	else
 	{
@@ -110,19 +118,13 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	}
 }
 
-void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const
-{
+void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisionChannel CollisionChannel) const {
 	FVector MouseWorldLocation, MouseWorldDirection;
 	PlayerController->DeprojectMousePositionToWorld(MouseWorldLocation,MouseWorldDirection);
+	//MouseWorldLocation = this->GetCameraLocation();
 
-	const FVector LookPointPosition =
-	MouseWorldLocation-(((MouseWorldLocation.Z-GetActorLocation().Z)/MouseWorldDirection.Z)*MouseWorldDirection);
-	
-	FVector TraceStart = LookPointPosition-500*MouseWorldDirection;
-	FVector TraceEnd = LookPointPosition+5000*MouseWorldDirection;
 	FCollisionQueryParams QueryParams;
-	
-	GetWorld()->LineTraceSingleByChannel(HitResult, TraceStart, TraceEnd, CollisionChannel);
+	GetWorld()->LineTraceSingleByChannel(HitResult, MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * 15000, CollisionChannel);
 }
 
 void APlayerPawnDefault::Select(const FInputActionValue& Value) {
@@ -147,16 +149,41 @@ void APlayerPawnDefault::CallSelect() {
 }
 
 void APlayerPawnDefault::OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
-	if (IsObject) {
-		SelectedActor = Core->GetOwner();
-
-		if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
-			GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+	if (bAltSelectMode)
+	{
+		if (IsObject) {
+			TargetActor = Core->GetOwner();
+		}
+		else {
+			TargetActor = nullptr;
 		}
 	}
-	else {
-		SelectedActor = nullptr;
+	else
+	{
+		if (IsObject) {
+			SelectedActor = Core->GetOwner();
+
+			if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
+				GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+			}
+		}
+		else {
+			SelectedActor = nullptr;
+		}
 	}
+}
+
+void APlayerPawnDefault::SetAltSelectMode(bool AltSelectModeState)
+{
+	if (AltSelectModeState)	{
+		PlayerController->CurrentMouseCursor = EMouseCursor::Crosshairs;
+	}
+	else {
+		PlayerController->CurrentMouseCursor = EMouseCursor::Default;
+	}
+	TargetActor = nullptr;
+	bAltSelectMode = AltSelectModeState;
+	OnAltSelectModeChanges.Broadcast(bAltSelectMode);
 }
 
 void APlayerPawnDefault::CallCommand() {
@@ -174,6 +201,7 @@ void APlayerPawnDefault::CallCommand() {
 
 void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
 	PointOfInterest = Location;
+	SetAltSelectMode(false);
 
 	//if (IsObject) {
 	//	TSet<EMessageTag> MessageTags{};
@@ -191,15 +219,25 @@ void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectC
 	//}
 }
 
+void APlayerPawnDefault::QuickSave(const FInputActionValue& Value) {
+	OnQuickSave.Broadcast();
+}
+
+void APlayerPawnDefault::QuickLoad(const FInputActionValue& Value) {
+	OnQuickLoad.Broadcast();
+}
+
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
+	CameraTargetPosition = CameraTargetPosition -
+		(GetActorLocation() - CameraTargetPosition) * CameraMovementSpeedInputInfluence * LastDeltaTime;
 	float MovementMaxSpeed = GetCameraMovementMaxSpeed();
 	FVector2D inputValue = Value.Get<FVector2D>();
 	if (inputValue.Length() > 1) {
 		inputValue.Normalize();
 	}
 	const FVector2D MovementVector = inputValue *
-		MovementMaxSpeed *
+		MovementMaxSpeed * CameraMovementSpeedInputMultiplier *
 		LastDeltaTime;
 
 	const FRotator YawRotator = { 0, CameraTargetRotation, 0 };
@@ -261,8 +299,12 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
 	}
 	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
-	if (TimeDilation >= 0.0001f)
-		CustomTimeDilation = 1/TimeDilation;
+	if (TimeDilation >= 0.0001f) {
+		CustomTimeDilation = 1 / TimeDilation;
+		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
+			timerManager->CustomTimeDilation = CustomTimeDilation;
+		}			
+	}
 	OnGameSpeedChanged.Broadcast();
 }
 
@@ -357,6 +399,8 @@ void APlayerPawnDefault::InitCamera() {
 
 	ApplyCameraZoom();
 	ApplyCameraRotation();
+	CameraDefaultZ = GetActorLocation().Z;
+	UpdateCameraPositionZ();
 }
 
 void APlayerPawnDefault::UpdateCamera(float DeltaTime) {
@@ -370,6 +414,23 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		if (IsValid(CameraTargetActor)) {
 			CameraTargetPosition = CameraTargetActor->GetActorLocation();
 			CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
+			if (bFastMove) {
+				float delta = ((this->GetActorLocation() - CameraTargetActor->GetActorLocation())
+					* FVector(1, 1, 0)).Length();
+				if (delta < CameraFastMoveDistanceNearestZoom) {
+					bFastMove = false;
+					SetCameraHeight(saveCameraHeight);
+				}
+				else {
+					SetCameraHeight(
+						(
+							std::clamp(delta, CameraFastMoveDistanceNearestZoom, CameraFastMoveDistanceFarawayZoom) 
+							- CameraFastMoveDistanceNearestZoom
+						) / (CameraFastMoveDistanceFarawayZoom - CameraFastMoveDistanceNearestZoom)
+						  * (CameraFastMoveFarawayZoom - saveCameraHeight)
+					);
+				}
+			}
 		}
 		else {
 			UnsetCameraTargetActor();
@@ -379,6 +440,8 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 
 	float CameraMovementMaxSpeed = GetCameraMovementMaxSpeed();
 	int slow = CameraSlowing.MoveX;
+	FVector deltaMovement;
+	bool changeTarget;
 	CameraCurrentMovementSpeed = CalculateVectorSpeed(
 		DeltaTime,
 		actorLocation,
@@ -386,14 +449,44 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		CameraCurrentMovementSpeed,
 		CameraMovementAcceleration,
 		CameraMovementMaxSpeed,
-		slow
+		slow,
+		deltaMovement,
+		changeTarget
 	);
+	if (changeTarget) {
+		CameraTargetPosition = actorLocation + deltaMovement;
+		CameraTargetPosition = {
+			std::clamp(CameraTargetPosition.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(CameraTargetPosition.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			CameraTargetPosition.Z,
+		};
+	}
 	CameraSlowing.MoveX = slow;
 
 	if (CameraCurrentMovementSpeed.X || CameraCurrentMovementSpeed.Y) {
-		actorLocation.X += CameraCurrentMovementSpeed.X * DeltaTime;
-		actorLocation.Y += CameraCurrentMovementSpeed.Y * DeltaTime;
+		actorLocation.X = std::clamp(actorLocation.X + CameraCurrentMovementSpeed.X * DeltaTime, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X);
+		actorLocation.Y = std::clamp(actorLocation.Y + CameraCurrentMovementSpeed.Y * DeltaTime, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y);
 		this->SetActorLocation(actorLocation);
+		UpdateCameraPositionZ();
+	}
+}
+
+void APlayerPawnDefault::UpdateCameraPositionZ() {
+	FHitResult Hit;	
+	FVector actorLocation = GetActorLocation();
+	FVector startTrace = actorLocation;
+	startTrace.Z = 5000;
+	GetWorld()->LineTraceSingleByChannel(
+		Hit,
+		startTrace, 
+		startTrace + FVector(0, 0, -8000), 
+		ECC_GameTraceChannel6
+	);
+
+	float newZ = std::max(CameraDefaultZ, (float)(Hit.Location.Z + CameraMovementMinLandscapeHeight));
+	if (newZ != actorLocation.Z) {
+		actorLocation.Z = newZ;
+		SetActorLocation(actorLocation);
 	}
 }
 
@@ -407,6 +500,8 @@ void APlayerPawnDefault::ApplyCameraZoom() {
 
 void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 	int slow = CameraSlowing.Zoom;
+	float deltaZoom;
+	bool changeTarget;
 	CameraCurrentZoomSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentHeight,
@@ -414,13 +509,19 @@ void APlayerPawnDefault::UpdateCameraZoom(float DeltaTime) {
 		CameraCurrentZoomSpeed,
 		CameraZoomAcceleration,
 		CameraZoomMaxSpeed,
-		slow
+		slow,
+		deltaZoom,
+		changeTarget
 	);
+	if (changeTarget) {
+		CameraTagretHeight = CameraCurrentHeight + deltaZoom;
+	}
 	CameraSlowing.Zoom = slow;
 
 	if (CameraCurrentZoomSpeed) {
-		CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
-		
+		//CameraCurrentHeight += CameraCurrentZoomSpeed * DeltaTime;
+		CameraCurrentHeight = std::clamp(CameraCurrentHeight + CameraCurrentZoomSpeed * DeltaTime,
+											CameraZoomMin, CameraZoomMax);
 		ApplyCameraZoom();
 	}
 }
@@ -441,8 +542,15 @@ void APlayerPawnDefault::UpdateCameraActorLocationOnRotation(float rotationBefor
 		FVector cameraPositionAfter = FVector(std::cos(rotationAfter), std::sin(rotationAfter), 0) * CameraDistance;
 
 		FVector deltaPosition = cameraPositionAfter - cameraPositionBefore;
-		this->SetActorLocation(this->GetActorLocation() + deltaPosition);
-		CameraTargetPosition += deltaPosition;
+		FVector newPosition = this->GetActorLocation() + deltaPosition;
+		FVector endPosition = {
+			std::clamp(newPosition.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(newPosition.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			newPosition.Z,
+		};
+		CameraTargetPosition += endPosition - this->GetActorLocation();
+		this->SetActorLocation(endPosition);
+		UpdateCameraPositionZ();
 	}
 }
 
@@ -452,6 +560,8 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 	}
 
 	int slow = CameraSlowing.Rotation;
+	float deltaRotation;
+	bool changeTarget;
 	CameraCurrentRotationSpeed = CalculateSpeed(
 		DeltaTime,
 		CameraCurrentRotation,
@@ -459,9 +569,14 @@ void APlayerPawnDefault::UpdateCameraRotation(float DeltaTime) {
 		CameraCurrentRotationSpeed,
 		CameraRotationAcceleration,
 		CameraRotationMaxSpeed,
-		slow
+		slow,
+		deltaRotation,
+		changeTarget
 	);
 	CameraSlowing.Rotation = slow;
+	if (changeTarget) {
+		CameraTargetRotation = CameraCurrentRotation + deltaRotation;
+	}
 
 	if (CameraCurrentRotationSpeed){
 		UpdateCameraActorLocationOnRotation(
@@ -479,17 +594,21 @@ float APlayerPawnDefault::CalculateSpeed(float DeltaTime,
 										 float currentSpeed,
 										 float acceleration,
 										 float maxSpeed,
-										 int& currentSlowing) {
+										 int& currentSlowing,
+										 float& newTargetOffset,
+										 bool& needChangeTarget) {
+	needChangeTarget = false;
 	acceleration *= maxSpeed;
 	int signs = currentSpeed > 0 ? 1 : -1;
 	int signVal = (targetValue - currentValue) > 0 ? 1 : -1;
 	float deltaValue = targetValue - currentValue;
 	if (currentSlowing) {
+		needChangeTarget = true;
+		newTargetOffset = 0;// -currentSpeed * currentSpeed / 2.f / acceleration * signs;
 		return std::max(0.f, std::abs(currentSpeed) - acceleration * DeltaTime) * signs;
 	}
 	// if another direction
 	if (deltaValue * currentSpeed < 0 && std::abs(currentSpeed) > 0.001f) {
-
 		return currentSpeed - acceleration * signs * DeltaTime;
 	}
 
@@ -517,7 +636,10 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 												FVector currentSpeed, 
 												float acceleration, 
 												float maxSpeed, 
-												int& currentSlowing) {
+												int& currentSlowing,
+												FVector& newTargetOffset,
+												bool& needChangeTarget) {
+	needChangeTarget = false;
 	FVector direction = targetValue - currentValue;
 	float directionSpeed = 0;
 	if (direction.Length() > 0) {
@@ -525,6 +647,8 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 		directionSpeed = currentSpeed.Length() * direction.CosineAngle2D(currentSpeed);
 	}
 	
+	float targetOffset;
+	bool needChangeT;
 	directionSpeed = CalculateSpeed(
 		DeltaTime,
 		0,
@@ -532,8 +656,14 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 		directionSpeed,
 		acceleration,
 		maxSpeed,
-		currentSlowing
+		currentSlowing,
+		targetOffset,
+		needChangeT
 	);
+	if (needChangeT) {
+		needChangeTarget = true;
+		newTargetOffset = direction * newTargetOffset;
+	}
 
 	return direction * directionSpeed;
 }
@@ -584,13 +714,17 @@ void APlayerPawnDefault::AddCameraRotation(float deltaRotation) {
 void APlayerPawnDefault::AddCameraRotationForce(float deltaRotation) {
 	UpdateCameraActorLocationOnRotation(CameraCurrentRotation, CameraCurrentRotation + deltaRotation);
 	CameraTargetRotation = CameraCurrentRotation += deltaRotation;
-	CameraSlowing.Rotation = 1;
+	CameraSlowing.Rotation = -1;
 	ApplyCameraRotation();
 }
 
 void APlayerPawnDefault::SetCameraLocation(FVector newLocation) {
 	UnsetCameraTargetActor();
-	CameraTargetPosition = newLocation;
+	CameraTargetPosition = {
+			std::clamp(newLocation.X, CameraMovementMinCoordinate.X, CameraMovementMaxCoordinate.X),
+			std::clamp(newLocation.Y, CameraMovementMinCoordinate.Y, CameraMovementMaxCoordinate.Y),
+			newLocation.Z,
+	};
 	CameraSlowing.MoveX = CameraSlowing.MoveY = 0;
 }
 
@@ -598,13 +732,18 @@ void APlayerPawnDefault::AddCameraLocation(FVector deltaLocation) {
 	SetCameraLocation(CameraTargetPosition + deltaLocation);
 }
 
-void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor) {
+void APlayerPawnDefault::SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove) {
+	bFastMove = fastMove;
 	CameraHasTargetActor = true;
 	CameraTargetActor = cameraTargetActor;
 	CameraBoom->bEnableCameraLag = true;
+	if (bFastMove) {
+		saveCameraHeight = CameraTagretHeight;
+	}
 }
 
 void APlayerPawnDefault::UnsetCameraTargetActor() {
+	bFastMove = false;
 	CameraHasTargetActor = false;
 	CameraBoom->bEnableCameraLag = false;
 }

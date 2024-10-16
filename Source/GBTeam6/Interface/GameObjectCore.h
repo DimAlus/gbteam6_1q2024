@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UGameObjectCore : public UObject
 {
 	GENERATED_BODY()
@@ -36,6 +36,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnCreatingAfter;
 
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnBeginPlay;
+
 public:
 	UGameObjectCore();
 
@@ -49,7 +52,7 @@ public:
 	void SaveActor(FActorSaveData& saveData);
 	void LoadActor(const FActorSaveData& saveData);
 
-	//UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Initialization)
+	UFUNCTION(BlueprintCallable, Category = Initialization)
 	FORCEINLINE bool GetIsCreated() const { return isCreated; };
 	FORCEINLINE FString GetOwnerName() const { return OwnerName; };
 	

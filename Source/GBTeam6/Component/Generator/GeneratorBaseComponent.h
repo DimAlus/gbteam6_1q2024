@@ -71,6 +71,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual TMap<EResource, int> GetNeeds();
 
+	UFUNCTION(BlueprintCallable)
+	virtual TMap<EResource, int> GetPlayerResourcesNeeds();
+
 
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive);
@@ -87,6 +90,16 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetProgressPercents(FString threadName);
+
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool HasAllSocialTags(const FString& generatorName);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool HasConstraintByResultActors(const FString& generatorName);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool HasConstraintByInventory(const FString& generatorName);
 
 
 	UFUNCTION(BlueprintCallable)

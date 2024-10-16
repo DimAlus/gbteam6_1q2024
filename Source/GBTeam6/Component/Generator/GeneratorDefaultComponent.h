@@ -21,6 +21,7 @@ public:
 protected:
 	virtual void OnCoreCreatedBefore() override;
 
+	virtual void OnCoreBeginPlay() override;
 public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -56,6 +57,7 @@ private:
 
 
 	TMap<EResource, int> CurrentNeeds;
+	TMap<EResource, int> CurrentPlayerNeeds;
 private:
 
 	UInventoryBaseComponent* GetInventory();
@@ -74,9 +76,6 @@ private:
 
 	bool GeneratorSelected(const FString& generatorName);
 
-	bool HasAllSocialTags(const FString& generatorName);
-	bool HasConstraintByResultActors(const FString& generatorName);
-	bool HasConstraintByInventory(const FString& generatorName);
 	bool CanGenerate(const FString& generatorName);
 
 	bool HireWorkers(const FString& generatorName);
@@ -100,6 +99,7 @@ public:
 	virtual float GetWorkPower() override;
 
 	virtual TMap<EResource, int> GetNeeds() override;
+	virtual TMap<EResource, int> GetPlayerResourcesNeeds() override;
 	
 	virtual void ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) override;
 	virtual void ChangeGenerationPriority(const FString& generatorName, bool isPriority) override;
@@ -107,6 +107,10 @@ public:
 	virtual TArray<FString> GetGenerators(FString threadName) override;
 	virtual float GetProgress(FString threadName) override;
 	virtual float GetProgressPercents(FString threadName) override;
+
+	virtual bool HasAllSocialTags(const FString& generatorName) override;
+	virtual bool HasConstraintByResultActors(const FString& generatorName) override;
+	virtual bool HasConstraintByInventory(const FString& generatorName) override;
 
 	virtual const FGeneratorThread& GetThread(FString threadName, bool& exists) override;
 	virtual const FGeneratorElementInfo& GetCurrentGenerator(FString threadName, bool& exists) override;

@@ -10,7 +10,7 @@
 class IMessageObserver;
 class UGameObjectCore;
 
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UMessageService : public UAGameService {
 	GENERATED_BODY()
 

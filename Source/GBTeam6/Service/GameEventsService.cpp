@@ -282,7 +282,9 @@ bool UGameEventsService::CheckNeedArray(const TArray<FNeed>& needs, FGameEventCo
 bool UGameEventsService::UpdateRow(const FString& QuestName,
 								   const FQuestData& QuestData,
 								   FGameEventConext& EventContext) {
-
+	if (!QuestData.Status) {
+		return false;
+	}
 	for (const FNeedArray& needs : QuestData.Requirements) {
 		if (CheckNeedArray(needs.Needs, EventContext)) {
 			UE_LOG_SERVICE(Log, "Event '%s'.'%s' Complete needs", *EventContext.EventName, *QuestName);
@@ -290,7 +292,8 @@ bool UGameEventsService::UpdateRow(const FString& QuestName,
 			for (auto act : QuestData.Actions) {
 				DoAction(act, EventContext, CurrentActionContext);
 			}
-			ShowPages(QuestData.Pages, EventContext);
+			if (QuestData.Pages.Num() > 0)
+				ShowPages(QuestData.Pages, EventContext);
 			return true;
 		}
 	}
@@ -316,6 +319,7 @@ void UGameEventsService::LoadEvents() {
 		FTRGameEvent* evtdata = (FTRGameEvent*)iter.Value;
 
 		FGameEvent evt;
+		evt.Status = evtdata->Status;
 		evt.QuestDatas = evtdata->QuestData;
 		evt.Context.EventName = RowName.ToString();
 
@@ -341,6 +345,9 @@ void UGameEventsService::LoadEvents() {
 void UGameEventsService::Update() {
 	if (!bIsPaused) {
 		for (auto iter = Events.begin(); iter != Events.end(); ++iter) {
+			if (!iter.Value().Status) {
+				continue;
+			}
 			FGameEventConext& Context = iter.Value().Context;
 			TMap<FString, FQuestData>& QuestDatas = iter.Value().QuestDatas;
 
@@ -353,6 +360,17 @@ void UGameEventsService::Update() {
 			for (auto data : QuestDatas) {
 				UpdateRow(data.Key, data.Value, Context);
 			}
+		}
+	}
+}
+
+void UGameEventsService::UpdateTag(FString EventName, FString TagName, bool IsSetTag) {
+	if (Events.Contains(EventName)) {
+		if (IsSetTag) {
+			Events[EventName].Context.Tags.Add(TagName);
+		}
+		else {
+			Events[EventName].Context.Tags.Remove(TagName);
 		}
 	}
 }

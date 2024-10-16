@@ -22,6 +22,10 @@ void UGeneratorDefaultComponent::OnCoreCreatedBefore() {
 	if (auto inventory = GetInventory()) {
 		inventory->OnInventoryChange.AddDynamic(this, &UGeneratorDefaultComponent::OnInventoryChanging);
 	}
+}
+
+void UGeneratorDefaultComponent::OnCoreBeginPlay() {
+	Super::OnCoreBeginPlay();
 	if (auto gameState = GetGameState()) {
 		gameState->OnPlayerInventoryChanging.AddDynamic(this, &UGeneratorDefaultComponent::OnPlayerInventoryChanging);
 	}
@@ -44,7 +48,6 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				UGameObjectCore* core = thread.AttachedCores[i];
 
 				if (IsValid(core)) {
-					UE_LOG_COMPONENT(Warning, "Core at 44 line is %s", *GetNameSafe(core));
 					if (auto gen = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
 						DeltaPower += gen->GetWorkPower() * info.WorkMultiplier;
 					}
@@ -61,6 +64,7 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				ApplyWork(thread.GeneratorName);
 				FString save = thread.GeneratorName;
 				thread.GeneratorName = "";
+				TouchGeneratorSocialTagNeeds(save);
 				OnGeneratorChanging.Broadcast(save, info);
 			}
 
@@ -101,12 +105,11 @@ void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer
 
 		info.HasSocialTagNeeds = false;
 		bool HasPlayerResources = false;
-		auto gameState = GetGameState();
 		for (const auto& prc : info.Barter.Price) {
 			if (prc.Resource == EResource::SocialTag) {
 				info.HasSocialTagNeeds = true;
 			}
-			if (gameState->GetPlayerResources().Contains(prc.Resource)) {
+			if (AGameStateDefault::GetPlayerResourcesTypes().Contains(prc.Resource)) {
 				HasPlayerResources = true;
 			}
 		}
@@ -189,11 +192,11 @@ void UGeneratorDefaultComponent::TouchGeneratorSocialTagNeeds(const FString& gen
 	if (!info.HasSocialTagNeeds) {
 		return;
 	}
-	if (((GeneratorSelected(generatorName) || thread.GeneratorName == generatorName)
+	bool CurrentWaitSocialTags = (GeneratorSelected(generatorName) || thread.GeneratorName == generatorName)
 		&& !HasConstraintByResultActors(generatorName)
-		&& !HasConstraintByInventory(generatorName))
-		!= context.WaitSocialTags) {
-		context.WaitSocialTags = !context.WaitSocialTags;
+		&& !HasConstraintByInventory(generatorName);
+	if (CurrentWaitSocialTags != context.WaitSocialTags) {
+		context.WaitSocialTags = CurrentWaitSocialTags;
 		CurrentThreadNeedSocialTagsActual = false;
 		IsActualCurrentSocialTagNeeds = false;
 	}
@@ -454,6 +457,7 @@ void UGeneratorDefaultComponent::ApplyNotInventoriableResources(const TArray<FPr
 
 TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 	TMap<EResource, int> needs;
+	CurrentPlayerNeeds.Reset();
 
 	TArray<FString> keys;
 	this->GeneratorsContext.GetKeys(keys);
@@ -468,6 +472,9 @@ TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 			}
 			if (count > 0) {
 				for (const FPrice& price : info.Barter.Price) {
+					if (GetGameState()->GetPlayerResources().Contains(price.Resource)) {
+						CurrentPlayerNeeds.Add(price.Resource, price.Count * count);
+					}
 					if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
 						continue;
 					}
@@ -511,6 +518,10 @@ TMap<EResource, int> UGeneratorDefaultComponent::GetNeeds() {
 	return CurrentNeeds;
 }
 
+TMap<EResource, int> UGeneratorDefaultComponent::GetPlayerResourcesNeeds() {
+	return CurrentPlayerNeeds;
+}
+
 
 void UGeneratorDefaultComponent::ChangeGenerationPassiveWork(const FString& generatorName, bool isPassive) {
 	UE_LOG_COMPONENT(Log, "Set Generator Passive Work <%s>: %d", *generatorName, isPassive ? 1 : 0);
@@ -521,8 +532,8 @@ void UGeneratorDefaultComponent::ChangeGenerationPassiveWork(const FString& gene
 	this->GeneratorsContext[generatorName].PassiveWork = isPassive;
 	ResetCurrentNeeds();
 	this->TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -631,8 +642,8 @@ void UGeneratorDefaultComponent::AddTask(FString generatorName) {
 	UE_LOG_COMPONENT(Log, "Add Task <%s>: %d", *generatorName, context.CountTasks);
 	ResetCurrentNeeds();
 	TouchGenerator(generatorName);
-	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 	IsActualCurrentSocialTagNeeds = false;
+	OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 }
 
 
@@ -646,8 +657,8 @@ void UGeneratorDefaultComponent::RemoveTask(FString generatorName) {
 		UE_LOG_COMPONENT(Log, "Remove Task <%s>: %d", *generatorName, context.CountTasks);
 		ResetCurrentNeeds();
 		TouchGenerator(generatorName);
-		OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 		IsActualCurrentSocialTagNeeds = false;
+		OnGeneratorChanging.Broadcast(generatorName, this->Generators[generatorName]);
 
 	}
 }

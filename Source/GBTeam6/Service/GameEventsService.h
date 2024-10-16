@@ -9,13 +9,15 @@
 #include "GameEventsService.generated.h"
 
 class USaveService;
+class UGameInstanceDefault;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UGameEventsService : public UAGameService, public ICanSaveInterface
 {
 	GENERATED_BODY()
+	friend class UGameInstanceDefault;
 protected:
 	virtual void InitializeService() override;
 	virtual void ClearService() override;
@@ -29,6 +31,7 @@ private:
 	struct FGameEvent {
 		TMap<FString, FQuestData> QuestDatas{};
 		FGameEventConext Context;
+		bool Status;
 	};
 
 	TMap<FString, FGameEvent> Events;
@@ -59,4 +62,9 @@ public:
 
 	void LoadEvents();
 	void Update();
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void UpdateTag(FString EventName, FString TagName, bool IsSetTag);
 };

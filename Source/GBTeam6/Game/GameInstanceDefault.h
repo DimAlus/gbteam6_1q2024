@@ -2,6 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+
+#include "../Lib/Lib.h"
+
 #include "GameInstanceDefault.generated.h"
 
 /** Services classes */
@@ -12,6 +15,7 @@ class UMappingService;
 class USocialService;
 class UConfigService;
 class USoundService;
+class UTimerService;
 class USaveService;
 
 /**
@@ -22,15 +26,45 @@ class GBTEAM6_API UGameInstanceDefault : public UGameInstance
 {
 	GENERATED_BODY()
 public:
+	virtual void Shutdown() override;
 	virtual void Init() override;
 
 	UFUNCTION()
-	void OnChangeMap(UWorld* world);
+	void OnChangeMap(UWorld* world, FString FolderName, FString NewMapName);
+
+private:
+	void GameLoading();
+
+private:
+	FDelegateHandle PreLoadMapHandle;
+	FDelegateHandle PostLoadMapHandle;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void LoadGame(FString slotName);
+
+	UFUNCTION(BlueprintCallable)
+	void SaveGame(FString slotName);
+
+	UFUNCTION(BlueprintCallable)
+	void MainMenu();
 
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString GameSaveSlot;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool IsMenuMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool IsDevelopmentMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool GameLoaded;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FTouchSignature OnGameLoadedEvent;
 
 /***************************************
 ***    Tables            
@@ -81,6 +115,8 @@ private:
 	UGameEventsService* GameEventsService{ nullptr };
 	UPROPERTY()
 	UConfigService* ConfigService{ nullptr };
+	UPROPERTY()
+	UTimerService* TimerService{ nullptr };
 
 	bool bServicesInitialized = false;
 
@@ -115,6 +151,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UConfigService* GetConfigService() const { return ConfigService; }
+	
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UTimerService* GetGameTimerManager() const { return TimerService; }
 
 
 

@@ -4,10 +4,12 @@
 
 void UAGameService::InitializeService() {
 	UE_LOG_SERVICE(Log, "Initialize Servie");
+	Initialized = true;
 }
 
 void UAGameService::ClearService() {
 	UE_LOG_SERVICE(Log, "Clear Servie");
+	Initialized = false;
 }
 
 AGameStateDefault* UAGameService::GetGameState() {

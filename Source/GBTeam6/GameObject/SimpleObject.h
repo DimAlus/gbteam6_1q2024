@@ -22,6 +22,8 @@ public:
 	// Sets default values for this actor's properties
 	ASimpleObject();
 
+	virtual void CreateCore_Implementation() override;
+
 	virtual void Destroyed() override;
 
 protected:

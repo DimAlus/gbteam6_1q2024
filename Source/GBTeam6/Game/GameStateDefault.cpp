@@ -44,11 +44,22 @@ void AGameStateDefault::LoadSizeStacks() {
 	}
 }
 
+const TSet<EResource>& AGameStateDefault::GetPlayerResourcesTypes() {
+	static TSet<EResource> resources = {
+		EResource::Spirit
+	};
+	return resources;
+}
+
 int AGameStateDefault::GetStackSize(EResource resource) {
 	if (StackSizes.Contains(resource)) {
 		return StackSizes[resource];
 	}
 	return 1;
+}
+
+bool AGameStateDefault::IsPlayerResource(EResource resource) {
+	return GetPlayerResourcesTypes().Contains(resource);
 }
 
 int AGameStateDefault::GetResourceCount(EResource resource) {
@@ -197,15 +208,14 @@ void AGameStateDefault::DayChangingLoop(){
 
 void AGameStateDefault::BeginPlay() {
 	Super::BeginPlay();
-	PlayerResources = {
-		{ EResource::Spirit, 0 }
-	};
+	PlayerResources = {};
+	for (auto res : GetPlayerResourcesTypes()){
+		PlayerResources.Add(res, 0);
+	}
 	LoadConfig();
 	LoadSizeStacks();
 
 	GetSaveService()->AddSaveProgressOwner(this);
-
-	GetSaveService()->LoadConfigPublic(this);
 
 	FConfig conf;
 	GetGameInstance()->GetConfigService()->GetConfig(EConfig::F_StartGameTime, conf);

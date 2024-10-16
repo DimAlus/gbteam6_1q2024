@@ -15,7 +15,7 @@ struct ClientNeeds;
 /**
  * 
  */
-UCLASS()
+UCLASS(BlueprintType)
 class GBTEAM6_API UTaskManagerService : public UAGameService
 {
 	GENERATED_BODY()

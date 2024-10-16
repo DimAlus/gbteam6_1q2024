@@ -13,6 +13,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LgComponent, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTouchSignature);
+DECLARE_DYNAMIC_DELEGATE(FTouchBlueprintableSignature);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -81,6 +82,20 @@ public:
 	/** Set game speed lower action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* SetGameSpeedAction {nullptr};
+
+	/** Set game roatate building action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* RotateBuildingAction {nullptr};
+
+
+	/** Set game  quick save action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* SaveGameAction {nullptr};
+
+	/** Set game quick load action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* LoadGameAction {nullptr};
+
 };
 
 struct FTileInfo {
@@ -190,6 +205,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UMaterialInstance* ConstructionMaterial{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UMaterialInstance* ConstructionFullMaterial{};
 	
 };
 
@@ -613,12 +631,18 @@ struct FQuestPage {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FText AddText{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESocialTag TagToView{ ESocialTag::None };
 };
 
 
 USTRUCT(BlueprintType)
 struct FQuestData {
 	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
+	bool Status{ true };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SuccessEvent)
 	bool StartOnce{ true };
@@ -641,6 +665,8 @@ struct FTRGameEvent : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FString, FQuestData> QuestData{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Status{ true };
 };
 
 USTRUCT()

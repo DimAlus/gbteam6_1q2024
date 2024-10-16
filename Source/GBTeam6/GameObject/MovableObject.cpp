@@ -30,6 +30,31 @@ AMovableObject::AMovableObject() {
 
 }
 
+void AMovableObject::CreateCore_Implementation() {
+	if (!this->GameObjectCore) {
+		this->GameObjectCore = NewObject<UGameObjectCore>();
+		this->GameObjectCore->SetOwner(this);
+
+		this->GameObjectCore->BindComponentNoRegister(
+			EGameComponentType::Movement,
+			GetMovementComponent()
+		);
+
+		this->GameObjectCore->BindComponentNoRegister(
+			EGameComponentType::Collision,
+			GetCapsuleComponent()
+		);
+
+		this->GameObjectCore->BindComponentNoRegister(
+			EGameComponentType::Mapping,
+			MappingComponent
+		);
+
+		this->GameObjectCore->InitDataByName(ObjectName);
+		this->GameObjectCore->SetIsCreated();
+	}
+}
+
 void AMovableObject::Destroyed() {
 	if (GameObjectCore) {
 		GameObjectCore->DestroyOwner();
@@ -39,27 +64,8 @@ void AMovableObject::Destroyed() {
 
 // Called when the game starts or when spawned
 void AMovableObject::BeginPlay() {
-
-	this->GameObjectCore = NewObject<UGameObjectCore>();
-	this->GameObjectCore->SetOwner(this);
-
-	this->GameObjectCore->BindComponentNoRegister(
-		EGameComponentType::Movement,
-		GetMovementComponent()
-	);
-
-	this->GameObjectCore->BindComponentNoRegister(
-		EGameComponentType::Collision,
-		GetCapsuleComponent()
-	);
-
-	this->GameObjectCore->BindComponentNoRegister(
-		EGameComponentType::Mapping,
-		MappingComponent
-	);
-
-	this->GameObjectCore->InitDataByName(ObjectName);
-	this->GameObjectCore->SetIsCreated();
+	CreateCore_Implementation();
+	this->GameObjectCore->OnBeginPlay.Broadcast();
 	Super::BeginPlay();
 }
 

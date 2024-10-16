@@ -83,8 +83,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool CheckNeed(const FNeed& need);
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-	bool isMenuMap;
 
 /// Player Resources
 private:
@@ -94,9 +92,14 @@ private:
 
 	
 public:
+	static const TSet<EResource>& GetPlayerResourcesTypes();
+
 	FORCEINLINE const TMap<EResource, int>& GetPlayerResources() const { return PlayerResources; }
 
 	int GetStackSize(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsPlayerResource(EResource resource);
 
 	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
@@ -181,4 +184,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FTouchSignature OnPlayerInventoryChanging;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FTouchSignature OnSpiritEatingFail;
 };
