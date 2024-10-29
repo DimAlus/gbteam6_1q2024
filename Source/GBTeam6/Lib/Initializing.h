@@ -334,6 +334,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoundComponentInitData SoundComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FMappingComponentInitData MappingComponentInitData{};
 };
 
 /***********************************************************************************/

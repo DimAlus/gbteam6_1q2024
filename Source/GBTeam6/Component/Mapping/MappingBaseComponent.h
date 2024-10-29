@@ -8,8 +8,6 @@
 
 #include "MappingBaseComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlacedEventSignature, bool, IsPlaced);
-
 class AMapPreview;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -18,7 +16,6 @@ class GBTEAM6_API UMappingBaseComponent : public UBaseComponent {
 
 public:	
 	UMappingBaseComponent();
-
 
 
 	UFUNCTION(BlueprintCallable)
@@ -34,21 +31,21 @@ public:
 	virtual void SetOwnerLocation(FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
+	virtual void AddRotation(int direction);
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsPlaced(bool isPlaced);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsPlaced();
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<FMapInfo> GetMapInfo();
+	virtual const TArray<FMapInfo>& GetMapInfo();
 	
 	UFUNCTION(BlueprintCallable)
 	virtual FIntVector GetCurrentMapLocation();
 
-	UFUNCTION(BlueprintCallable)
-	virtual void SetPreviewVisibility(bool isVilible);
-
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnPlacedEventSignature OnPlaced;
+	FBoolSignature OnPlaced;
 };

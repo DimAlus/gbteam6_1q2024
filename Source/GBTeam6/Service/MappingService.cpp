@@ -1,5 +1,11 @@
 #include "./MappingService.h"
 #include "../Game/GameInstanceDefault.h"
+#include "./ConfigService.h"
+
+#include "../Interface/GameObjectCore.h"
+
+#include "../Component/Mapping/MappingBaseComponent.h"
+
 #include "MappingService.h"
 
 
@@ -7,6 +13,10 @@ void UMappingService::InitializeService() {
 	UAGameService::InitializeService();
 	InitTileTypes();
 	InitTileTypesTree();
+
+	FConfig config;
+	GameInstance->GetConfigService()->GetConfig(EConfig::FV_TileSize, config);
+	this->tileSize = FIntVector(config.VectorValue);
 }
 
 void UMappingService::ClearService() {
@@ -178,15 +188,14 @@ void UMappingService::SetShowTileView(bool isShowTileView) {
 }
 
 bool UMappingService::CanPlaceAtWorld(UGameObjectCore* core) {
-	auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping))
+	auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping));
 	if (!mapping) {
 		return false; 
 	}
-	FIntVector loc = mapping->GetCurrentLocation();
+	FIntVector loc = mapping->GetCurrentMapLocation();
 	for (const FMapInfo& rect : mapping->GetMapInfo()) {
 		for (int i = 0; i < rect.Size.X; i++) {
-			for (int j = 0; j < rect.Size.Y; j++) 
-			{
+			for (int j = 0; j < rect.Size.Y; j++) {
 				const FTileInfo& info = this->GetTileInfo(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y);
 				bool isCanPlace = info.state == ETileState::Free
 					&& this->GetTileIsParent(info.type, rect.TileType);
@@ -207,15 +216,26 @@ void UMappingService::SetLocatedCore(UGameObjectCore* core) {
 void UMappingService::SetLocatedCoreLocation(FVector location) {
 	if (IsValid(LoacatedCore)) {
 		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
-			FIntVector currentLocation = mapping->GetCurrentLocation();
+			FIntVector currentLocation = mapping->GetCurrentMapLocation();
 			mapping->SetOwnerLocation(location);
-			if (mapping->GetCurrentLocation() != currentLocation){
+			if (mapping->GetCurrentMapLocation() != currentLocation){
 				CanSetLoacatedCore = CanPlaceAtWorld(LoacatedCore);
+				UpdateTiles();
 			}
 		}
 	}
 	else {
 		SetShowTileView(false);
+	}
+}
+
+void UMappingService::AddLocatedCoreRotation(int direction) {
+	if (IsValid(LoacatedCore)) {
+		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+			mapping->AddRotation(direction);
+			CanSetLoacatedCore = CanPlaceAtWorld(LoacatedCore);
+			UpdateTiles();
+		}
 	}
 }
 
@@ -232,6 +252,7 @@ bool UMappingService::InstallLocatedCore() {
 	if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
 		mapping->GetIsPlaced();
 		LoacatedCore = nullptr;
+		UpdateTiles();
 		return true;
 	}
 	return false;

@@ -97,14 +97,55 @@ public:
 	void SetLocatedCore(UGameObjectCore* core);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LoacatedCore };
+	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LoacatedCore; };
 
 	UFUNCTION(BlueprintCallable)
 	void SetLocatedCoreLocation(FVector location);
+
+	UFUNCTION(BlueprintCallable)
+	void AddLocatedCoreRotation(int direction);
 
 	UFUNCTION(BlueprintCallable)
 	bool CanSetLocatedCore();
 
 	UFUNCTION(BlueprintCallable)
 	bool InstallLocatedCore();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FIntVector GetTileSize() const { return tileSize; };
+
+
+	/****************  Tiles Settings   ****************/
+protected:
+	TMap<TTuple<int, int>, UStaticMeshComponent*> previews;
+	FIntVector tileSize{ 100, 100, 1 }; // Initialized at InitializeService from Config
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float tileMeshBorderPercents = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float tileMeshHeight = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UStaticMesh* tileMesh = Cast<UStaticMesh>(StaticLoadObject(
+		UStaticMesh::StaticClass(),
+		NULL,
+		TEXT("/Engine/BasicShapes/Cube")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* tileMeshEnabledMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* tileMeshDisabledMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
+	));
+
 };

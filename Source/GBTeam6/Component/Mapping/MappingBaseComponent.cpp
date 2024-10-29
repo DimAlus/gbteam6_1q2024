@@ -18,6 +18,9 @@ void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
 void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation) {
 }
 
+void UMappingBaseComponent::AddRotation(int direction) {
+}
+
 bool UMappingBaseComponent::SetIsPlaced(bool isPlaced) {
 	return true;
 }
@@ -26,13 +29,11 @@ bool UMappingBaseComponent::GetIsPlaced() {
 	return true;
 }
 
-TArray<FMapInfo> UMappingBaseComponent::GetMapInfo() { 
-	return TArray<FMapInfo>(); 
+const TArray<FMapInfo>& UMappingBaseComponent::GetMapInfo() {
+	static TArray<FMapInfo> EmptyArray;
+	return EmptyArray;
 }
 
 FIntVector UMappingBaseComponent::GetCurrentMapLocation() { 
 	return FIntVector(); 
-}
-
-void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {
 }
