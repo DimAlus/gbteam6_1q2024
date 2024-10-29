@@ -13,6 +13,7 @@ UCLASS(BlueprintType)
 class GBTEAM6_API USoundService : public UAGameService, public IMessageObserver
 {
 	GENERATED_BODY()
+
 protected:
 	virtual void InitializeService() override;
 	virtual void ClearService() override;
@@ -32,7 +33,31 @@ protected:
 	UAudioComponent* SelectCommandAudioComponent = nullptr;
 
 	UPROPERTY()
+	USoundBase* NextMusicTrack = nullptr;
+
+	UPROPERTY()
+	FTimerHandle DelayTimerHandle{};
+
+	UPROPERTY()
 	TSet<EMessageTag> SubscriberMessageTags{};
+
+	UPROPERTY()
+	EMessageTag LastReceivedMusicTag{};
+
+protected:
+
+	UFUNCTION()
+	void PlayNextMusicTrack(float Delay);
+	
+	UFUNCTION()
+	void PlayMusicTrackByTag(EMessageTag MusicTag, float Delay = 0.f);
+
+	UFUNCTION()
+	void OnMusicTrackFinished();
+
+public:
+	UPROPERTY()
+	float MusicFadeDuration{5.f};
 
 public:
 	
