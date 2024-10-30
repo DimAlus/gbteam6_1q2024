@@ -24,7 +24,7 @@ void UMappingService::ClearService() {
 	ClearTileInfoArray();
 	this->TileTypesTree.Empty();
 	this->TileTypes.Empty();
-	LoacatedCore = nullptr;
+	LocatedCore = nullptr;
 }
 
 UMappingService::UMappingService() {
@@ -209,17 +209,17 @@ bool UMappingService::CanPlaceAtWorld(UGameObjectCore* core) {
 }
 
 void UMappingService::SetLocatedCore(UGameObjectCore* core) {
-	LoacatedCore = core;
-	CanSetLoacatedCore = false;
+	LocatedCore = core;
+	bCanSetLocatedCore = false;
 }
 
 void UMappingService::SetLocatedCoreLocation(FVector location) {
-	if (IsValid(LoacatedCore)) {
-		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+	if (IsValid(LocatedCore)) {
+		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
 			FIntVector currentLocation = mapping->GetCurrentMapLocation();
 			mapping->SetOwnerLocation(location);
 			if (mapping->GetCurrentMapLocation() != currentLocation){
-				CanSetLoacatedCore = CanPlaceAtWorld(LoacatedCore);
+				bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 				UpdateTiles();
 			}
 		}
@@ -230,10 +230,10 @@ void UMappingService::SetLocatedCoreLocation(FVector location) {
 }
 
 void UMappingService::AddLocatedCoreRotation(int direction) {
-	if (IsValid(LoacatedCore)) {
-		if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
+	if (IsValid(LocatedCore)) {
+		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
 			mapping->AddRotation(direction);
-			CanSetLoacatedCore = CanPlaceAtWorld(LoacatedCore);
+			bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 			UpdateTiles();
 		}
 	}
@@ -241,7 +241,7 @@ void UMappingService::AddLocatedCoreRotation(int direction) {
 
 
 bool UMappingService::CanSetLocatedCore() { 
-	return IsValid(LoacatedCore) && CanSetLoacatedCore;
+	return IsValid(LocatedCore) && bCanSetLocatedCore;
 }
 
 
@@ -249,11 +249,41 @@ bool UMappingService::InstallLocatedCore() {
 	if (!CanSetLocatedCore()) 
 		return false; 
 
-	if (auto mapping = Cast<UMappingBaseComponent>(LoacatedCore->GetComponent(EGameComponentType::Mapping))) {
-		mapping->GetIsPlaced();
-		LoacatedCore = nullptr;
-		UpdateTiles();
-		return true;
+	if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
+		if (SetTilesBusyByCore(LocatedCore, ETileState::Busy)) {
+			mapping->SetIsPlaced(true);
+			LocatedCore = nullptr;
+			UpdateTiles();
+			return true;
+		}
 	}
 	return false;
+}
+
+bool UMappingService::SetTilesBusyByCore(UGameObjectCore* core, ETileState state) {
+	auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping));
+	if (!mapping) {
+		return true;
+	}
+	FIntVector loc = mapping->GetCurrentMapLocation();
+	if (state == ETileState::Busy) {
+		for (const auto& rect : mapping->GetMapInfo()) {
+			for (int i = 0; i < rect.Size.Y; i++) {
+				for (int j = 0; j < rect.Size.X; j++) {
+					if (GetTileInfo(j + rect.Location.X + loc.X, i + rect.Location.Y + loc.Y).state == ETileState::Busy) {
+						return false;
+					}
+				}
+			}
+		}
+	}
+	for (const auto& rect : mapping->GetMapInfo()) {
+		for (int i = 0; i < rect.Size.Y; i++) {
+			for (int j = 0; j < rect.Size.X; j++) {
+				SetTileBusy(j + rect.Location.X + loc.X, i + rect.Location.Y + loc.Y, state);
+			}
+		}
+	}
+
+	return true;
 }

@@ -35,6 +35,7 @@ protected:
 	void UpdateActorLocation();
 	void UpdateActorRotation();
 
+	void OnDead();
 public:
 	virtual void SetOwnerLocation(FVector TargetLocation) override;
 	virtual void AddRotation(int direction) override;
@@ -42,6 +43,5 @@ public:
 	virtual bool GetIsPlaced() override;
 	virtual const TArray<FMapInfo>& GetMapInfo() override;
 	virtual FIntVector GetCurrentMapLocation() override;
-
 
 };

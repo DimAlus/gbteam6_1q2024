@@ -1,7 +1,12 @@
 #include "./MappingDefaultComponent.h"
 #include "../../Game/GameStateDefault.h"
-#include "../../Service/MappingService.h"
 #include "../../Game/GameInstanceDefault.h"
+
+#include "../../Service/MappingService.h"
+#include "../../Service/SaveService.h"
+
+#include "../../Component/Health/HealthBaseComponent.h"
+
 #include "Components/ShapeComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
 #include "MappingDefaultComponent.h"
@@ -32,11 +37,19 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 		}
 	}	
 
+	if (auto health = Cast<UHealthBaseComponent>(GetCore()->GetComponent(EGameComponentType::Health))) {
+		health->OnLastDead.AddDynamic(this, &UMappingDefaultComponent::OnDead);
+	}
+
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.MappingLocation = CurrentLocation;
+
+	if (!bIsPlaced) {
+		GetGameInstance()->GetSaveService()->bSaveMe = false;
+	}
 }
 
 void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
@@ -65,6 +78,10 @@ void UMappingDefaultComponent::UpdateActorRotation() {
 	GetOwner()->SetActorRotation(FRotator(0, CurrentRotation * 90, 0));
 }
 
+void UMappingDefaultComponent::OnDead() {
+	this->SetIsPlaced(false);
+}
+
 
 void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
 	FIntVector newLocation = FIntVector(
@@ -91,6 +108,9 @@ bool UMappingDefaultComponent::SetIsPlaced(bool isPlaced) {
 	if (bIsPlaced ^ isPlaced) {
 		bIsPlaced = isPlaced;
 		OnPlaced.Broadcast(isPlaced);
+		if (!bIsPlaced) {
+			GetGameInstance()->GetMappingService()->SetTilesBusyByCore(GetCore(), ETileState::Free);
+		}
 		return true;
 	}
 	return false;

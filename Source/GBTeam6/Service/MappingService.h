@@ -80,8 +80,8 @@ public:
 	bool GetTileIsParent(ETileType child, ETileType parent);
 
 protected:
-	UGameObjectCore* LoacatedCore = nullptr;
-	bool CanSetLoacatedCore;
+	UGameObjectCore* LocatedCore = nullptr;
+	bool bCanSetLocatedCore;
 
 	bool currentTileViewVisibility = false;
 
@@ -97,7 +97,7 @@ public:
 	void SetLocatedCore(UGameObjectCore* core);
 
 	UFUNCTION(BlueprintCallable)
-	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LoacatedCore; };
+	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LocatedCore; };
 
 	UFUNCTION(BlueprintCallable)
 	void SetLocatedCoreLocation(FVector location);
@@ -110,6 +110,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool InstallLocatedCore();
+
+	UFUNCTION(BlueprintCallable)
+	bool SetTilesBusyByCore(UGameObjectCore* core, ETileState state);
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FIntVector GetTileSize() const { return tileSize; };

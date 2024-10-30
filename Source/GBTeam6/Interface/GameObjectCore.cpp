@@ -1,4 +1,5 @@
 #include "./GameObjectCore.h"
+#include "../Component/Mapping/MappingBaseComponent.h"
 #include "../Component/Health/HealthBaseComponent.h"
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
@@ -82,6 +83,14 @@ TSubclassOf<UActorComponent> GetNvlClass(TSubclassOf<UActorComponent> cls, TSubc
 
 void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& InitData) {
 	UE_LOG_COMPONENT(Log, "Initialize runtime components!");
+
+	//Create Mapping component
+	UMappingBaseComponent* NewMappingComponent = NewObject<UMappingBaseComponent>(
+		owner, 
+		GetNvlClass(InitData.MappingComponentInitData.ComponentClass, UMappingBaseComponent::StaticClass())
+	);
+	NewMappingComponent->Initialize(InitData.MappingComponentInitData.ComponentInitializer);
+	BindComponent(EGameComponentType::Mapping, NewMappingComponent);
 
 	//Create Health component
 	UHealthBaseComponent* NewHealthComponent = NewObject<UHealthBaseComponent>(

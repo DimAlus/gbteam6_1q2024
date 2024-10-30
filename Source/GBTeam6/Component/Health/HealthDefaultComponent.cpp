@@ -124,6 +124,7 @@ void UHealthDefaultComponent::NotDestroyNow() {
 void UHealthDefaultComponent::PleaseDead() {
 	if (--lifeCount <= 0) {
 		if (IsValid(this) && IsValid(this->GetOwner())) {
+			OnLastDead.Broadcast();
 			this->GetOwner()->Destroy();
 		}
 	}
