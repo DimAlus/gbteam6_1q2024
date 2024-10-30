@@ -20,6 +20,10 @@ public:
 
 protected:
 
+	virtual void OnCoreCreatedBefore() override;
+
+protected:
+
 	FVector ComponentRelativeLocation{};
 	TArray<FMapInfo> MapInfos{};
 	TArray<FMapInfo> CurrentMapInfos{};
@@ -32,9 +36,11 @@ protected:
 	float CurrentActorRelaticveRotation = 0;
 
 protected:
+	FVector GetRotatedOffset();
 	void UpdateActorLocation();
 	void UpdateActorRotation();
 
+	UFUNCTION()
 	void OnDead();
 public:
 	virtual void SetOwnerLocation(FVector TargetLocation) override;

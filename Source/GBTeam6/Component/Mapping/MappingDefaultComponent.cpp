@@ -36,11 +36,6 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			square.Location.Y -= square.Size.Y;
 		}
 	}	
-
-	if (auto health = Cast<UHealthBaseComponent>(GetCore()->GetComponent(EGameComponentType::Health))) {
-		health->OnLastDead.AddDynamic(this, &UMappingDefaultComponent::OnDead);
-	}
-
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
@@ -57,17 +52,35 @@ void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 	CurrentLocation = saveData.MappingLocation;
 	UpdateActorLocation();
 	UpdateActorRotation();
-	
-	bIsPlaced = true;
-	OnPlaced.Broadcast(bIsPlaced);
+
+	if (!GetGameInstance()->GetMappingService()->SetTilesBusyByCore(GetCore(), ETileState::Busy)) {
+		UE_LOG_COMPONENT(Error, "Failed to load GameObject at <%d; %d>! Map already Busy!", CurrentLocation.X, CurrentLocation.Y);
+		GetOwner()->Destroy();
+	}
+	else {
+		bIsPlaced = true;
+		OnPlaced.Broadcast(bIsPlaced);
+	}
+}
+
+void UMappingDefaultComponent::OnCoreCreatedBefore() {
+	if (auto health = Cast<UHealthBaseComponent>(GetCore()->GetComponent(EGameComponentType::Health))) {
+		health->OnLastDead.AddDynamic(this, &UMappingDefaultComponent::OnDead);
+	}
 }
 
 
+FVector UMappingDefaultComponent::GetRotatedOffset() {
+	return CurrentRotation == 1 ? FVector(-ComponentRelativeLocation.Y, ComponentRelativeLocation.X, 0)
+		: CurrentRotation == 2 ? FVector(-ComponentRelativeLocation.X, -ComponentRelativeLocation.Y, 0)
+		: CurrentRotation == 3 ? FVector(ComponentRelativeLocation.Y, -ComponentRelativeLocation.X, 0)
+		: FVector(ComponentRelativeLocation.X, ComponentRelativeLocation.Y, 0);
+}
+
 void UMappingDefaultComponent::UpdateActorLocation() {
-	;
 	this->GetOwner()->SetActorLocation(
 		FVector(CurrentLocation * GetGameInstance()->GetMappingService()->GetTileSize()) 
-		  - this->ComponentRelativeLocation * FVector(1, 1, 0),
+		  - GetRotatedOffset(),
 		false,
 		nullptr,
 		ETeleportType::TeleportPhysics
@@ -76,6 +89,7 @@ void UMappingDefaultComponent::UpdateActorLocation() {
 
 void UMappingDefaultComponent::UpdateActorRotation() {
 	GetOwner()->SetActorRotation(FRotator(0, CurrentRotation * 90, 0));
+	UpdateActorLocation();
 }
 
 void UMappingDefaultComponent::OnDead() {
@@ -85,7 +99,7 @@ void UMappingDefaultComponent::OnDead() {
 
 void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
 	FIntVector newLocation = FIntVector(
-		(TargetLocation + this->ComponentRelativeLocation) / 
+		(TargetLocation + GetRotatedOffset()) /
 		FVector(GetGameInstance()->GetMappingService()->GetTileSize()) +
 		FVector(0.5f, 0.5f, 0)
 	);
@@ -132,10 +146,10 @@ const TArray<FMapInfo>& UMappingDefaultComponent::GetMapInfo() {
 		CurrentMapInfos.Add(info);
 		FMapInfo& curr = CurrentMapInfos[CurrentMapInfos.Num() - 1];
 
-		if (CurrentRotation == 1 || CurrentRotation == 2) 
-			curr.Location.Y += curr.Size.Y;
-		if (CurrentRotation == 2 || CurrentRotation == 3) 
-			curr.Location.X += curr.Size.X;
+		if (CurrentRotation == 1 || CurrentRotation == 2)
+			curr.Location.Y += curr.Size.Y - 1;// curr.Size.Y % 2;
+		if (CurrentRotation == 2 || CurrentRotation == 3)
+			curr.Location.X += curr.Size.X - 1;// curr.Size.X % 2;
 
 		curr.Location.X *= signer[CurrentRotation].Key;
 		curr.Location.Y *= signer[CurrentRotation].Value;

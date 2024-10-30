@@ -86,6 +86,7 @@ protected:
 	bool currentTileViewVisibility = false;
 
 protected:
+	UStaticMeshComponent* CreateTilePreview();
 	void UpdateTiles();
 	void SetShowTileView (bool isShowTileView);
 
@@ -120,9 +121,11 @@ public:
 
 	/****************  Tiles Settings   ****************/
 protected:
-	TMap<TTuple<int, int>, UStaticMeshComponent*> previews;
+	TArray<UStaticMeshComponent*> createdTiles;
 	FIntVector tileSize{ 100, 100, 1 }; // Initialized at InitializeService from Config
-
+	FIntVector currentLookedLocation;
+	UPROPERTY()
+	AActor* tileContainer;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
 	float tileMeshBorderPercents = 0.1f;

@@ -89,7 +89,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner, 
 		GetNvlClass(InitData.MappingComponentInitData.ComponentClass, UMappingBaseComponent::StaticClass())
 	);
-	NewMappingComponent->Initialize(InitData.MappingComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Mapping, NewMappingComponent);
 
 	//Create Health component
@@ -97,7 +96,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner, 
 		GetNvlClass(InitData.HealthComponentInitData.ComponentClass, UHealthBaseComponent::StaticClass())
 	);
-	NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Health, NewHealthComponent);
 		
 	//Create Inventory component
@@ -105,7 +103,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.InventoryComponentInitData.ComponentClass, UInventoryBaseComponent::StaticClass())
 	);
-	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Inventory, NewInventoryComponent);
 
 	//Create Generator component
@@ -113,7 +110,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.GeneratorComponentInitData.ComponentClass, UGeneratorBaseComponent::StaticClass())
 	);
-	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Generator, NewGeneratorComponent);
 
 	//Create Tasker component
@@ -121,7 +117,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.TaskerComponentInitData.ComponentClass, UTaskerBaseComponent::StaticClass())
 	);
-	NewTaskerComponent->Initialize(InitData.TaskerComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Tasker, NewTaskerComponent);
 
 	//Create Social component
@@ -129,7 +124,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.SocialComponentInitData.ComponentClass, USocialBaseComponent::StaticClass())
 	);
-	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Social, NewSocialComponent);
 
 	//Create UI component
@@ -137,7 +131,6 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.UIComponentInitData.ComponentClass, UUIBaseComponent::StaticClass())
 	);
-	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::UI, NewUIComponent);
 
 	//Create Sound component
@@ -145,8 +138,16 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 		owner,
 		GetNvlClass(InitData.SoundComponentInitData.ComponentClass, USoundBaseComponent::StaticClass())
 	);
-	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
 	BindComponent(EGameComponentType::Sound, NewSoundComponent);
+
+	NewMappingComponent->Initialize(InitData.MappingComponentInitData.ComponentInitializer);
+	NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
+	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
+	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
+	NewTaskerComponent->Initialize(InitData.TaskerComponentInitData.ComponentInitializer);
+	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
+	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
+	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
 
 }
 

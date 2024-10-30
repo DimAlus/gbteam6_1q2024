@@ -17,6 +17,12 @@ void UMappingService::InitializeService() {
 	FConfig config;
 	GameInstance->GetConfigService()->GetConfig(EConfig::FV_TileSize, config);
 	this->tileSize = FIntVector(config.VectorValue);
+	createdTiles.Reset();
+
+	FActorSpawnParameters par;
+	par.Name = "Tiles Preview Container";
+	tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
+	tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
 }
 
 void UMappingService::ClearService() {
@@ -177,8 +183,88 @@ void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
 	}
 }
 
-void UMappingService::UpdateTiles() {
+UStaticMeshComponent* UMappingService::CreateTilePreview() {
+	UStaticMeshComponent* tile = NewObject<UStaticMeshComponent>(tileContainer);
+	check(tile);
+	tile->AttachToComponent(
+		tileContainer->GetRootComponent(),
+		FAttachmentTransformRules::KeepRelativeTransform
+	);
+	tileContainer->AddInstanceComponent(tile);
+	tile->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	tile->SetWorldRotation(FRotator(0, 0, 0));
 
+	tile->RegisterComponent();
+
+	if (IsValid(tile)) {
+		tile->SetStaticMesh(tileMesh);
+		FVector scale = FVector(tileSize) / 100;
+		scale.X *= 1 - tileMeshBorderPercents * 2;
+		scale.Y *= 1 - tileMeshBorderPercents * 2;
+		scale.Z = 0.1;
+		tile->SetWorldScale3D(scale);
+
+	}
+	else {
+		UE_LOG_SERVICE(Error, "Created ATilePreview not Valid!");
+	}
+	return tile;
+}
+
+void UMappingService::UpdateTiles() {
+	int ind = 0;
+	int radius = 10;
+	FVector offsetVector = FVector(
+		tileSize.X * tileMeshBorderPercents, 
+		tileSize.Y * tileMeshBorderPercents, 
+		currentLookedLocation.Z
+	);
+	if (IsValid(LocatedCore)) {
+		for (int i = -radius; i <= radius; i++) {
+			for (int j = -radius; j <= radius; j++) {
+				if (sqrt(i * i + j * j) > radius + 0.51f) {
+					continue;
+				}
+				FIntVector loc = FIntVector(currentLookedLocation.X + i, currentLookedLocation.Y + j, 0);
+				if (GetTileInfo(loc.X, loc.Y).state == ETileState::Busy) {
+					if (createdTiles.Num() <= ind) {
+						createdTiles.Add(CreateTilePreview());
+					}
+					UStaticMeshComponent* tile = createdTiles[ind++];
+					tile->SetVisibility(true);
+					tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector);
+					tile->SetMaterial(0, tileMeshDisabledMaterial);
+				}
+			}
+		}
+		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
+			FIntVector loc = mapping->GetCurrentMapLocation();
+			for (const FMapInfo& rect : mapping->GetMapInfo()) {
+				for (int i = 0; i < rect.Size.X; i++) {
+					for (int j = 0; j < rect.Size.Y; j++) {
+						const FTileInfo& info = this->GetTileInfo(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y);
+						bool isCanPlace = info.state == ETileState::Free
+							&& this->GetTileIsParent(info.type, rect.TileType);
+						if (info.state != ETileState::Busy) {
+							if (createdTiles.Num() <= ind) {
+								createdTiles.Add(CreateTilePreview());
+							}
+							UStaticMeshComponent* tile = createdTiles[ind++];
+							tile->SetVisibility(true);
+							tile->SetRelativeLocation(
+								FVector(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y, 0) * FVector(tileSize) 
+								+ offsetVector
+							);
+							tile->SetMaterial(0, isCanPlace ? tileMeshEnabledMaterial : tileMeshDisabledMaterial);
+						}
+					}
+				}
+			}
+		}
+	}
+	for (int i = ind; i < createdTiles.Num(); i++) {
+		createdTiles[i]->SetVisibility(false);
+	}
 }
 
 void UMappingService::SetShowTileView(bool isShowTileView) {
@@ -211,14 +297,18 @@ bool UMappingService::CanPlaceAtWorld(UGameObjectCore* core) {
 void UMappingService::SetLocatedCore(UGameObjectCore* core) {
 	LocatedCore = core;
 	bCanSetLocatedCore = false;
+	UpdateTiles();
 }
 
 void UMappingService::SetLocatedCoreLocation(FVector location) {
 	if (IsValid(LocatedCore)) {
 		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
+			currentLookedLocation.Z = location.Z;
 			FIntVector currentLocation = mapping->GetCurrentMapLocation();
 			mapping->SetOwnerLocation(location);
-			if (mapping->GetCurrentMapLocation() != currentLocation){
+			if (mapping->GetCurrentMapLocation() != currentLocation) {
+				currentLocation = mapping->GetCurrentMapLocation();
+				currentLookedLocation.X = currentLocation.X; currentLookedLocation.Y = currentLocation.Y;
 				bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 				UpdateTiles();
 			}
