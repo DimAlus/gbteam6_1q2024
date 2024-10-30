@@ -14,6 +14,9 @@ DECLARE_LOG_CATEGORY_EXTERN(LgObject, Log, All);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FTouchSignature);
 DECLARE_DYNAMIC_DELEGATE(FTouchBlueprintableSignature);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))

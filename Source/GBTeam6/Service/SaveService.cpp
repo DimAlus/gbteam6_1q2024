@@ -338,6 +338,7 @@ TArray<FString> USaveService::GetSaveNames(FString MapName) {
 void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameObjectSaveData>& saveData) {
 	for (AActor* act : actors) {
 		if (IsValid(act)) {
+			bSaveMe = true;
 			IGameObjectInterface* obj = Cast<IGameObjectInterface>(act);
 			UGameObjectCore* core = obj->GetCore_Implementation();//(act);
 			FGameObjectSaveData SaveData;
@@ -367,7 +368,9 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 				ui->SaveComponent(SaveData.SocialData);
 			}
-			saveData.Add(SaveData);
+			if (bSaveMe) {
+				saveData.Add(SaveData);
+			}
 		}
 	}
 }

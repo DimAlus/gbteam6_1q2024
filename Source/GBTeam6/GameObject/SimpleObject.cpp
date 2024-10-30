@@ -22,8 +22,6 @@ ASimpleObject::ASimpleObject() {
 	ObjectMesh->SetupAttachment(SceneBase);
 	ObjectMesh->SetCollisionProfileName("GameObject");
 
-	MappingComponent = CreateDefaultSubobject<UMappingDefaultComponent>(TEXT("MappingComponent"));
-	MappingComponent->OnPlaced.AddDynamic(this, &ASimpleObject::OnPlacedBehaviour);
 	//OnDestroyed.AddDynamic(this, &ASimpleObject::DestroyGameObject);
 }
 
@@ -31,11 +29,6 @@ void ASimpleObject::CreateCore_Implementation() {
 	if (!this->GameObjectCore) {
 		this->GameObjectCore = NewObject<UGameObjectCore>();
 		this->GameObjectCore->SetOwner(this);
-
-		this->GameObjectCore->BindComponentNoRegister(
-			EGameComponentType::Mapping,
-			MappingComponent
-		);
 
 		this->GameObjectCore->BindComponentNoRegister(
 			EGameComponentType::Collision,
@@ -49,6 +42,10 @@ void ASimpleObject::CreateCore_Implementation() {
 		GeneratorComponent->OnResourceGenerated.AddDynamic(this, &ASimpleObject::OnResourceGeneratedBehaviour);
 
 		this->GameObjectCore->SetIsCreated();
+
+		if (auto mapping = Cast<UMappingBaseComponent>(this->GameObjectCore->GetComponent(EGameComponentType::Mapping))) {
+			mapping->OnPlaced.AddDynamic(this, &ASimpleObject::OnPlacedBehaviour);
+		}
 	}
 }
 

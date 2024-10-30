@@ -11,6 +11,7 @@
 
 
 class AGameStateDefault;
+class UGameObjectCore;
 
 /** Service manager of map's tiles, its types and busyness
  * 
@@ -27,18 +28,21 @@ public:
 	UMappingService();
 	virtual void BeginDestroy() override;
 
+// Meta Info
 private:
 	// Info about parents of TileType
 	TMap<ETileType, TSet<ETileType>> TileTypesTree;
 	// Info for associate TileSetIndex with TileType
 	TMap<int, ETileType> TileTypes;
 
+private:
 	void InitTileTypes();
 	void InitTileTypesTree();
 	void InitTileTypesTreeRow(TArray<FTRTileTypeTree*>& rows, FTRTileTypeTree* currentRow);
 
 // Unsafe!!!
 private:
+	const FTileInfo voidInfo { ETileType::Nothing, ETileState::Busy };
 	FTileInfo* TileInfoArray;
 	void ClearTileInfoArray();
 	int MapWidth;
@@ -51,8 +55,10 @@ private:
 	/// <param name="tileLayer"> Valid link to PaperTileLayer </param>
 	void GenerateMapByLeyer(UPaperTileLayer* tileLayer);
 
-public:
+private:
+	FORCEINLINE bool InPlace(int x, int y) const { return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight; }
 
+public:
 
 	/// <summary>
 	/// Generate Data of TileInfoArray by TileMap's layer
@@ -72,7 +78,80 @@ public:
 	const FTileInfo& GetTileInfo(int x, int y); 
 	void SetTileBusy(int x, int y, ETileState state);
 	bool GetTileIsParent(ETileType child, ETileType parent);
-private:
-	const FTileInfo voidInfo { ETileType::Nothing, ETileState::Busy };
-	FORCEINLINE bool InPlace(int x, int y) const { return x >= 0 && x < MapWidth && y >= 0 && y < MapHeight; }
+
+protected:
+	UGameObjectCore* LocatedCore = nullptr;
+	bool bCanSetLocatedCore;
+
+	bool currentTileViewVisibility = false;
+
+protected:
+	UStaticMeshComponent* CreateTilePreview();
+	void UpdateTiles();
+	void SetShowTileView (bool isShowTileView);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	bool CanPlaceAtWorld(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintCallable)
+	void SetLocatedCore(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UGameObjectCore* GetLocatedCore() const { return LocatedCore; };
+
+	UFUNCTION(BlueprintCallable)
+	void SetLocatedCoreLocation(FVector location);
+
+	UFUNCTION(BlueprintCallable)
+	void AddLocatedCoreRotation(int direction);
+
+	UFUNCTION(BlueprintCallable)
+	bool CanSetLocatedCore();
+
+	UFUNCTION(BlueprintCallable)
+	bool InstallLocatedCore();
+
+	UFUNCTION(BlueprintCallable)
+	bool SetTilesBusyByCore(UGameObjectCore* core, ETileState state);
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE FIntVector GetTileSize() const { return tileSize; };
+
+
+	/****************  Tiles Settings   ****************/
+protected:
+	TArray<UStaticMeshComponent*> createdTiles;
+	FIntVector tileSize{ 100, 100, 1 }; // Initialized at InitializeService from Config
+	FIntVector currentLookedLocation;
+	UPROPERTY()
+	AActor* tileContainer;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float tileMeshBorderPercents = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	float tileMeshHeight = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UStaticMesh* tileMesh = Cast<UStaticMesh>(StaticLoadObject(
+		UStaticMesh::StaticClass(),
+		NULL,
+		TEXT("/Engine/BasicShapes/Cube")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* tileMeshEnabledMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterial* tileMeshDisabledMaterial = Cast<UMaterial>(StaticLoadObject(
+		UMaterial::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
+	));
+
 };

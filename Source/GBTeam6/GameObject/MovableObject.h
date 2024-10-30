@@ -31,9 +31,6 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* GameObjectCore;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UMappingBaseComponent* MappingComponent;
-
 	//Object name to get InitData from table
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Object Name")
 	FName ObjectName = TEXT("Default");

@@ -182,41 +182,11 @@ struct FMappingComponentInitializer {
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
-	bool IsPreview = false;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
 	FVector ComponentLocation{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MapInfo)
 	TArray<FMapInfo> MapInfos{};
 
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	float borderMesh = 0.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	float heightMesh = 0.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UStaticMesh* staticMesh = Cast<UStaticMesh>(StaticLoadObject(
-		UStaticMesh::StaticClass(),
-		NULL, 
-		TEXT("/Engine/BasicShapes/Cube")
-	));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* enabledMatMesh = Cast<UMaterial>(StaticLoadObject(
-		UMaterial::StaticClass(), 
-		NULL, 
-		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
-	));
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* disabledMatMesh = Cast<UMaterial>(StaticLoadObject(
-		UMaterial::StaticClass(),
-		NULL,
-		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
-	));
 };
 
 
@@ -364,6 +334,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSoundComponentInitData SoundComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FMappingComponentInitData MappingComponentInitData{};
 };
 
 /***********************************************************************************/
