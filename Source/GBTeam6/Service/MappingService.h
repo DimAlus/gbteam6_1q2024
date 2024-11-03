@@ -141,17 +141,31 @@ protected:
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* tileMeshEnabledMaterial = Cast<UMaterial>(StaticLoadObject(
-		UMaterial::StaticClass(),
+	UMaterialInstance* tileMeshEnabledMaterial = Cast<UMaterialInstance>(StaticLoadObject(
+		UMaterialInstance::StaticClass(),
 		NULL,
-		TEXT("/Game/MaterialLibrary/Tile/M_TileEnabled")
+		TEXT("/Game/MaterialLibrary/Tile/MI_TileEnabled")
 	));
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
-	UMaterial* tileMeshDisabledMaterial = Cast<UMaterial>(StaticLoadObject(
-		UMaterial::StaticClass(),
+	UMaterialInstance* tileMeshDisabledMaterial = Cast<UMaterialInstance>(StaticLoadObject(
+		UMaterialInstance::StaticClass(),
 		NULL,
-		TEXT("/Game/MaterialLibrary/Tile/M_TileDisabled")
+		TEXT("/Game/MaterialLibrary/Tile/MI_TileDisabled")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterialInstance* tileMeshEnabledHiddenMaterial = Cast<UMaterialInstance>(StaticLoadObject(
+		UMaterialInstance::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/MI_TileEnabledHidden")
+	));
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = MeshInfo)
+	UMaterialInstance* tileMeshDisabledHiddenMaterial = Cast<UMaterialInstance>(StaticLoadObject(
+		UMaterialInstance::StaticClass(),
+		NULL,
+		TEXT("/Game/MaterialLibrary/Tile/MI_TileDisabledHidden")
 	));
 
 };

@@ -220,23 +220,8 @@ void UMappingService::UpdateTiles() {
 		currentLookedLocation.Z
 	);
 	if (IsValid(LocatedCore)) {
-		for (int i = -radius; i <= radius; i++) {
-			for (int j = -radius; j <= radius; j++) {
-				if (sqrt(i * i + j * j) > radius + 0.51f) {
-					continue;
-				}
-				FIntVector loc = FIntVector(currentLookedLocation.X + i, currentLookedLocation.Y + j, 0);
-				if (GetTileInfo(loc.X, loc.Y).state == ETileState::Busy) {
-					if (createdTiles.Num() <= ind) {
-						createdTiles.Add(CreateTilePreview());
-					}
-					UStaticMeshComponent* tile = createdTiles[ind++];
-					tile->SetVisibility(true);
-					tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector);
-					tile->SetMaterial(0, tileMeshDisabledMaterial);
-				}
-			}
-		}
+		TMap<TTuple<int, int>, bool> atCore;
+
 		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
 			FIntVector loc = mapping->GetCurrentMapLocation();
 			for (const FMapInfo& rect : mapping->GetMapInfo()) {
@@ -245,20 +230,33 @@ void UMappingService::UpdateTiles() {
 						const FTileInfo& info = this->GetTileInfo(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y);
 						bool isCanPlace = info.state == ETileState::Free
 							&& this->GetTileIsParent(info.type, rect.TileType);
-						if (info.state != ETileState::Busy) {
-							if (createdTiles.Num() <= ind) {
-								createdTiles.Add(CreateTilePreview());
-							}
-							UStaticMeshComponent* tile = createdTiles[ind++];
-							tile->SetVisibility(true);
-							tile->SetRelativeLocation(
-								FVector(rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y, 0) * FVector(tileSize) 
-								+ offsetVector
-							);
-							tile->SetMaterial(0, isCanPlace ? tileMeshEnabledMaterial : tileMeshDisabledMaterial);
-						}
+						atCore.Add({rect.Location.X + i + loc.X, rect.Location.Y + j + loc.Y}, isCanPlace);
 					}
 				}
+			}
+		}
+
+		for (int i = -radius; i <= radius; i++) {
+			for (int j = -radius; j <= radius; j++) {
+				if (sqrt(i * i + j * j) > radius + 0.51f) {
+					continue;
+				}
+				FIntVector loc = FIntVector(currentLookedLocation.X + i, currentLookedLocation.Y + j, 0);
+				bool intoCore = atCore.Contains({ loc.X, loc.Y });
+				bool enabled = !(GetTileInfo(loc.X, loc.Y).state == ETileState::Busy ||
+					(intoCore && !atCore[{ loc.X, loc.Y }]));
+				if (createdTiles.Num() <= ind) {
+					createdTiles.Add(CreateTilePreview());
+				}
+				UStaticMeshComponent* tile = createdTiles[ind++];
+				tile->SetVisibility(true);
+				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector);
+				tile->SetMaterial(0, enabled 
+					? intoCore 
+						? tileMeshEnabledMaterial : tileMeshEnabledHiddenMaterial 
+					: intoCore ? tileMeshDisabledMaterial : tileMeshDisabledHiddenMaterial
+				);
+				
 			}
 		}
 	}
