@@ -66,7 +66,8 @@ enum class EConfig : uint8 {
 
 	F_NewEventDelay			UMETA(DisplayName = "F  New Event Delay"),
 
-	F_WorkerStackMultiplyer	UMETA(DisplayName = "F  Worker Stack Multiplyer")
+	F_WorkerStackMultiplyer	UMETA(DisplayName = "F  Worker Stack Multiplyer"),
+	I_RuneCount				UMETA(DisplayName = "I  Rune Count")
 };
 
 UENUM(BlueprintType)
@@ -86,7 +87,9 @@ enum class EResource : uint8 {
 	Decoction	UMETA(DisplayName = "Decoction"),
 	Herb		UMETA(DisplayName = "Herb"),
 
-	Heal		UMETA(DisplayName = "Heal")
+	Heal		UMETA(DisplayName = "Heal"),
+
+	Rune		UMETA(DisplayName = "Rune")
 };
 
 UENUM(BlueprintType)

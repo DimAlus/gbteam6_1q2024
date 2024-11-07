@@ -43,6 +43,7 @@ void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
 	saveData.MappingLocation = CurrentLocation;
 
 	if (!bIsPlaced) {
+		UE_LOG_COMPONENT(Warning, "Object not placed! Saveing canceled!");
 		GetGameInstance()->GetSaveService()->bSaveMe = false;
 	}
 }

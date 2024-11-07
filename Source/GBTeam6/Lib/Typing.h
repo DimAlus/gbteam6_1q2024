@@ -143,7 +143,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
 	bool BoolValue{false};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "false", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = "ConfigType == EConfig::I_RuneCount", EditConditionHides))
 	int IntValue = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = 

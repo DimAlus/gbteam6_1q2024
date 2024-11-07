@@ -146,7 +146,9 @@ protected:
 	FVector CameraTargetPosition;
 	float CameraTargetRotation; // Rotation target can be more 360 deg => Rotator not usable
 	float CameraTagretHeight;
+	UPROPERTY(BlueprintReadOnly)
 	bool CameraHasTargetActor = false;
+	UPROPERTY(BlueprintReadOnly)
 	AActor* CameraTargetActor;
 
 	FVector CameraCurrentMovementSpeed;
@@ -297,7 +299,7 @@ public:
 	void AddCameraLocation(FVector deltaLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove = false);
+	void SetCameraTargetActor(AActor* cameraTargetActor_, bool fastMove = false);
 
 	UFUNCTION(BlueprintCallable)
 	void UnsetCameraTargetActor();
