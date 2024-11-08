@@ -81,9 +81,14 @@ void USoundService::PlayNextMusicTrack(float Delay)
 			MusicAudioComponent->OnAudioFinished.RemoveAll(this);
 			MusicAudioComponent->FadeOut(Delay, 0.f);
 		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), NextMusicTrack);
-		MusicAudioComponent->FadeIn(Delay, 1.f);
-		MusicAudioComponent->OnAudioFinished.AddDynamic(this, &USoundService::OnMusicTrackFinished);
+		if (auto NewMusicTrack =
+			UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), NextMusicTrack))
+		{
+			MusicAudioComponent = NewMusicTrack;
+			MusicAudioComponent->FadeIn(Delay, 1.f);
+			MusicAudioComponent->OnAudioFinished.AddDynamic(this, &USoundService::OnMusicTrackFinished);
+		};
+
 	}
 }
 
