@@ -21,8 +21,10 @@ void UMappingService::InitializeService() {
 
 	FActorSpawnParameters par;
 	par.Name = "Tiles Preview Container";
-	tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
-	tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
+	if (!(GameInstance->IsDevelopmentMap || GameInstance->IsMenuMap)) {
+		tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
+		tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
+	}
 }
 
 void UMappingService::ClearService() {
@@ -217,8 +219,9 @@ void UMappingService::UpdateTiles() {
 	FVector offsetVector = FVector(
 		tileSize.X * tileMeshBorderPercents, 
 		tileSize.Y * tileMeshBorderPercents, 
-		currentLookedLocation.Z
+		0
 	);
+	offsetVector = FVector(0, 0, 0);
 	if (IsValid(LocatedCore)) {
 		TMap<TTuple<int, int>, bool> atCore;
 
@@ -248,9 +251,24 @@ void UMappingService::UpdateTiles() {
 				if (createdTiles.Num() <= ind) {
 					createdTiles.Add(CreateTilePreview());
 				}
+
+				float zOffset = currentLookedLocation.Z;
+				FHitResult Hit;
+				FVector startTrace = (FVector(loc)/* + FVector(0.5f, 0.5f, 0) */ ) * FVector(tileSize);
+				startTrace.Z = 5000;
+				GameInstance->GetWorld()->LineTraceSingleByChannel(
+					Hit,
+					startTrace,
+					startTrace + FVector(0, 0, -8000),
+					ECC_GameTraceChannel6
+				);
+				if (Hit.Location.Length() > 0) {
+					zOffset = Hit.Location.Z;
+				}
+				DrawDebugSphere(GameInstance->GetWorld(), startTrace * FVector(1, 1, 0) + FVector(0, 0, zOffset), 20, 10, FColor::Cyan);
 				UStaticMeshComponent* tile = createdTiles[ind++];
 				tile->SetVisibility(true);
-				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector);
+				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector + FVector(0, 0, zOffset));
 				tile->SetMaterial(0, enabled 
 					? intoCore 
 						? tileMeshEnabledMaterial : tileMeshEnabledHiddenMaterial 
