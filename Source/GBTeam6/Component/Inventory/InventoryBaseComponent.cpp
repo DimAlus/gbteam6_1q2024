@@ -7,6 +7,7 @@ const TSet<EResource>& UInventoryBaseComponent::GetIgnoreResources() {
 		EResource::Actor,
 		EResource::SocialTag,
 		EResource::Spirit,
+		EResource::Rune,
 		EResource::Self
 	};
 	return res;
