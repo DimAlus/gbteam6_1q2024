@@ -60,6 +60,7 @@ protected:
 
 protected:
 	float LastDeltaTime = 0.f;
+	float newTimeDilation = 1.f;
 
 	bool isScrollPressed = false;
 
@@ -132,6 +133,7 @@ protected:
 	/** Change game speed main function */
 	void UpdateGameSpeed();
 
+	void UpdateTimeDilation();
 
 /**************** Camera Movement ****************/
 protected:

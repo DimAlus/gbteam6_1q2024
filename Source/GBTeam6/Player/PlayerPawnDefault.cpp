@@ -64,6 +64,7 @@ void APlayerPawnDefault::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
 	LastDeltaTime = DeltaTime;
 	UpdateCamera(DeltaTime);
+	UpdateTimeDilation();
 }
 
 // Called to bind functionality to input
@@ -298,14 +299,20 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 	else {
 		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
 	}
-	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), TimeDilation);
-	if (TimeDilation >= 0.0001f) {
-		CustomTimeDilation = 1 / TimeDilation;
+	if (TimeDilation >= 0.0001f) {	
+		newTimeDilation = TimeDilation;
+	}
+}
+
+void APlayerPawnDefault::UpdateTimeDilation() {
+	if (CustomTimeDilation != newTimeDilation) {
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), newTimeDilation);
+		CustomTimeDilation = 1 / newTimeDilation;
 		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
 			timerManager->CustomTimeDilation = CustomTimeDilation;
-		}			
+		}
+		OnGameSpeedChanged.Broadcast();
 	}
-	OnGameSpeedChanged.Broadcast();
 }
 
 void APlayerPawnDefault::SetGameSpeed(int speed) {
@@ -453,6 +460,7 @@ void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
 		deltaMovement,
 		changeTarget
 	);
+
 	if (changeTarget) {
 		CameraTargetPosition = actorLocation + deltaMovement;
 		CameraTargetPosition = {

@@ -265,7 +265,6 @@ void UMappingService::UpdateTiles() {
 				if (Hit.Location.Length() > 0) {
 					zOffset = Hit.Location.Z;
 				}
-				DrawDebugSphere(GameInstance->GetWorld(), startTrace * FVector(1, 1, 0) + FVector(0, 0, zOffset), 20, 10, FColor::Cyan);
 				UStaticMeshComponent* tile = createdTiles[ind++];
 				tile->SetVisibility(true);
 				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector + FVector(0, 0, zOffset));
