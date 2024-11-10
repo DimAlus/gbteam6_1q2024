@@ -23,7 +23,9 @@ void UMappingService::InitializeService() {
 	par.Name = "Tiles Preview Container";
 	if (!(GameInstance->IsDevelopmentMap || GameInstance->IsMenuMap)) {
 		tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
+#if UE_EDITOR
 		tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
+#endif
 	}
 }
 
