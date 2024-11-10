@@ -103,7 +103,7 @@ public:
 
 struct FTileInfo {
 	ETileType type { ETileType::Nothing };
-	ETileState state{ ETileState::Busy };
+	ETileState state { ETileState::Busy };
 };
 
 
@@ -166,7 +166,7 @@ struct FTRConfig : public FTableRowBase {
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FConfig Value;
+	FConfig Value{};
 };
 
 USTRUCT(BlueprintType)
@@ -233,7 +233,7 @@ struct FPrice {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"Resource == EResource::SocialTag",
 		EditConditionHides))
-	TSet<ESocialTag> SocialTags;
+	TSet<ESocialTag> SocialTags{};
 };
 
 USTRUCT(BlueprintType)
@@ -298,10 +298,10 @@ public:
 	float Power;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TMap<FString, float> SavePower;
+	TMap<FString, float> SavePower{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	TArray<UGameObjectCore*> AttachedCores;
+	TArray<UGameObjectCore*> AttachedCores{};
 };
 
 
@@ -358,22 +358,22 @@ struct FGameTaskFindData {
 	UGameObjectCore* Performer{nullptr};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> Sources;
+	TSet<ESocialTag> Sources{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> Destinations;
+	TSet<ESocialTag> Destinations{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> SourcesIgnores;
+	TSet<ESocialTag> SourcesIgnores{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> DestinationsIgnores;
+	TSet<ESocialTag> DestinationsIgnores{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool ForPerformer;
+	bool ForPerformer{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool CheckNeeds;
+	bool CheckNeeds{};
 };
 
 
@@ -588,7 +588,7 @@ struct FQuestAction {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition = 
 		"(ActionType == EQuestActionType::FindLocation && FindLocationType == EActionFindLocationType::Spawned) || (ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::BySocialTag)",
 		EditConditionHides))
-	ESocialTag SocialTag;
+	ESocialTag SocialTag{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"(ActionType == EQuestActionType::Select && SelectionType == EActionSelectionType::BySocialTag) || (ActionType == EQuestActionType::Inventory)",
@@ -698,10 +698,10 @@ struct FGameEventConext {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString EventName;
+	FString EventName{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<FString> Tags;
+	TSet<FString> Tags{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float CurrentTime{};

@@ -100,7 +100,7 @@ struct FTaskerComponentInitializer {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FGameTaskFindData> TaskFinders;
+	TArray<FGameTaskFindData> TaskFinders{};
 };
 
 
