@@ -19,14 +19,7 @@ void UMappingService::InitializeService() {
 	this->tileSize = FIntVector(config.VectorValue);
 	createdTiles.Reset();
 
-	FActorSpawnParameters par;
-	par.Name = "Tiles Preview Container";
-	if (!(GameInstance->IsDevelopmentMap || GameInstance->IsMenuMap)) {
-		tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
-#if UE_EDITOR
-		tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
-#endif
-	}
+	tileContainer = nullptr;
 }
 
 void UMappingService::ClearService() {
@@ -188,7 +181,17 @@ void UMappingService::GenerateMapByLeyer(UPaperTileLayer* tileLayer) {
 }
 
 UStaticMeshComponent* UMappingService::CreateTilePreview() {
-	UStaticMeshComponent* tile = NewObject<UStaticMeshComponent>(tileContainer);
+	if (!tileContainer) {
+		FActorSpawnParameters par;
+		par.Name = "Tiles Preview Container";
+		if (!(GameInstance->IsDevelopmentMap || GameInstance->IsMenuMap)) {
+			tileContainer = GameInstance->GetWorld()->SpawnActor<AActor>(par);
+#if UE_EDITOR
+			tileContainer->SetActorLabel(TEXT("Tiles Preview Container"));
+#endif
+		}
+	}
+	UStaticMeshComponent* tile = NewObject<UStaticMeshComponent>(Cast<UObject>(tileContainer));
 	check(tile);
 	tile->AttachToComponent(
 		tileContainer->GetRootComponent(),
