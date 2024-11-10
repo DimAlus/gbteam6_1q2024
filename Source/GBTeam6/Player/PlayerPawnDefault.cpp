@@ -300,14 +300,14 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
 	}
 	if (TimeDilation >= 0.0001f) {	
-		newTimeDilation = TimeDilation;
+		newTimeDilation = 1.f / TimeDilation;
 	}
 }
 
 void APlayerPawnDefault::UpdateTimeDilation() {
 	if (CustomTimeDilation != newTimeDilation) {
-		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), newTimeDilation);
-		CustomTimeDilation = 1 / newTimeDilation;
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1 / newTimeDilation);
+		CustomTimeDilation = newTimeDilation;
 		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
 			timerManager->CustomTimeDilation = CustomTimeDilation;
 		}

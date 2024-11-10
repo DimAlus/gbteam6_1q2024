@@ -216,6 +216,7 @@ UStaticMeshComponent* UMappingService::CreateTilePreview() {
 void UMappingService::UpdateTiles() {
 	int ind = 0;
 	int radius = 10;
+	int zAdditionalOffset = 20;
 	FVector offsetVector = FVector(
 		tileSize.X * tileMeshBorderPercents, 
 		tileSize.Y * tileMeshBorderPercents, 
@@ -267,7 +268,7 @@ void UMappingService::UpdateTiles() {
 				}
 				UStaticMeshComponent* tile = createdTiles[ind++];
 				tile->SetVisibility(true);
-				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector + FVector(0, 0, zOffset));
+				tile->SetRelativeLocation(FVector(loc * tileSize) + offsetVector + FVector(0, 0, zOffset + zAdditionalOffset));
 				tile->SetMaterial(0, enabled 
 					? intoCore 
 						? tileMeshEnabledMaterial : tileMeshEnabledHiddenMaterial 
