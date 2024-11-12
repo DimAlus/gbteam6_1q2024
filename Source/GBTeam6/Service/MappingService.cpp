@@ -220,7 +220,7 @@ UStaticMeshComponent* UMappingService::CreateTilePreview() {
 
 void UMappingService::UpdateTiles() {
 	int ind = 0;
-	int radius = 10;
+	int radius = 5;
 	int zAdditionalOffset = 20;
 	FVector offsetVector = FVector(
 		tileSize.X * tileMeshBorderPercents, 
