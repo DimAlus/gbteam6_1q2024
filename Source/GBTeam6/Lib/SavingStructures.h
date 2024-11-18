@@ -59,6 +59,12 @@ struct FMappingSaveData {
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FIntVector MappingLocation{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Rotation{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RelativeRotation{};
 };
 
 

@@ -4,6 +4,7 @@
 
 #include "../../Service/MappingService.h"
 #include "../../Service/SaveService.h"
+#include "../../Service/ConfigService.h"
 
 #include "../../Component/Health/HealthBaseComponent.h"
 
@@ -18,6 +19,9 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 	Super::Initialize(initializer);
 	this->ComponentRelativeLocation = initializer.ComponentLocation;
 	this->MapInfos = initializer.MapInfos;
+
+	FVector actorLocation = GetOwner()->GetActorLocation();
+	FRotator actorRotation = GetOwner()->GetActorRotation();
 
 	for (int i = this->MapInfos.Num() - 1; i >= 0; i--) {
 		FMapInfo& square = this->MapInfos[i];
@@ -36,13 +40,23 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			square.Location.Y -= square.Size.Y;
 		}
 	}	
+	CurrentRotation = (int)((actorRotation.Yaw + 180 + 45) / 90) % 4;
+	CurrentActorRelaticveRotation = actorRotation.Yaw - CurrentRotation * 90;
+	if (CurrentActorRelaticveRotation <= -180) {
+		CurrentActorRelaticveRotation += 360;
+	}
+	SetOwnerLocation(actorLocation);
+	UpdateActorRotation();
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Saving!");
 	saveData.MappingLocation = CurrentLocation;
+	saveData.Rotation = CurrentRotation;
+	saveData.RelativeRotation = CurrentActorRelaticveRotation;
 
-	if (!bIsPlaced) {
+	auto gameInstance = GetGameInstance();
+	if (!bIsPlaced && !(gameInstance->IsDevelopmentMap || gameInstance->IsMenuMap)) {
 		UE_LOG_COMPONENT(Warning, "Object not placed! Saveing canceled!");
 		GetGameInstance()->GetSaveService()->bSaveMe = false;
 	}
@@ -51,6 +65,8 @@ void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
 void UMappingDefaultComponent::LoadComponent(const FMappingSaveData& saveData) {
 	UE_LOG_COMPONENT(Log, "Component Loading!");
 	CurrentLocation = saveData.MappingLocation;
+	CurrentRotation = saveData.Rotation;
+	CurrentActorRelaticveRotation = saveData.RelativeRotation;
 	UpdateActorLocation();
 	UpdateActorRotation();
 
@@ -89,7 +105,7 @@ void UMappingDefaultComponent::UpdateActorLocation() {
 }
 
 void UMappingDefaultComponent::UpdateActorRotation() {
-	GetOwner()->SetActorRotation(FRotator(0, CurrentRotation * 90, 0));
+	GetOwner()->SetActorRotation(FRotator(0, CurrentRotation * 90 + CurrentActorRelaticveRotation, 0));
 	UpdateActorLocation();
 }
 
