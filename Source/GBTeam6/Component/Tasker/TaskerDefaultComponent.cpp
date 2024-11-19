@@ -80,7 +80,7 @@ bool UTaskerDefaultComponent::ApplyTask() {
 	auto core = GetCore();
 	UE_LOG_COMPONENT(Log, "Applying Task '%s': '%d'", *UEnum::GetValueAsString(task.Resource), task.Count);
 
-	if (!IsValid(task.Core)) {
+	if (!IsValid(task.Core) || !task.Core->IsValidLowLevel()) {
 		UE_LOG_COMPONENT(Warning, "Task destination core not valid!");
 		CancleTask();
 		return false;
@@ -131,7 +131,7 @@ void UTaskerDefaultComponent::CancleTask() {
 	const FGameTask& task = this->ObjectTasks[0];
 	UE_LOG_COMPONENT(Log, "Canceling task '%s': '%d'", *UEnum::GetValueAsString(task.Resource), task.Count);
 
-	if (IsValid(task.Core)) {
+	if (IsValid(task.Core) && task.Core->IsValidLowLevel()) {
 		if (auto tasker = Cast<UTaskerBaseComponent>(task.Core->GetComponent(EGameComponentType::Tasker))) {
 			tasker->RemoveExpecting(GetCore(), task);
 		}
