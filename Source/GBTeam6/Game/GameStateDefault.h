@@ -190,4 +190,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FTouchSignature OnWaveStart;
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FTouchSignature OnWaveEnd;
 };
