@@ -15,6 +15,7 @@ const TSet<EConfig>& USaveConfig::ConfigIgnore() {
         EConfig::F_StartGameTime,
         EConfig::F_NewEventDelay,
         EConfig::F_WorkDelay,
+        EConfig::I_RuneCount,
         EConfig::F_WorkerStackMultiplyer
     };
     return ignores;
