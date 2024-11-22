@@ -53,4 +53,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void RemoveExpecting(UGameObjectCore* core, const FGameTask& task);
 
+
+	UFUNCTION(BlueprintCallable)
+	virtual UGameObjectCore* GetLastTaskedCore();
+
 };

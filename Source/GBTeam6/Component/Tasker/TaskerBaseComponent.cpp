@@ -44,3 +44,7 @@ void UTaskerBaseComponent::AddExpecting(UGameObjectCore* core, const FGameTask& 
 
 void UTaskerBaseComponent::RemoveExpecting(UGameObjectCore* core, const FGameTask& task) {
 }
+
+UGameObjectCore* UTaskerBaseComponent::GetLastTaskedCore() {
+	return nullptr;
+}
