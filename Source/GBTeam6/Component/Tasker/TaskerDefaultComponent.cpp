@@ -1,6 +1,7 @@
 #include "./TaskerDefaultComponent.h"
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Generator/GeneratorBaseComponent.h"
+#include "../Social/SocialBaseComponent.h"
 #include "../../Interface/GameObjectCore.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Service/TaskManagerService.h"
@@ -44,6 +45,10 @@ void UTaskerDefaultComponent::RegisterTasks(TArray<FGameTask>& tasks) {
 
 bool UTaskerDefaultComponent::FindTask() { 
 	UE_LOG_COMPONENT(Log, "Try find new tasks");
+
+	if (!ObjectTasks.IsEmpty()) {
+		return true;
+	}
 
 	AGameStateDefault* gameState = GetGameState();
 	if (gameState) {
@@ -113,6 +118,12 @@ bool UTaskerDefaultComponent::ApplyTask() {
 		UE_LOG_COMPONENT(Warning, "Resource can't be moving between inventories!");
 		CancleTask();
 		return false;
+	}
+
+	if (auto social = Cast<USocialBaseComponent>(task.Core->GetComponent(EGameComponentType::Social))) {
+		if (social->GetSocialTags().Contains(ESocialTag::Storage)) {
+			LastTaskedStorage = task.Core;
+		}
 	}
 
 	if (auto tasker = Cast<UTaskerBaseComponent>(task.Core->GetComponent(EGameComponentType::Tasker))) {
@@ -215,4 +226,8 @@ void UTaskerDefaultComponent::RemoveExpecting(UGameObjectCore* core, const FGame
 			return;
 		} 
 	}
+}
+
+UGameObjectCore* UTaskerDefaultComponent::GetLastTaskedCore() {
+	return LastTaskedStorage;
 }
