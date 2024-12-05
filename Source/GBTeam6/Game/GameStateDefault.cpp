@@ -46,7 +46,7 @@ void AGameStateDefault::LoadSizeStacks() {
 
 const TSet<EResource>& AGameStateDefault::GetPlayerResourcesTypes() {
 	static TSet<EResource> resources = {
-		EResource::Spirit
+		EResource::Spirit, EResource::Rune
 	};
 	return resources;
 }
@@ -63,6 +63,12 @@ bool AGameStateDefault::IsPlayerResource(EResource resource) {
 }
 
 int AGameStateDefault::GetResourceCount(EResource resource) {
+	if (resource == EResource::Rune) {
+		FConfig conf;
+		GetGameInstance()->GetConfigService()->GetConfig(EConfig::I_RuneCount, conf);
+		int numb = GetGameInstance()->GetSocialService()->GetObjectsByTag(ESocialTag::EnergyGenerator).Num();
+		return conf.IntValue - numb;
+	}
 	if (PlayerResources.Contains(resource)) {
 		return PlayerResources[resource];
 	}
@@ -88,8 +94,8 @@ bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
 }
 
 bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
-	if (PlayerResources.Contains(resource)) {
-		if (PlayerResources[resource] >= count) {
+	if (IsPlayerResource(resource)) {
+		if (GetResourceCount(resource) >= count) {
 			PlayerResources[resource] -= count;
 			OnPlayerInventoryChanging.Broadcast();
 			return true;
@@ -104,6 +110,9 @@ bool AGameStateDefault::CanPushPlayerResource(EResource resource, int count) {
 }
 
 bool AGameStateDefault::CanPopPlayerResource(EResource resource, int count) {
+	if (resource == EResource::Rune) {
+		return true;
+	}
 	if (PlayerResources.Contains(resource)) {
 		return PlayerResources[resource] >= count;
 	}

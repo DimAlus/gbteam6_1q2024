@@ -8,9 +8,6 @@
 
 #include "HealthBaseComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDamage, float, DamageAmount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTryDead, int, Lifes);
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GBTEAM6_API UHealthBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
@@ -26,13 +23,15 @@ public:
 public:
 	/** Delegates */
 	UPROPERTY(BlueprintAssignable)
-	FOnDamage OnDamage;
+	FFloatSignature OnDamage;
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnDeath;
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnChangeHealth;
 	UPROPERTY(BlueprintAssignable)
-	FOnTryDead OnTryDead;
+	FIntSignature OnTryDead;
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnLastDead;
 public:
 	
 	virtual void TakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,

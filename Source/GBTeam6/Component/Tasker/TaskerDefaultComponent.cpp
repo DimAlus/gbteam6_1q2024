@@ -1,6 +1,7 @@
 #include "./TaskerDefaultComponent.h"
 #include "../Inventory/InventoryBaseComponent.h"
 #include "../Generator/GeneratorBaseComponent.h"
+#include "../Social/SocialBaseComponent.h"
 #include "../../Interface/GameObjectCore.h"
 #include "../../Game/GameStateDefault.h"
 #include "../../Service/TaskManagerService.h"
@@ -45,6 +46,10 @@ void UTaskerDefaultComponent::RegisterTasks(TArray<FGameTask>& tasks) {
 bool UTaskerDefaultComponent::FindTask() { 
 	UE_LOG_COMPONENT(Log, "Try find new tasks");
 
+	if (!ObjectTasks.IsEmpty()) {
+		return true;
+	}
+
 	AGameStateDefault* gameState = GetGameState();
 	if (gameState) {
 		if (auto taskManager = gameState->GetTaskManagerService()) {
@@ -80,7 +85,7 @@ bool UTaskerDefaultComponent::ApplyTask() {
 	auto core = GetCore();
 	UE_LOG_COMPONENT(Log, "Applying Task '%s': '%d'", *UEnum::GetValueAsString(task.Resource), task.Count);
 
-	if (!IsValid(task.Core)) {
+	if (!IsValid(task.Core) || !task.Core->IsValidLowLevel()) {
 		UE_LOG_COMPONENT(Warning, "Task destination core not valid!");
 		CancleTask();
 		return false;
@@ -115,6 +120,12 @@ bool UTaskerDefaultComponent::ApplyTask() {
 		return false;
 	}
 
+	if (auto social = Cast<USocialBaseComponent>(task.Core->GetComponent(EGameComponentType::Social))) {
+		if (social->GetSocialTags().Contains(ESocialTag::Storage)) {
+			LastTaskedStorage = task.Core;
+		}
+	}
+
 	if (auto tasker = Cast<UTaskerBaseComponent>(task.Core->GetComponent(EGameComponentType::Tasker))) {
 		tasker->RemoveExpecting(core, task);
 	}
@@ -131,7 +142,7 @@ void UTaskerDefaultComponent::CancleTask() {
 	const FGameTask& task = this->ObjectTasks[0];
 	UE_LOG_COMPONENT(Log, "Canceling task '%s': '%d'", *UEnum::GetValueAsString(task.Resource), task.Count);
 
-	if (IsValid(task.Core)) {
+	if (IsValid(task.Core) && task.Core->IsValidLowLevel()) {
 		if (auto tasker = Cast<UTaskerBaseComponent>(task.Core->GetComponent(EGameComponentType::Tasker))) {
 			tasker->RemoveExpecting(GetCore(), task);
 		}
@@ -215,4 +226,8 @@ void UTaskerDefaultComponent::RemoveExpecting(UGameObjectCore* core, const FGame
 			return;
 		} 
 	}
+}
+
+UGameObjectCore* UTaskerDefaultComponent::GetLastTaskedCore() {
+	return LastTaskedStorage;
 }

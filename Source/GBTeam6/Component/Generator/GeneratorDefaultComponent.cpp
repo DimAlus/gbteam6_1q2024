@@ -674,6 +674,7 @@ void UGeneratorDefaultComponent::CancelTask(FString generatorName) {
 		thread.SavePower.Add(thread.GeneratorName, thread.Power);
 		thread.Power = 0;
 		thread.GeneratorName = FString();
+		TouchGeneratorSocialTagNeeds(generatorName);
 		OnGeneratorChanging.Broadcast(generatorName, info);
 	}
 }

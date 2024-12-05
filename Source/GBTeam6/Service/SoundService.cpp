@@ -38,7 +38,6 @@ void USoundService::InitializeService() {
 		UE_LOG_SERVICE(Error, "Can't find valid MusicSound!");
 	}
 
-
 	/*************************************************************************/
 	/********************	Subscibing on messages	**************************/
 	/*************************************************************************/
@@ -72,6 +71,57 @@ void USoundService::ClearService() {
 	UAGameService::ClearService();
 	SubscriberMessageTags.Reset();
 }
+
+void USoundService::PlayNextMusicTrack(float Delay)
+{
+	if (NextMusicTrack)
+	{
+		if (IsValid(MusicAudioComponent))
+		{
+			MusicAudioComponent->OnAudioFinished.RemoveAll(this);
+			MusicAudioComponent->FadeOut(Delay, 0.f);
+		}
+		if (auto NewMusicTrack =
+			UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), NextMusicTrack))
+		{
+			MusicAudioComponent = NewMusicTrack;
+			MusicAudioComponent->FadeIn(Delay, 1.f);
+			MusicAudioComponent->OnAudioFinished.AddDynamic(this, &USoundService::OnMusicTrackFinished);
+		};
+
+	}
+}
+
+void USoundService::PlayMusicTrackByTag(EMessageTag MusicTag, float Delay)
+{
+	if (MusicSound.MusicMainMenu && MusicTag == EMessageTag::GLBGameStart)
+	{
+		NextMusicTrack = MusicSound.MusicMainMenu;
+	}
+
+	if (MusicSound.MusicPeaceful && MusicTag == EMessageTag::GLBEnterPlayMap)
+	{
+		NextMusicTrack = MusicSound.MusicPeaceful;
+	}
+
+	if (MusicSound.MusicPeaceful && MusicTag == EMessageTag::GLBDay)
+	{
+		NextMusicTrack = MusicSound.MusicPeaceful;
+	}
+
+	if (MusicSound.MusicPeacefulNight && MusicTag == EMessageTag::GLBNight)
+	{
+		NextMusicTrack = MusicSound.MusicPeacefulNight;
+	}
+	
+	PlayNextMusicTrack(Delay);
+}
+
+void USoundService::OnMusicTrackFinished()
+{
+	PlayNextMusicTrack(MusicFadeDuration);
+}
+
 
 TSet<EMessageTag> USoundService::GetSubscriberMessageTags()
 {
@@ -156,49 +206,31 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 		return;
 	}
 
-
-
-	//Music sounds
-	if (MusicSound.MusicMainMenu && tags.Contains(EMessageTag::GLBGameStart))
-	{
-		if (MusicAudioComponent) {
-			MusicAudioComponent->SetActive(false);
-		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicMainMenu);
-		MusicAudioComponent->Play();
-	}
-	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
-
-	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBEnterPlayMap))
-	{
-		if (MusicAudioComponent) {
-			MusicAudioComponent->SetActive(false);
-		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeaceful);
-		MusicAudioComponent->Play();
-	}
-	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
-
-	if (MusicSound.MusicPeaceful && tags.Contains(EMessageTag::GLBDay))
-	{
-		if (MusicAudioComponent) {
-			MusicAudioComponent->SetActive(false);
-		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeaceful);
-		MusicAudioComponent->Play();
-	}
-	else UE_LOG_SERVICE(Error, "TestSoundEffect sound is not valid!");
-
-	if (MusicSound.MusicPeacefulNight && tags.Contains(EMessageTag::GLBNight))
-	{
-		if (MusicAudioComponent) {
-			MusicAudioComponent->SetActive(false);
-		}
-		MusicAudioComponent = UGameplayStatics::CreateSound2D(GameInstance->GetWorld(), MusicSound.MusicPeacefulNight);
-		MusicAudioComponent->Play();
-	}
-	else UE_LOG_SERVICE(Error, "TestSoundVoice sound is not valid!");
 	
+	//Music sounds
+	if (tags.Contains(EMessageTag::GLBGameStart))
+	{
+		LastReceivedMusicTag = EMessageTag::GLBGameStart;
+		PlayMusicTrackByTag(EMessageTag::GLBGameStart);
+	}
+
+	if (tags.Contains(EMessageTag::GLBEnterPlayMap))
+	{
+		LastReceivedMusicTag = EMessageTag::GLBEnterPlayMap;
+		PlayMusicTrackByTag(EMessageTag::GLBEnterPlayMap);
+	}
+
+	if (tags.Contains(EMessageTag::GLBDay))
+	{
+		LastReceivedMusicTag = EMessageTag::GLBDay;
+		PlayMusicTrackByTag(EMessageTag::GLBDay, MusicFadeDuration);
+	}
+
+	if (tags.Contains(EMessageTag::GLBNight))
+	{
+		LastReceivedMusicTag = EMessageTag::GLBNight;
+		PlayMusicTrackByTag(EMessageTag::GLBNight, MusicFadeDuration);
+	}	
 	
 	//System sounds
 	
@@ -206,18 +238,15 @@ void USoundService::TakeMessage_Implementation(const TSet<EMessageTag>& tags, UG
 	{
 		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.PressButton);
 	}
-	else UE_LOG_SERVICE(Error, "PressButton sound is not valid!");
 
 	if (SystemSound.TestSoundEffect && tags.Contains(EMessageTag::UIESliderEffectVolume))
 	{
 		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.TestSoundEffect);
 	}
-	else UE_LOG_SERVICE(Error, "TestSoundEffect sound is not valid!");
 
 	if (SystemSound.TestSoundVoice && tags.Contains(EMessageTag::UIESliderVoiceVolume))
 	{
 		UGameplayStatics::PlaySound2D(GameInstance->GetWorld(), SystemSound.TestSoundVoice);
 	}
-	else UE_LOG_SERVICE(Error, "TestSoundVoice sound is not valid!");
 	
 }

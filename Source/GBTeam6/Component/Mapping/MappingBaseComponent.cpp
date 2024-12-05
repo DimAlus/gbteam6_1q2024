@@ -1,4 +1,5 @@
 #include "./MappingBaseComponent.h"
+#include "MappingBaseComponent.h"
 
 UMappingBaseComponent::UMappingBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -6,7 +7,6 @@ UMappingBaseComponent::UMappingBaseComponent() {
 
 
 void UMappingBaseComponent::Initialize(const FMappingComponentInitializer& initializer) {
-	this->Initializer = initializer;
 }
 
 void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
@@ -15,10 +15,10 @@ void UMappingBaseComponent::SaveComponent(FMappingSaveData& saveData) {
 void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
 }
 
-void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace) {
+void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation) {
 }
 
-void UMappingBaseComponent::SetPreviewVisibility(bool isVilible) {
+void UMappingBaseComponent::AddRotation(int direction) {
 }
 
 bool UMappingBaseComponent::SetIsPlaced(bool isPlaced) {
@@ -27,4 +27,13 @@ bool UMappingBaseComponent::SetIsPlaced(bool isPlaced) {
 
 bool UMappingBaseComponent::GetIsPlaced() {
 	return true;
+}
+
+const TArray<FMapInfo>& UMappingBaseComponent::GetMapInfo() {
+	static TArray<FMapInfo> EmptyArray;
+	return EmptyArray;
+}
+
+FIntVector UMappingBaseComponent::GetCurrentMapLocation() { 
+	return FIntVector(); 
 }

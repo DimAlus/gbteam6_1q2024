@@ -4,6 +4,7 @@
 
 void USocialService::InitializeService() {
 	UAGameService::InitializeService();
+	ClearService();
 }
 
 void USocialService::ClearService() {

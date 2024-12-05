@@ -31,6 +31,9 @@ private:
 	UPROPERTY()
 	TArray<ICanSaveInterface*> ProgressSavers;
 
+public:
+	bool bSaveMe;
+
 private:
 
 	USaveDefault* CreateSave(TSubclassOf<USaveDefault> saveClass, FString playerName, FString slotName, bool isDevMap);

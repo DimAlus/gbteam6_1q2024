@@ -27,6 +27,8 @@ private:
 	TArray<FGameTask> ExpectedTasks;
 
 	TArray<FGameTaskFindData> TaskFinders;
+
+	UGameObjectCore* LastTaskedStorage;
 private:
 	void RegisterTasks(TArray<FGameTask>& tasks);
 
@@ -42,4 +44,7 @@ public:
 	
 	virtual void AddExpecting(UGameObjectCore* core, const FGameTask& task) override;
 	virtual void RemoveExpecting(UGameObjectCore* core, const FGameTask& task) override;
+
+	virtual UGameObjectCore* GetLastTaskedCore() override;
+
 };

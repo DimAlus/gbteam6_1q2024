@@ -8,8 +8,6 @@
 
 #include "MappingBaseComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlacedEventSignature, bool, IsPlaced);
-
 class AMapPreview;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -20,34 +18,20 @@ public:
 	UMappingBaseComponent();
 
 
-
 	UFUNCTION(BlueprintCallable)
 	virtual void Initialize(const FMappingComponentInitializer& initializer);
 
 	virtual void SaveComponent(FMappingSaveData& saveData);
 	virtual void LoadComponent(const FMappingSaveData& saveData);
 
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Initializer)
-	FMappingComponentInitializer Initializer;
-
-public:
-	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	bool bCanPlace = false;
-
-	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	bool bIsPlaced = false;
-
-	UPROPERTY(BlueprintReadOnly, Category = MapInfo)
-	FIntVector currentLocation;
 
 public:
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetOwnerLocation(FVector TargetLocation, bool bUpdateCanPlace);
+	virtual void SetOwnerLocation(FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetPreviewVisibility(bool isVilible);
+	virtual void AddRotation(int direction);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool SetIsPlaced(bool isPlaced);
@@ -55,8 +39,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsPlaced();
 
+	UFUNCTION(BlueprintCallable)
+	virtual const TArray<FMapInfo>& GetMapInfo();
+	
+	UFUNCTION(BlueprintCallable)
+	virtual FIntVector GetCurrentMapLocation();
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnPlacedEventSignature OnPlaced;
+	FBoolSignature OnPlaced;
 };

@@ -60,6 +60,7 @@ protected:
 
 protected:
 	float LastDeltaTime = 0.f;
+	float newTimeDilation = 1.f;
 
 	bool isScrollPressed = false;
 
@@ -132,6 +133,7 @@ protected:
 	/** Change game speed main function */
 	void UpdateGameSpeed();
 
+	void UpdateTimeDilation();
 
 /**************** Camera Movement ****************/
 protected:
@@ -146,7 +148,9 @@ protected:
 	FVector CameraTargetPosition;
 	float CameraTargetRotation; // Rotation target can be more 360 deg => Rotator not usable
 	float CameraTagretHeight;
+	UPROPERTY(BlueprintReadOnly)
 	bool CameraHasTargetActor = false;
+	UPROPERTY(BlueprintReadOnly)
 	AActor* CameraTargetActor;
 
 	FVector CameraCurrentMovementSpeed;
@@ -297,7 +301,7 @@ public:
 	void AddCameraLocation(FVector deltaLocation);
 
 	UFUNCTION(BlueprintCallable)
-	void SetCameraTargetActor(AActor* cameraTargetActor, bool fastMove = false);
+	void SetCameraTargetActor(AActor* cameraTargetActor_, bool fastMove = false);
 
 	UFUNCTION(BlueprintCallable)
 	void UnsetCameraTargetActor();

@@ -109,7 +109,15 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 	UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
 	USocialService* social = GameInstance->GetSocialService();
 	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
-	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+	TSet<UGameObjectCore*> destsAll = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+	TSet<UGameObjectCore*> dests = destsAll;
+
+	if (auto tasker = Cast<UTaskerBaseComponent>(findData.Performer->GetComponent(EGameComponentType::Tasker))) {
+		if (dests.Contains(tasker->GetLastTaskedCore())) {
+			dests = { tasker->GetLastTaskedCore() };
+		}
+	}
+	
 
 	auto OverMap = GetOversByCores(sources);
 
@@ -123,6 +131,10 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 	if (findData.CheckNeeds) {
 		auto NeedMap = GetNeedsByCores(dests);
 		tasks = FindTaskByNeedsOvers(NeedMap, OverMap);
+		if (tasks.IsEmpty() && dests.Num() != destsAll.Num()) {
+			NeedMap = GetNeedsByCores(destsAll);
+			tasks = FindTaskByNeedsOvers(NeedMap, OverMap);
+		}
 	}
 	else {
 		TArray<UGameObjectCore*> destarr = dests.Array();

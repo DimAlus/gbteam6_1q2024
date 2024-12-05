@@ -37,9 +37,6 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ObjectMesh;
-		
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UMappingDefaultComponent* MappingComponent;
 	
 	// Object Core
 	UPROPERTY(BlueprintReadOnly)
