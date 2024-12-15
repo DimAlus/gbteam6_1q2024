@@ -27,20 +27,18 @@ public:
 
 
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual bool CanPush(const TArray<FPrice>& resources);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CanPop(const TArray<FPrice>& resources);
+	virtual bool CanChangeInventory(const TArray<FPrice>& resources, bool reverse);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool Push(const TArray<FPrice>& resources);
-
-	UFUNCTION(BlueprintCallable)
-	virtual bool Pop(const TArray<FPrice>& resources);
+	virtual bool ChangeInventory(const TArray<FPrice>& resources, bool reverse);
 
 	UFUNCTION(BlueprintCallable)
 	virtual int GetResourceCount(EResource resource);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanHasResourceCount(EResource resource, int count);
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TMap<EResource, int>& GetAllResources();

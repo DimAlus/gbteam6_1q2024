@@ -44,6 +44,9 @@ public:
 	FGeneratorInfoSignature OnGeneratorSuccess;
 
 	UPROPERTY(BlueprintAssignable)
+	FGeneratorInfoSignature OnGeneratorFail;
+
+	UPROPERTY(BlueprintAssignable)
 	FGeneratorInfoSignature OnGenerationBegin;
 
 	UPROPERTY(BlueprintAssignable)

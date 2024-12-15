@@ -282,6 +282,12 @@ struct FGeneratorElementInfo {
 	bool ShowResult{ true };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool SaveOnCanceling{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool CheckResultInventoryConstraints{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool HasSocialTagNeeds{ false };
 };
 

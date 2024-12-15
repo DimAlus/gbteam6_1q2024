@@ -26,24 +26,20 @@ void UInventoryBaseComponent::SaveComponent(FInventorySaveData& saveData) {
 void UInventoryBaseComponent::LoadComponent(const FInventorySaveData& saveData) {
 }
 
-bool UInventoryBaseComponent::CanPush(const TArray<FPrice>& resources) {
+bool UInventoryBaseComponent::CanChangeInventory(const TArray<FPrice>& resources, bool reverse) {
 	return false;
 }
 
-bool UInventoryBaseComponent::CanPop(const TArray<FPrice>& resources) {
-	return false;
-}
-
-bool UInventoryBaseComponent::Push(const TArray<FPrice>& resources) {
-	return false;
-}
-
-bool UInventoryBaseComponent::Pop(const TArray<FPrice>& resources) {
+bool UInventoryBaseComponent::ChangeInventory(const TArray<FPrice>& resources, bool reverse) {
 	return false;
 }
 
 int UInventoryBaseComponent::GetResourceCount(EResource resource) {
 	return 0;
+}
+
+bool UInventoryBaseComponent::CanHasResourceCount(EResource resource, int count) {
+	return false;
 }
 
 const TMap<EResource, int>& UInventoryBaseComponent::GetAllResources() { 

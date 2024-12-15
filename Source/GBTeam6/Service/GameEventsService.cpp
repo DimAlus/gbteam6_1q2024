@@ -122,12 +122,12 @@ void UGameEventsService::ActionInventory(const FQuestAction& Action, FGameEventC
 		auto inventory = Cast<UInventoryBaseComponent>(core->GetComponent(EGameComponentType::Inventory));
 
 		if (count > 0) {
-			if (inventory->Push({ prc }))
+			if (inventory->ChangeInventory({ prc }, false))
 				constraints--;
 		}
 		else {
 			prc.Count = std::min(-count, inventory->GetResourceCount(prc.Resource));
-			if (inventory->Pop({ prc })) {
+			if (inventory->ChangeInventory({ prc }, true)) {
 				count += prc.Count;
 				constraints--;
 			}

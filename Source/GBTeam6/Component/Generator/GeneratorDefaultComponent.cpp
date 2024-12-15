@@ -59,9 +59,26 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 			thread.Power += DeltaPower * DeltaTime;
 			if (thread.Power >= info.Barter.WorkSize) {
+				DismissWorkers(info.ThreadName);
+
+				bool success = true;
+				if (UInventoryBaseComponent* inventory = GetInventory()) {
+					success = inventory->CanChangeInventory(info.Barter.Result, false);
+				}
+
 				thread.SavePower.Add(thread.GeneratorName, thread.Power - info.Barter.WorkSize);
 				thread.Power = 0;
-				ApplyWork(thread.GeneratorName);
+
+				if (success) {
+					OnGeneratorSuccess.Broadcast(thread.GeneratorName, info);
+					ApplyWork(thread.GeneratorName);
+
+				}
+				else {
+					OnGeneratorFail.Broadcast(thread.GeneratorName, info);
+					CancelWork(thread.GeneratorName);
+				}
+
 				FString save = thread.GeneratorName;
 				thread.GeneratorName = "";
 				TouchGeneratorSocialTagNeeds(save);
@@ -294,8 +311,11 @@ bool UGeneratorDefaultComponent::HasConstraintByResultActors(const FString& gene
 bool UGeneratorDefaultComponent::HasConstraintByInventory(const FString& generatorName) {
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		return !(inventory->CanPop(info.Barter.Price)
-			  && inventory->CanPush(info.Barter.Result));
+		return !(
+			inventory->CanChangeInventory(info.Barter.Price, true)
+			&& (!info.CheckResultInventoryConstraints
+			  || inventory->CanChangeInventory(info.Barter.Result, false))
+		);
 	}
 	return false;
 }
@@ -365,7 +385,7 @@ void UGeneratorDefaultComponent::StartWork(const FString& threadName, const FStr
 	thread.GeneratorName = generatorName;
 	thread.Power = thread.SavePower.Contains(generatorName) ? thread.SavePower[generatorName] : 0;
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		inventory->Pop(this->Generators[generatorName].Barter.Price);
+		inventory->ChangeInventory(this->Generators[generatorName].Barter.Price, true);
 	}
 	HireWorkers(generatorName);
 	if (context.CountTasks > 0) {
@@ -414,11 +434,9 @@ bool UGeneratorDefaultComponent::FindWork(const FString& threadName) {
 void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Applied <%s>", *generatorName);
 	const FGeneratorElementInfo& info = this->Generators[generatorName];
-	DismissWorkers(info.ThreadName);
-	OnGeneratorSuccess.Broadcast(generatorName, info);
 
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		inventory->Push(info.Barter.Result);
+		inventory->ChangeInventory(info.Barter.Result, false);
 		ApplyNotInventoriableResources(info.Barter.Result);
 
 		OnResourceGenerated.Broadcast(info.Barter.Result);
@@ -433,7 +451,7 @@ void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 void UGeneratorDefaultComponent::CancelWork(const FString& generatorName) {
 	UE_LOG_COMPONENT(Log, "Work Canceled <%s>", *generatorName);
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
-		inventory->Push(this->Generators[generatorName].Barter.Price);
+		inventory->ChangeInventory(this->Generators[generatorName].Barter.Price, false);
 	}
 }
 
@@ -471,19 +489,29 @@ TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 				count = steps;
 			}
 			if (count > 0) {
-				for (const FPrice& price : info.Barter.Price) {
-					if (GetGameState()->GetPlayerResources().Contains(price.Resource)) {
-						CurrentPlayerNeeds.Add(price.Resource, price.Count * count);
+				bool reverse = false;
+				for (auto brt : { info.Barter.Price, info.Barter.Result }) {
+					for (const FPrice& prc : brt) {
+						FPrice price = prc;
+						price.Count *= reverse ? -1 : 1;
+						if (price.Count <= 0) {
+							continue;
+						}
+
+						if (GetGameState()->GetPlayerResources().Contains(price.Resource)) {
+							CurrentPlayerNeeds.Add(price.Resource, price.Count * count);
+						}
+						if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
+							continue;
+						}
+						if (!needs.Contains(price.Resource)) {
+							needs.Add(price.Resource, price.Count * count);
+						}
+						else {
+							needs[price.Resource] += price.Count * count;
+						}
 					}
-					if (UInventoryBaseComponent::GetIgnoreResources().Contains(price.Resource)) {
-						continue;
-					}
-					if (!needs.Contains(price.Resource)) {
-						needs.Add(price.Resource, price.Count * count);
-					}
-					else {
-						needs[price.Resource] += price.Count * count;
-					}
+					reverse = true;
 				}
 			}
 		}
@@ -671,7 +699,7 @@ void UGeneratorDefaultComponent::CancelTask(FString generatorName) {
 	if (thread.GeneratorName == generatorName) {
 		DismissWorkers(info.ThreadName);
 		CancelWork(generatorName);
-		thread.SavePower.Add(thread.GeneratorName, thread.Power);
+		thread.SavePower.Add(thread.GeneratorName, info.SaveOnCanceling ? thread.Power : 0);
 		thread.Power = 0;
 		thread.GeneratorName = FString();
 		TouchGeneratorSocialTagNeeds(generatorName);

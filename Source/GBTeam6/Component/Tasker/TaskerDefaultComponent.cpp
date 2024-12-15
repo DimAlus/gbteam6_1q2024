@@ -110,9 +110,8 @@ bool UTaskerDefaultComponent::ApplyTask() {
 	TArray<FPrice> prc{{}};
 	prc[0].Resource = task.Resource;
 	prc[0].Count = std::abs(task.Count);
-	if (inventorySrc->CanPop(prc)) {
-		inventorySrc->Pop(prc);
-		inventoryDest->Push(prc);
+	if (inventorySrc->ChangeInventory(prc, true)) {
+		inventoryDest->ChangeInventory(prc, false);
 	}
 	else {
 		UE_LOG_COMPONENT(Warning, "Resource can't be moving between inventories!");

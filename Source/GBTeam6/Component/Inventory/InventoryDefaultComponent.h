@@ -35,18 +35,12 @@ protected:
 private:
 	void SavePoint();
 	void RollBack(bool isBack);
-	bool _push(const TArray<FPrice>& resources);
-	bool _pop(const TArray<FPrice>& resources);
-	bool _player_push(const TArray<FPrice>& resources);
-	bool _player_pop(const TArray<FPrice>& resources);
-	bool _can_player_push(const TArray<FPrice>& resources);
-	bool _can_player_pop(const TArray<FPrice>& resources);
+	bool TryChangeInventory(const TArray<FPrice>& resources, bool reverse, bool withRb);
 public:
-	virtual bool CanPush(const TArray<FPrice>& resources) override;
-	virtual bool CanPop(const TArray<FPrice>& resources) override;
-	virtual bool Push(const TArray<FPrice>& resources) override;
-	virtual bool Pop(const TArray<FPrice>& resources) override;
+	virtual bool CanChangeInventory(const TArray<FPrice>& resources, bool reverse) override;
+	virtual bool ChangeInventory(const TArray<FPrice>& resources, bool reverse) override;
 	virtual int GetResourceCount(EResource resource) override;
+	virtual bool CanHasResourceCount(EResource resource, int count) override;
 	virtual const TMap<EResource, int>& GetAllResources() override;
 	virtual TMap<EResource, int> GetOverage() override;
 };

@@ -85,38 +85,22 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 	return cnt;
 }
 
-bool AGameStateDefault::PushPlayerResource(EResource resource, int count){
-	if (PlayerResources.Contains(resource)) {
+
+bool AGameStateDefault::AddPlayerResource(EResource resource, int count) {
+	if (CanAddPlayerResource(resource, count)) {
 		PlayerResources[resource] += count;
 		OnPlayerInventoryChanging.Broadcast();
-	}
-	return true;
-}
-
-bool AGameStateDefault::PopPlayerResource(EResource resource, int count){
-	if (IsPlayerResource(resource)) {
-		if (GetResourceCount(resource) >= count) {
-			PlayerResources[resource] -= count;
-			OnPlayerInventoryChanging.Broadcast();
-			return true;
-		}
-		return false;
-	}
-	return true;
-}
-
-bool AGameStateDefault::CanPushPlayerResource(EResource resource, int count) {
-	return true;
-}
-
-bool AGameStateDefault::CanPopPlayerResource(EResource resource, int count) {
-	if (resource == EResource::Rune) {
 		return true;
 	}
-	if (PlayerResources.Contains(resource)) {
-		return PlayerResources[resource] >= count;
+	return false;
+}
+
+bool AGameStateDefault::CanAddPlayerResource(EResource resource, int count) {
+	if (IsPlayerResource(resource)) {
+		return resource == EResource::Rune
+			|| PlayerResources[resource] + count >= 0;
 	}
-	return true;
+	return false;
 }
 
 TArray<FPrice> AGameStateDefault::GetResourcesByStacks(TMap<EResource, int> resources) {

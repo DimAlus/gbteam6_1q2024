@@ -103,18 +103,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	int GetResourceCount(EResource resource);
-
+	
 	UFUNCTION(BlueprintCallable)
-	bool PushPlayerResource(EResource resource, int count);
-
+	bool AddPlayerResource(EResource resource, int count);
+	
 	UFUNCTION(BlueprintCallable)
-	bool PopPlayerResource(EResource resource, int count);
-
-	UFUNCTION(BlueprintCallable)
-	bool CanPushPlayerResource(EResource resource, int count);
-
-	UFUNCTION(BlueprintCallable)
-	bool CanPopPlayerResource(EResource resource, int count);
+	bool CanAddPlayerResource(EResource resource, int count);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FPrice> GetResourcesByStacks(TMap<EResource, int> resources);
