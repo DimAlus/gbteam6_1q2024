@@ -274,3 +274,27 @@ enum class ETopPanelType : uint8 {
 	Building			UMETA(DisplayName = "Buildingx")
 };
 
+
+UENUM(BlueprintType)
+enum class ETargetType : uint8 {
+	Self			UMETA(DisplayName = "Self"),
+	Enemy			UMETA(DisplayName = "Enemy"),
+	Friend			UMETA(DisplayName = "Friend"),
+};
+
+UENUM(BlueprintType)
+enum class ETargetFilterType : uint8 {
+	Distance		UMETA(DisplayName = "Distance"),
+	Health			UMETA(DisplayName = "Health"),
+	HealthPerc		UMETA(DisplayName = "HealthPerc"),
+};
+
+
+UENUM(BlueprintType)
+enum class EFilterCompareType : uint8 {
+	Equal			UMETA(DisplayName = "Equal (==)"),
+	More			UMETA(DisplayName = "More (>)"),
+	MoreEqual		UMETA(DisplayName = "MoreEqual (>=)"),
+	Less			UMETA(DisplayName = "Less (<)"),
+	LessEqual		UMETA(DisplayName = "LessEqual (<=)"),
+};

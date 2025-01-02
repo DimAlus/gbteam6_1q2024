@@ -25,7 +25,7 @@ private:
 
 private:
 	const TMap<ESocialTeam, TMap<ERelations, TSet<ESocialTeam>>>& GetRelations();
-
+	
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -54,5 +54,26 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	TSet<UGameObjectCore*> GetObjectsByTags(TSet<ESocialTag> SocialTags, TSet<ESocialTag> IgnoreTags);
+	
+// FindTagrets
+private:
+	TMap<FString, FTargetFinder> Finders;
+
+
+private:
+	void LoadFinders();
+	const FTargetFinder& GetFinder(FString finderName);
+
+	bool FilterComparing(float value1, float value2, EFilterCompareType compareType);
+	float GetFilterValue(const ETargetFilterType& filterType, UGameObjectCore* core, FVector centerLocation);
+	bool AtFilter(const FTargetFinder& finder, UGameObjectCore* core, FVector centerLocation);
+	
+public:
+
+	UFUNCTION(BlueprintCallable)
+	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore);
+
+	UFUNCTION(BlueprintCallable)
+	TArray<UGameObjectCore*> FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation);
 	
 };

@@ -731,3 +731,60 @@ struct FGameEventConextSave {
 	float CurrentTime{};
 };
 
+
+USTRUCT(BlueprintType)
+struct FTargetFilter {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETargetFilterType Type{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Value{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EFilterCompareType CompareType{};
+};
+
+USTRUCT(BlueprintType)
+struct FTargetFinder {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString FinderName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETargetType TargetType{ ETargetType::Enemy };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Count{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FTargetFilter> Filters{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETargetFilterType OrderType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsOrderDesc{ false };
+};
+
+USTRUCT(BlueprintType)
+struct FTRTargetFinder : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETargetType TargetType{ ETargetType::Enemy };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int Count{ 1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FTargetFilter> Filters{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETargetFilterType OrderType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsOrderDesc{ false };
+};

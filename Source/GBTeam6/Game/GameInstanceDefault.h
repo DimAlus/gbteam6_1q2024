@@ -94,6 +94,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_GameEvents;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_TargetFilters;
+
 
 /***************************************
 ***    Services            
