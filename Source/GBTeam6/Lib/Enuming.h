@@ -38,6 +38,7 @@ enum class EGameComponentType : uint8 {
 	Mapping		UMETA(DisplayName = "Mapping"),
 	Generator	UMETA(DisplayName = "Generator"),
 	Tasker		UMETA(DisplayName = "Tasker"),
+	Effect		UMETA(DisplayName = "Effect"),
 	Inventory	UMETA(DisplayName = "Inventory"),
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
@@ -297,4 +298,29 @@ enum class EFilterCompareType : uint8 {
 	MoreEqual		UMETA(DisplayName = "MoreEqual (>=)"),
 	Less			UMETA(DisplayName = "Less (<)"),
 	LessEqual		UMETA(DisplayName = "LessEqual (<=)"),
+};
+
+
+UENUM(BlueprintType)
+enum class EEffect : uint8 {
+	HealthChange	UMETA(DisplayName = "Health Change"),
+	Slowing			UMETA(DisplayName = "Slowing"),
+	Protection		UMETA(DisplayName = "Protection"),
+	Mutation		UMETA(DisplayName = "Mutation"),
+};
+
+
+UENUM(BlueprintType)
+enum class EEffectType : uint8 {
+	Instant			UMETA(DisplayName = "Instant"),
+	Periodic		UMETA(DisplayName = "Periodic"),
+};
+
+
+UENUM(BlueprintType)
+enum class ESkillSlot : uint8 {
+	Auto			UMETA(DisplayName = "Auto"),
+	Skill1			UMETA(DisplayName = "First Slot"),
+	Skill2			UMETA(DisplayName = "Second Slot"),
+	Skill3			UMETA(DisplayName = "Third Slot"),
 };

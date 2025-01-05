@@ -53,9 +53,9 @@ protected:
 	void GeneratorProgress(const FString& generatorName, const FGeneratorElementInfo& info);
 	UFUNCTION()
 	void GeneratorSuccess(const FString& generatorName, const FGeneratorElementInfo& info);
-	UFUNCTION(BlueprintCallable)
-	void ChangeHealth(float deltaHealth);
+
 public:
+	virtual void ChangeHealth(float deltaHealth) override;
 	
 	virtual float GetMaxHealth() override { return MaxHealth; }
 	virtual float GetCurrentHealth() override { return CurrentHealth; }

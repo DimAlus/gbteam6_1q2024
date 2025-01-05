@@ -88,6 +88,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FEffectSaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FInventorySaveData {
 	GENERATED_BODY()
 public:
@@ -126,6 +133,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTaskerSaveData TaskerData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEffectSaveData EffectData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventorySaveData InventoryData{};

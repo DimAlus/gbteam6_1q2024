@@ -788,3 +788,31 @@ struct FTRTargetFinder : public FTableRowBase {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsOrderDesc{ false };
 };
+
+
+USTRUCT(BlueprintType)
+struct FEffect {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEffect Effect{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EEffectType EffectType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Value{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"EffectType == EEffectType::Periodic",
+		EditConditionHides))
+	float Time;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsConst{ false };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"IsConst",
+		EditConditionHides))
+	FString EffectName{};
+};

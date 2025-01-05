@@ -12,6 +12,7 @@ class UGeneratorBaseComponent;
 class UTaskerBaseComponent;
 class UInventoryBaseComponent;
 class USocialBaseComponent;
+class UEffectBaseComponent;
 class UUIBaseComponent;
 class USoundBaseComponent;
 
@@ -113,6 +114,32 @@ struct FTaskerComponentInitData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTaskerComponentInitializer ComponentInitializer{};
+
+};
+
+
+
+/***********************************************************************************/
+/// <summary>
+/// Effect Initializing
+/// </summary>
+
+
+USTRUCT(BlueprintType)
+struct FEffectComponentInitializer {
+	GENERATED_BODY()
+};
+
+
+USTRUCT(BlueprintType)
+struct FEffectComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UEffectBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEffectComponentInitializer ComponentInitializer{};
 
 };
 
@@ -325,6 +352,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FTaskerComponentInitData TaskerComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FEffectComponentInitData EffectComponentInitData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FInventoryComponentInitData InventoryComponentInitData{};

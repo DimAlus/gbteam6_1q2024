@@ -21,6 +21,7 @@
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Component/Tasker/TaskerBaseComponent.h"
+#include "../Component/Effect/EffectBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
 #include "PlatformFeatures.h"
 #include "GameFramework/SaveGame.h"
@@ -362,6 +363,9 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
 				tasker->SaveComponent(SaveData.TaskerData);
 			}
+			if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
+				effect->SaveComponent(SaveData.EffectData);
+			}
 			if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				social->SaveComponent(SaveData.SocialData);
 			}
@@ -396,6 +400,9 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	}
 	if (auto tasker = Cast<UTaskerBaseComponent>(core->GetComponent(EGameComponentType::Tasker))) {
 		tasker->LoadComponent(objectSaveData.TaskerData);
+	}
+	if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
+		effect->LoadComponent(objectSaveData.EffectData);
 	}
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);

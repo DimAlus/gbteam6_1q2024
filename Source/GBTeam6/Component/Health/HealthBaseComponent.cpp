@@ -20,3 +20,7 @@ void UHealthBaseComponent::TakeDamage(AActor* DamagedActor, float Damage, const 
 	AController* InstigatedBy, AActor* DamageCauser) {
 	// Virtual function.
 }
+
+void UHealthBaseComponent::ChangeHealth(float changing) {
+	// Virtual function.
+}

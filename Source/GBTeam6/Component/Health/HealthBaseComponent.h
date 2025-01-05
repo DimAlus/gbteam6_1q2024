@@ -38,6 +38,9 @@ public:
 		class AController* InstigatedBy, AActor* DamageCauser);
 	
 	UFUNCTION(BlueprintCallable)
+	virtual void ChangeHealth(float changing);
+	
+	UFUNCTION(BlueprintCallable)
 	virtual float GetMaxHealth() {return 0.f;};
 	UFUNCTION(BlueprintCallable)
 	virtual float GetCurrentHealth() {return 0.f;};

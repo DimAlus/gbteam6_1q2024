@@ -4,6 +4,7 @@
 #include "../Component/Inventory/InventoryBaseComponent.h"
 #include "../Component/Generator/GeneratorBaseComponent.h"
 #include "../Component/Tasker/TaskerBaseComponent.h"
+#include "../Component/Effect/EffectBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
 #include "../Component/UI/UIBaseComponent.h"
 #include "../Component/Sound/SoundBaseComponent.h"
@@ -119,6 +120,13 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	);
 	BindComponent(EGameComponentType::Tasker, NewTaskerComponent);
 
+	//Create Effect component
+	UEffectBaseComponent* NewEffectComponent = NewObject<UEffectBaseComponent>(
+		owner,
+		GetNvlClass(InitData.EffectComponentInitData.ComponentClass, UEffectBaseComponent::StaticClass())
+	);
+	BindComponent(EGameComponentType::Effect, NewEffectComponent);
+
 	//Create Social component
 	USocialBaseComponent* NewSocialComponent = NewObject<USocialBaseComponent>(
 		owner,
@@ -145,6 +153,7 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
 	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	NewTaskerComponent->Initialize(InitData.TaskerComponentInitData.ComponentInitializer);
+	NewEffectComponent->Initialize(InitData.EffectComponentInitData.ComponentInitializer);
 	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
 	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
 	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
