@@ -8,6 +8,7 @@
 #include "../Component/Social/SocialBaseComponent.h"
 #include "../Component/UI/UIBaseComponent.h"
 #include "../Component/Sound/SoundBaseComponent.h"
+#include "../Component/SkillHeaver/SkillHeaverBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 #include "../Game/GameInstanceDefault.h"
 
@@ -148,6 +149,13 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	);
 	BindComponent(EGameComponentType::Sound, NewSoundComponent);
 
+	//Create SkillHeaver component
+	USkillHeaverBaseComponent* NewSkillHeaverComponent = NewObject<USkillHeaverBaseComponent>(
+		owner,
+		GetNvlClass(InitData.SkillHeaverComponentInitData.ComponentClass, USkillHeaverBaseComponent::StaticClass())
+	);
+	BindComponent(EGameComponentType::SkillHeaver, NewSkillHeaverComponent);
+
 	NewMappingComponent->Initialize(InitData.MappingComponentInitData.ComponentInitializer);
 	NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
 	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
@@ -157,6 +165,7 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
 	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
 	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);
+	NewSkillHeaverComponent->Initialize(InitData.SkillHeaverComponentInitData.ComponentInitializer);
 
 }
 

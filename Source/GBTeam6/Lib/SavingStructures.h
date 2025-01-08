@@ -110,6 +110,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FSkillHeaverSaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FGameObjectSaveData {
 	GENERATED_BODY()
 public:
@@ -142,6 +149,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSocialSaveData SocialData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSkillHeaverSaveData SkillHeaverData{};
 };
 
 

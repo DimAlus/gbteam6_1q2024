@@ -15,6 +15,7 @@ class USocialBaseComponent;
 class UEffectBaseComponent;
 class UUIBaseComponent;
 class USoundBaseComponent;
+class USkillHeaverBaseComponent;
 
 /**
  * 
@@ -316,6 +317,37 @@ struct FSoundComponentInitData {
 
 /***********************************************************************************/
 /// <summary>
+/// SkillHeaver Initializing
+/// </summary>
+USTRUCT(BlueprintType)
+struct FSkillHeaverComponentInitializer {
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<ESkillSlot, FSkill> Skills{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float MaxMana{100.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ManaRegeneration{5.f};
+};
+
+USTRUCT(BlueprintType)
+struct FSkillHeaverComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<USkillHeaverBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSkillHeaverComponentInitializer ComponentInitializer{};
+};
+
+
+/***********************************************************************************/
+/// <summary>
 /// Game Object Initializing
 /// </summary>
 ///
@@ -367,6 +399,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FMappingComponentInitData MappingComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSkillHeaverComponentInitData SkillHeaverComponentInitData{};
 };
 
 /***********************************************************************************/

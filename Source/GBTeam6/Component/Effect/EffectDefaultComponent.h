@@ -39,7 +39,8 @@ private:
 
 	UFUNCTION(BlueprintCallable) 
 	void TimerCallbackFunc();
-
+	
+	UFUNCTION()
 	void OnDeath();
 
 	void ActionApplyEffect(const FEffect& effect);

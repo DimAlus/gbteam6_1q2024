@@ -17,6 +17,8 @@ DECLARE_DYNAMIC_DELEGATE(FTouchBlueprintableSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, TArray<UGameObjectCore*>, Targets);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -26,6 +28,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 #define LG_VECTOR(v) v.X, v.Y, v.Z
 
 class UGameObjectCore;
+class AProjectile;
 
 FString GetLevelName(ULevel* level);
 
@@ -815,4 +818,35 @@ struct FEffect {
 		"IsConst",
 		EditConditionHides))
 	FString EffectName{};
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FSkill {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Name{"None"};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FEffect> Effects{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TargetFinder{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Cooldown{1.f};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float CurrentCooldown{0.f};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Mana{100.f};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AProjectile> ProjectileClass{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Autouse{true};
 };

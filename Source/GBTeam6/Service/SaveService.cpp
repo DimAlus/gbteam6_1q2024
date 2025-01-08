@@ -23,6 +23,7 @@
 #include "../Component/Tasker/TaskerBaseComponent.h"
 #include "../Component/Effect/EffectBaseComponent.h"
 #include "../Component/Social/SocialBaseComponent.h"
+#include "../Component/SkillHeaver/SkillHeaverBaseComponent.h"
 #include "PlatformFeatures.h"
 #include "GameFramework/SaveGame.h"
 
@@ -372,6 +373,9 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 				ui->SaveComponent(SaveData.SocialData);
 			}
+			if (auto skillheaver = Cast<USkillHeaverBaseComponent>(core->GetComponent(EGameComponentType::SkillHeaver))) {
+				skillheaver->SaveComponent(SaveData.SkillHeaverData);
+			}
 			if (bSaveMe) {
 				saveData.Add(SaveData);
 			}
@@ -406,6 +410,9 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	}
 	if (auto ui = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::UI))) {
 		ui->LoadComponent(objectSaveData.SocialData);
+	}
+	if (auto skillheaver = Cast<USkillHeaverBaseComponent>(core->GetComponent(EGameComponentType::SkillHeaver))) {
+		skillheaver->LoadComponent(objectSaveData.SkillHeaverData);
 	}
 }
 

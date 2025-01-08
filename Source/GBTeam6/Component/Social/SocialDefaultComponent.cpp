@@ -2,6 +2,7 @@
 
 #include "../../Interface/GameObjectCore.h"
 #include "../Mapping/MappingBaseComponent.h"
+#include "../Health/HealthBaseComponent.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	this->UnRegisterObjectInService();
@@ -20,6 +21,10 @@ void USocialDefaultComponent::OnCoreCreatedAfter() {
 	}
 	else {
 		OnPlacedRegister(true);
+	}
+
+	if (auto health = Cast<UHealthBaseComponent>(GetCore()->GetComponent(EGameComponentType::Health))) {
+		health->OnDeath.AddDynamic(this, &USocialDefaultComponent::UnRegisterObjectInService);
 	}
 }
 

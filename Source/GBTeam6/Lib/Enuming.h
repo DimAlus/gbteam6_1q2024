@@ -43,7 +43,8 @@ enum class EGameComponentType : uint8 {
 	UI			UMETA(DisplayName = "User Interface"),
 	Social		UMETA(DisplayName = "Social"),
 	Sound		UMETA(DisplayName = "Sound"),
-	Collision	UMETA(DisplayName = "Collision")
+	Collision	UMETA(DisplayName = "Collision"),
+	SkillHeaver	UMETA(DisplayName = "SkillHeaver")
 };
 
 UENUM(BlueprintType)
@@ -323,4 +324,12 @@ enum class ESkillSlot : uint8 {
 	Skill1			UMETA(DisplayName = "First Slot"),
 	Skill2			UMETA(DisplayName = "Second Slot"),
 	Skill3			UMETA(DisplayName = "Third Slot"),
+};
+
+
+UENUM(BlueprintType)
+enum class EProjectileMovement : uint8 {
+	Multiple		UMETA(DisplayName = "Multiple"),
+	Queue			UMETA(DisplayName = "Queue"),
+	Average			UMETA(DisplayName = "Average"),
 };
