@@ -150,6 +150,7 @@ void USocialService::LoadFinders() {
 	FTargetFinder deflt;
 	deflt.Count = 1;
 	deflt.FinderName = "Default";
+	deflt.Count = 0;
 	Finders.Add("Default", deflt);
 
 
@@ -167,6 +168,19 @@ void USocialService::LoadFinders() {
 		}
 		finder.OrderType = data->OrderType;
 		finder.IsOrderDesc = data->IsOrderDesc;
+		finder.FiltersSocialTags = data->FiltersSocialTags;
+		auto& arrSocTag = finder.FiltersSocialTags;
+		for (int i = 0; i < arrSocTag.Num() - 1; i++) {
+			while (i < arrSocTag.Num() - 1 && arrSocTag[i] == arrSocTag[i + 1]) {
+				arrSocTag.RemoveAt(i + 1);
+			}
+		}
+		if (arrSocTag.Num() > 0 && arrSocTag[0] == ESocialTag::None) {
+			arrSocTag.RemoveAt(0);
+		}
+		if (arrSocTag.Num() > 0 && arrSocTag[arrSocTag.Num() - 1] != ESocialTag::None) {
+			arrSocTag.Add(ESocialTag::None);
+		}
 
 		Finders.Add(finder.FinderName, finder);
 	}
@@ -195,7 +209,7 @@ float USocialService::GetFilterValue(const ETargetFilterType& filterType, UGameO
 	switch (filterType)
 	{
 	case ETargetFilterType::Distance:
-		return (core->GetOwner()->GetActorLocation() - centerLocation).Length();
+		return ((core->GetOwner()->GetActorLocation() - centerLocation) * FVector(1, 1, 0)).Length();
 	case ETargetFilterType::HealthPerc:
 		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 			return health->GetPercentageHealth();
@@ -221,17 +235,38 @@ bool USocialService::AtFilter(const FTargetFinder& finder, UGameObjectCore* core
 			return false;
 		}
 	}
+
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		bool accessed = true;
+		for (const auto& tag : finder.FiltersSocialTags) {
+			if (tag == ESocialTag::None) {
+				if (accessed) {
+					return true;
+				}
+				accessed = true;
+			}
+			else {
+				if (accessed && !social->GetSocialTags().Contains(tag)) {
+					accessed = false;
+				}
+			}
+		}
+	}
 	
-	return true;
+	return finder.FiltersSocialTags.Num() == 0;
 }
 
 
-TArray<UGameObjectCore*> USocialService::FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore) {
-	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation());
+TArray<UGameObjectCore*> USocialService::FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore, const TArray<UGameObjectCore*>& priorityTargets) {
+	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets);
 }
 
-TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation) {
+TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation, const TArray<UGameObjectCore*>& priorityTargets) {
 	const FTargetFinder& finder = GetFinder(targetFinder);
+
+	if (finder.Count <= 0) {
+		return {};
+	}
 
 	if (finder.TargetType == ETargetType::Self) {
 		return { core };
@@ -256,15 +291,18 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder, UGame
 	for (const auto& obj : objects) {
 		if (AtFilter(finder, obj, centerLocation)) {
 			float val = GetFilterValue(finder.OrderType, obj, centerLocation);
+			int priority = priorityTargets.Contains(obj);
 
 			bool inserted = false;
 			for (auto iter = targets.GetHead(); iter; iter = iter->GetNextNode()) {
-				if (FilterComparing(val, iter->GetValue().Key, orderCompareType)) {
+				int itPriority = priorityTargets.Contains(iter->GetValue().Value);
+				if (priority > itPriority || FilterComparing(val, iter->GetValue().Key, orderCompareType)) {
 					targets.InsertNode({ val, obj }, iter);
 					inserted = true;
 					break;
 				}
 			}
+			
 			if (!inserted) {
 				targets.AddTail({ val, obj });
 			}

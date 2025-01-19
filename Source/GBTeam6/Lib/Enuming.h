@@ -113,39 +113,31 @@ enum class ERelations : uint8 {
 UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
-	MainStorage			UMETA(DisplayName = "MainStorage"),
+
+	Forest				UMETA(DisplayName = "Forest's"),
+	Human				UMETA(DisplayName = "Human's"),
+
+	Building			UMETA(DisplayName = "Building"),
 	Storage				UMETA(DisplayName = "Storage"),
+	MainBuilding		UMETA(DisplayName = "Main Building"),
+	Defence				UMETA(DisplayName = "Defence Building"),
+
 	Worker				UMETA(DisplayName = "Worker"),
-	
+	Warrior				UMETA(DisplayName = "Warrior"),
+	LongRange			UMETA(DisplayName = "Long-range warior"),
+	Person				UMETA(DisplayName = "Person (supreme spirit)"),
+
+	RuneHeaver			UMETA(DisplayName = "Rune Heaver"),
+	ResourceSource		UMETA(DisplayName = "Resource Source"),
+
 	Forester			UMETA(DisplayName = "Forester"),
 	Forestling			UMETA(DisplayName = "Forestling"),
-	Shoremaiden			UMETA(DisplayName = "Shoremaiden"),
-	Woodmaiden			UMETA(DisplayName = "Woodmaiden"),
-	Meadowman			UMETA(DisplayName = "Meadowman"),
-	Swimmer				UMETA(DisplayName = "Swimmer"),
-	Wisp				UMETA(DisplayName = "Wisp"),
-	Human				UMETA(DisplayName = "Human"),
-	HumanWarrior		UMETA(DisplayName = "HumanWarrior"),
-	HumanWarriorLeader	UMETA(DisplayName = "HumanWarriorLeader"),
-	
-	ForesterHouse		UMETA(DisplayName = "ForesterHouse"),
-	ForestlingHouse		UMETA(DisplayName = "ForestlingHouse"),
-	ShoremaidenHouse	UMETA(DisplayName = "ShoremaidenHouse"),
-	WoodmaidenHouse		UMETA(DisplayName = "WoodmaidenHouse"),
-	MeadowmanHouse		UMETA(DisplayName = "MeadowmanHouse"),
-	SwimmerHouse		UMETA(DisplayName = "SwimmerHouse"),
-	ReedThickets		UMETA(DisplayName = "ReedThickets"),
-	Cellar				UMETA(DisplayName = "Cellar"),
-	StumpAltar			UMETA(DisplayName = "StumpAltar"),
+	ShoreMaiden			UMETA(DisplayName = "Shoremaiden"),
+	Altar				UMETA(DisplayName = "Altar"),
+	ForesterHouse		UMETA(DisplayName = "Forester House"),
+	ShoreMaidenHouse	UMETA(DisplayName = "Shoremaiden House"),
+	Cage				UMETA(DisplayName = "Cage"),
 
-	EnergyGenerator		UMETA(DisplayName = "EnergyGenerator"),
-	Barricade			UMETA(DisplayName = "Barricade"),
-	Tower				UMETA(DisplayName = "Tower"),
-	BerryGrove			UMETA(DisplayName = "BerryGrove"),
-	WoodGrove			UMETA(DisplayName = "WoodGrove"),
-	HolyGrove			UMETA(DisplayName = "HolyGrove"),
-	MushroomGrove		UMETA(DisplayName = "MushroomGrove"),
-	HerbGrove			UMETA(DisplayName = "HerbGrove")
 };
 
 UENUM(BlueprintType)

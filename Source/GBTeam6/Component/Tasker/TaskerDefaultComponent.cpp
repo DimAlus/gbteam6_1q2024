@@ -120,7 +120,7 @@ bool UTaskerDefaultComponent::ApplyTask() {
 	}
 
 	if (auto social = Cast<USocialBaseComponent>(task.Core->GetComponent(EGameComponentType::Social))) {
-		if (social->GetSocialTags().Contains(ESocialTag::Storage)) {
+		if (social->GetSocialTags().Contains(ESocialTag::Building)) {
 			LastTaskedStorage = task.Core;
 		}
 	}

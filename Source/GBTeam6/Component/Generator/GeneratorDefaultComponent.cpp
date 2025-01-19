@@ -153,7 +153,9 @@ void UGeneratorDefaultComponent::LoadComponent(const FGeneratorSaveData& saveDat
 	this->IsDestructed = saveData.IsDestructed;
 
 	for (const auto& iter : saveData.GeneratorsContext) {
-		this->GeneratorsContext.Add(iter.Key, iter.Value);
+		if (this->Generators.Contains(iter.Key)) {
+			this->GeneratorsContext.Add(iter.Key, iter.Value);
+		}
 	}
 
 }
@@ -437,7 +439,7 @@ void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 
 	if (UInventoryBaseComponent* inventory = GetInventory()) {
 		inventory->ChangeInventory(info.Barter.Result, false);
-		ApplyNotInventoriableResources(info.Barter.Result);
+		ApplyNotInventoriableResources(info.Barter.Result, generatorName);
 
 		OnResourceGenerated.Broadcast(info.Barter.Result);
 		GetGameState()->GetMessageService()->Send(
@@ -456,13 +458,14 @@ void UGeneratorDefaultComponent::CancelWork(const FString& generatorName) {
 }
 
 
-void UGeneratorDefaultComponent::ApplyNotInventoriableResources(const TArray<FPrice>& resources) {
+void UGeneratorDefaultComponent::ApplyNotInventoriableResources(const TArray<FPrice>& resources, const FString& generatorName) {
 	FVector loc = GetOwner()->GetActorLocation() + FVector(0, 0, 100);
 	FRotator rot;
 	for (const FPrice& res : resources) {
 		if (res.Resource == EResource::Actor) {
 			for (int i = 0; i < res.Count; i++) {
-				GetOwner()->GetWorld()->SpawnActor<AActor>(res.ActorClass, loc, rot);
+				AActor* actor = GetOwner()->GetWorld()->SpawnActor<AActor>(res.ActorClass, loc, rot);
+				OnSpawnActor.Broadcast(actor, generatorName);
 			}
 		}
 		else if (res.Resource == EResource::Self) {
@@ -534,6 +537,10 @@ void UGeneratorDefaultComponent::SetIsSetedAtMap(bool isBuilded) {
 			TouchAllGenerators();
 		}
 	}
+}
+
+bool UGeneratorDefaultComponent::NeedBuilding() {
+	return this->Generators.Contains("Construction");
 }
 
 

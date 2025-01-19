@@ -38,6 +38,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<FEffect> Effects;
 
+	UPROPERTY(BlueprintReadOnly)
+	bool Initialized = false;
+
 protected:
 
 	virtual void ApplyEffects();

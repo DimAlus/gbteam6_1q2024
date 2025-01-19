@@ -19,7 +19,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 protected:
-	FVector targetLoaction;
+	FVector targetLocation;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Speed{ 100.f };

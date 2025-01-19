@@ -18,7 +18,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, TArray<UGameObjectCore*>, Targets);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -766,6 +767,9 @@ struct FTargetFinder {
 	TArray<FTargetFilter> Filters{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ESocialTag> FiltersSocialTags;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETargetFilterType OrderType{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -784,6 +788,9 @@ struct FTRTargetFinder : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FTargetFilter> Filters{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ESocialTag> FiltersSocialTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETargetFilterType OrderType{};
@@ -834,6 +841,9 @@ struct FSkill {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TargetFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TargetFarFinder{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Cooldown{1.f};

@@ -88,7 +88,7 @@ private:
 	void ApplyWork(const FString& generatorName);
 	void CancelWork(const FString& generatorName);
 
-	void ApplyNotInventoriableResources(const TArray<FPrice>& resources);
+	void ApplyNotInventoriableResources(const TArray<FPrice>& resources, const FString& generatorName);
 
 	TMap<EResource, int> CalculateNeeds(int steps);
 	void ResetCurrentNeeds();
@@ -96,6 +96,8 @@ private:
 	UFUNCTION()
 	void SetIsSetedAtMap(bool isBuilded);
 public:
+	virtual bool NeedBuilding() override;
+
 	virtual float GetWorkPower() override;
 
 	virtual TMap<EResource, int> GetNeeds() override;

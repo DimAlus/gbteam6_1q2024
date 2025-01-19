@@ -6,6 +6,7 @@
 
 AProjectile::AProjectile() {
 	PrimaryActorTick.bCanEverTick = false;
+	Initialized = false;
 }
 
 
@@ -17,6 +18,7 @@ void AProjectile::Initialize(UGameObjectCore* initiator, TArray<UGameObjectCore*
 		Destroy();
 		return;
 	}
+	Initialized = true;
 	OnInitialized.Broadcast();	
 }
 

@@ -12,11 +12,18 @@ void USkillHeaverBaseComponent::LoadComponent(const FSkillHeaverSaveData& saveDa
 void USkillHeaverBaseComponent::CancelSkillCast() {
 }
 
+void USkillHeaverBaseComponent::CancelStartedSkillCast(ESkillSlot slot) {
+}
+
 bool USkillHeaverBaseComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation = {}) {
 	return false;
 }
 
 bool USkillHeaverBaseComponent::TryCastSkill(ESkillSlot slot) {
+	return false;
+}
+
+bool USkillHeaverBaseComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) {
 	return false;
 }
 
@@ -38,7 +45,7 @@ float USkillHeaverBaseComponent::GetSkillCooldownPercents(ESkillSlot slot) {
 	return 0.0f;
 }
 
-TArray<UGameObjectCore*> USkillHeaverBaseComponent::FindSkillTargets(ESkillSlot slot) {
+TArray<UGameObjectCore*> USkillHeaverBaseComponent::FindSkillTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) {
 	return TArray<UGameObjectCore*>();
 }
 

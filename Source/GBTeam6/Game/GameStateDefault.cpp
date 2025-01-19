@@ -66,14 +66,14 @@ int AGameStateDefault::GetResourceCount(EResource resource) {
 	if (resource == EResource::Rune) {
 		FConfig conf;
 		GetGameInstance()->GetConfigService()->GetConfig(EConfig::I_RuneCount, conf);
-		int numb = GetGameInstance()->GetSocialService()->GetObjectsByTag(ESocialTag::EnergyGenerator).Num();
+		int numb = GetGameInstance()->GetSocialService()->GetObjectsByTag(ESocialTag::RuneHeaver).Num();
 		return conf.IntValue - numb;
 	}
 	if (PlayerResources.Contains(resource)) {
 		return PlayerResources[resource];
 	}
 	int cnt = 0;
-	const TSet<UGameObjectCore*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Storage);
+	const TSet<UGameObjectCore*>& actors = GetSocialService()->GetObjectsByTag(ESocialTag::Building);
 	for (auto core : actors) {
 		auto overs = Cast<UInventoryBaseComponent>(
 			core->GetComponent(EGameComponentType::Inventory)

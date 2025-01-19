@@ -21,10 +21,10 @@ void AProjectileFlying::Initialize(UGameObjectCore* initiator, TArray<UGameObjec
 		}
 		Targets = { Targets[0] };
 	}
-	targetLoaction = this->Targets[0]->GetOwner()->GetActorLocation();
+	targetLocation = this->Targets[0]->GetOwner()->GetActorLocation();
 	if (ProjectileMovement == EProjectileMovement::Average) {
 		for (int i = 1; i < Targets.Num(); i++) {
-			targetLoaction = (targetLoaction * i + Targets[i]->GetOwner()->GetActorLocation()) / (i + 1);
+			targetLocation = (targetLocation * i + Targets[i]->GetOwner()->GetActorLocation()) / (i + 1);
 		}
 	}
 }
@@ -32,26 +32,45 @@ void AProjectileFlying::Initialize(UGameObjectCore* initiator, TArray<UGameObjec
 
 void AProjectileFlying::Tick(float DeltaTime) {
 	Super::Tick(DeltaTime);
+	if (!Initialized) {
+		return;
+	}
 	if ((LifeTime -= DeltaTime) < 0) {
 		Destroy();
 		return;
 	}
-	if (IsValid(this->Targets[0]) && IsValid(this->Targets[0]->GetOwner())) {
-		targetLoaction = this->Targets[0]->GetOwner()->GetActorLocation();
+	if (IsValid(this->Targets[CurrentTargetIndex]) && IsValid(this->Targets[CurrentTargetIndex]->GetOwner())) {
+		targetLocation = this->Targets[CurrentTargetIndex]->GetOwner()->GetActorLocation();
 	}
 	FVector currentLocation = GetActorLocation();
-	FVector direction = targetLoaction - currentLocation;
+	FVector direction = targetLocation - currentLocation;
 	float distance = (direction * FVector(1, 1, 0)).Length();
 	float time = distance / Speed;
-	float zSpeed = direction.Z + 9.8 * Gravity * time * time / 2;
+	float zSpeed = direction.Z + 980 * Gravity * time * time / 2;
 
 	direction *= FVector(1, 1, 0);
 	direction.Normalize();
-
 	CurrentSpeed = direction * Speed + FVector(0, 0, zSpeed);
+
+	FVector newLocation = currentLocation + CurrentSpeed * DeltaTime;
+	if (targetLocation.X == std::clamp(
+		targetLocation.X,
+		std::min(currentLocation.X, newLocation.X),
+		std::max(currentLocation.X, newLocation.X)
+	)) {
+		newLocation.X = targetLocation.X;
+	}
+	if (targetLocation.Y == std::clamp(
+		targetLocation.Y,
+		std::min(currentLocation.Y, newLocation.Y),
+		std::max(currentLocation.Y, newLocation.Y)
+	)) {
+		newLocation.Y = targetLocation.Y;
+	}
+
 	SetActorRotation(CurrentSpeed.Rotation());
-	SetActorLocation(currentLocation + CurrentSpeed * DeltaTime);
-	if ((currentLocation + CurrentSpeed - targetLoaction).Length() < ApplyingDistance) {
+	SetActorLocation(newLocation);
+	if ((newLocation - targetLocation).Length() < ApplyingDistance) {
 		ApplyEffects();
 		OnEffectApplying.Broadcast();
 		if (ProjectileMovement == EProjectileMovement::Queue && CurrentTargetIndex + 1 < Targets.Num()) {

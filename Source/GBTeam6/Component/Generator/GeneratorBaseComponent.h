@@ -52,6 +52,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FObjectLevelSignature OnObjectLevelChanged;
 
+	UPROPERTY(BlueprintAssignable)
+	FActorStringSignature OnSpawnActor;
+
 	int Level = 0;
 
 	bool IsDestructed = false;
@@ -63,10 +66,13 @@ public:
 	FORCEINLINE int GetLevel() const { return IsDestructed ? -666 : Level; };
 
 	UFUNCTION(BlueprintCallable)
+	virtual bool NeedBuilding() { return false; };
+
+	UFUNCTION(BlueprintCallable)
 	void SetLevel(int NewLevel);
 	
 	UFUNCTION(BlueprintCallable)
-	virtual bool GetIsPlaced() {return false;};
+	virtual bool GetIsPlaced() { return false;};
 
 	UFUNCTION(BlueprintCallable)
 	virtual float GetWorkPower();

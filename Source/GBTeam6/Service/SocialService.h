@@ -71,9 +71,9 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore);
+	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore, const TArray<UGameObjectCore*>& priorityTargets);
 
 	UFUNCTION(BlueprintCallable)
-	TArray<UGameObjectCore*> FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation);
+	TArray<UGameObjectCore*> FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation, const TArray<UGameObjectCore*>& priorityTargets);
 	
 };

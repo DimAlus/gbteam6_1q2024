@@ -29,10 +29,16 @@ public:
 	virtual void CancelSkillCast();
 
 	UFUNCTION(BlueprintCallable)
+	virtual void CancelStartedSkillCast(ESkillSlot slot);
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool TryCastSkill(ESkillSlot slot);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanCastSkill(ESkillSlot slot);
@@ -49,7 +55,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot);
+	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets);
 
 
 	UFUNCTION(BlueprintCallable)
