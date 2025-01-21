@@ -17,7 +17,9 @@ class GBTEAM6_API AProjectile : public AActor
 public:	
 	AProjectile();
 
-	virtual void Initialize(UGameObjectCore* initiator, TArray<UGameObjectCore*> targets, const TArray<FEffect>& effects);
+	virtual void Initialize(UGameObjectCore* initiator, 
+							const TArray<UGameObjectCore*>& targets,
+							const TArray<FSkillProjectileData>& projectilesData);
 
 
 public:
@@ -33,10 +35,10 @@ protected:
 	UGameObjectCore* Initiator;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UGameObjectCore*> Targets;
+	UGameObjectCore* Target;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<FEffect> Effects;
+	TArray<FSkillProjectileData> ProjectilesData;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool Initialized = false;
@@ -44,4 +46,6 @@ protected:
 protected:
 
 	virtual void ApplyEffects();
+
+	FORCEINLINE FSkillProjectileData& GetProjectileData() const { return ProjectilesData[0]; }
 };

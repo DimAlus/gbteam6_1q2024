@@ -828,6 +828,34 @@ struct FEffect {
 };
 
 
+USTRUCT(BlueprintType)
+struct FSkillProjectileData {
+	GENERATED_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AProjectile> ProjectileClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TargetFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FEffect> Effects{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "1", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	int ChainSize{1};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ChainSize > 1",
+		EditConditionHides))
+	FString TargetChainFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Radius{0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool SpawnAtNoTargets{0};
+}
+
 
 USTRUCT(BlueprintType)
 struct FSkill {
@@ -837,10 +865,7 @@ struct FSkill {
 	FString Name{"None"};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FEffect> Effects{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetFinder{};
+	TArray<FSkillProjectileData> SkillProjectiles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TargetFarFinder{};
@@ -853,9 +878,6 @@ struct FSkill {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Mana{100.f};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AProjectile> ProjectileClass{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Autouse{true};

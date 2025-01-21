@@ -27,8 +27,14 @@ void USkillHeaverDefaultComponent::Initialize(const FSkillHeaverComponentInitial
 			skill.Name = FString::Printf(TEXT("#%s_%s"), *GetNameSafe(GetOwner()), *UEnum::GetValueAsString(iter.Key));
 		}
 
-		this->Skills.Add(iter.Key, skill);
-		this->SkillsLock.Add(iter.Key, false);
+		if (skill.SkillProjectiles.Num() > 0) {
+			this->Skills.Add(iter.Key, skill);
+			this->SkillsLock.Add(iter.Key, false);
+		}
+		else {
+			UE_LOG_COMPONENT(Error, "Can't initialize skill <%s>(<%s>): Projectile data not found!", 
+				*UEnum::GetValueAsString(iter.Key), *skill.Name);
+		}
 	}
 	TimerCallback.BindUFunction(this, FName("Update"));
 	TimerHandle = GetGameInstance()->GetGameTimerManager()->SetTimer(
@@ -95,18 +101,18 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	}
 	FSkill& skill = Skills[slot];
 	UE_LOG_COMPONENT(Log, "Cast Skill <%s>: <%s>", *UEnum::GetValueAsString(slot), *skill.Name);
-	if (IsValid(skill.ProjectileClass)) {
+	if (IsValid(skill.SkillProjectiles[0].ProjectileClass)) {
 		AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(
-			skill.ProjectileClass, 
+			skill.SkillProjectiles[0].ProjectileClass, 
 			castLocation.Length() < 1 ? GetOwner()->GetActorLocation() : castLocation,
 			FRotator()
 		);
-		proj->Initialize(GetCore(), targets, skill.Effects);
+		proj->Initialize(GetCore(), targets, skill.SkillProjectiles);
 	}
 	else {
 		for (const auto& target : targets) {
 			if (auto effect = Cast<UEffectBaseComponent>(target->GetComponent(EGameComponentType::Effect))) {
-				for (const auto& eff : skill.Effects) {
+				for (const auto& eff : skill.SkillProjectiles[0].Effects) {
 					effect->ApplyEffect(eff);
 				}
 			}
@@ -172,7 +178,7 @@ TArray<UGameObjectCore*> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSl
 	const FSkill& skill = GetSkillData(slot, found);
 	if (found) {
 		targets = GetGameInstance()->GetSocialService()->FindTargetsByCenterCore(
-			skill.TargetFinder,
+			skill.SkillProjectiles[0].TargetFinder,
 			GetCore(),
 			IsValid(centerTargetCore) && centerTargetCore->IsValidLowLevel() ? centerTargetCore : GetCore(),
 			priorityTargets

@@ -14,7 +14,10 @@ class GBTEAM6_API AProjectileFlying : public AProjectile
 public:
 	AProjectileFlying();
 
-	virtual void Initialize(UGameObjectCore* initiator, TArray<UGameObjectCore*> targets, const TArray<FEffect>& effects) override;
+
+	virtual void Initialize(UGameObjectCore* initiator, 
+							const TArray<UGameObjectCore*>& targets,
+							const TArray<FSkillProjectileData>& projectilesData) override;
 
 	virtual void Tick(float DeltaTime) override;
 
@@ -33,16 +36,31 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LifeTime{ 10.f };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector CurrentSpeed{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EProjectileMovement ProjectileMovement{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Radius{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int ChainSize{1};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString ChainFinder{};
+
 	int CurrentTargetIndex = 0;
 protected:
 	UFUNCTION(BlueprintCallable)
 	UGameObjectCore* GetCurrentTarget();
+
+	void CreateProjectilesForTargets(const TArray<UGameObjectCore*>& targets, const TArray<FSkillProjectileData>& projectilesData);
+
+	FVector GetCurrentSpeed(float deltaTime);
+
+	void HitWithTarget();
 
 	virtual void ApplyEffects() override;
 

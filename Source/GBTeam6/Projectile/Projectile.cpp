@@ -10,16 +10,16 @@ AProjectile::AProjectile() {
 }
 
 
-void AProjectile::Initialize(UGameObjectCore* initiator, TArray<UGameObjectCore*> targets, const TArray<FEffect>& effects) {
-	this->Targets = targets;
-	this->Initiator = initiator;
-	this->Effects = effects;
-	if (targets.Num() == 0) {
+void AProjectile::Initialize(UGameObjectCore* initiator,
+							const TArray<UGameObjectCore*>& targets,
+							const TArray<FSkillProjectileData>& projectilesData) {
+	if (targets.Num() * projectilesData.Num() == 0) {
 		Destroy();
 		return;
 	}
-	Initialized = true;
-	OnInitialized.Broadcast();	
+	this->Target = targets[0];
+	this->Initiator = initiator;
+	this->ProjectilesData = projectilesData;
 }
 
 void AProjectile::ApplyEffects() {
