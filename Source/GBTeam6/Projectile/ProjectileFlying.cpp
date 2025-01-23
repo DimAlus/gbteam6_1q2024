@@ -65,6 +65,7 @@ UGameObjectCore* AProjectileFlying::GetCurrentTarget() {
 
 void AProjectileFlying::CreateProjectilesForTargets(const TArray<UGameObjectCore*>& targets, 
 													const TArray<FSkillProjectileData>& projectilesData) {
+	projectilesData[0].ProjectileQueue = ProjectileQueue;
 	for (int i = 0; i < targets.Num(); i++) {
 		AProjectileFlying* proj = GetWorld()->SpawnActor<AProjectileFlying>(
 			this->GetClass(),
@@ -109,22 +110,7 @@ void AProjectileFlying::HitWithTarget() {
 	OnEffectApplying.Broadcast();
 
 	if (ProjectilesData.Num() > 1) {
-		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-			ProjectilesData[1].TargetFinder,
-			Initiator,
-			targetLocation,
-			{}
-		);
-		if (targets.Num() > 0 || ProjectilesData[1].SpawnAtNoTargets) {
-			TArray<FSkillProjectileData> data = ProjectilesData;
-			data.RemoveAt(0);
-			AProjectile* proj = GetGameInstanceDefault()->GetWorld()->SpawnActor<AProjectile>(
-				data[0].ProjectileClass, 
-				targetLocation,
-				FRotator()
-			);
-			proj->Initialize(Initiator, targets, data);
-		}
+		CreateNextProjectile();
 	}
 
 	if (GetProjectileData().ChainSize <= 1) {
@@ -132,27 +118,29 @@ void AProjectileFlying::HitWithTarget() {
 		return;
 	}
 
-	if (ProjectileMovement == EProjectileMovement::Queue) {
-		GetProjectileData().ChainSize--;
-		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-			GetProjectileData().TargetChainFinder,
-			Initiator,
-			targetLocation,
-			{}
-		); // TODO: exclude current target
-		if (targets.Num() > 0) {
+	TMap<UGameObjectCore*, int> priorities;
+	TArray<UGameObjectCore*>& queueProjectile = TargetQueues[ProjectileQueue];
+	for (int i = 0; i < queueProjectile.Num(); i++) {
+		priorities.Add(queueProjectile[i], -i-1);
+	}
+
+	TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+		GetProjectileData().TargetChainFinder,
+		Initiator,
+		targetLocation,
+		priorities,
+		{ Target },
+		{}
+	);
+
+	if (targets.Num() > 0) {
+		if (ProjectileMovement == EProjectileMovement::Queue) {
+			GetProjectileData().ChainSize--;
 			Target = targets[0];
+			AddTargetToQueue(Target);
 			return;
 		}
-	}
-	else if (ProjectileMovement == EProjectileMovement::Multiple) {
-		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-			GetProjectileData().TargetChainFinder,
-			Initiator,
-			targetLocation,
-			{}
-		);
-		if (targets.Num() > 0) {
+		else if (ProjectileMovement == EProjectileMovement::Multiple) {
 			Target = targets[0];
 			targets.RemoveAt(0);
 			while (targets.Num() > GetProjectileData().ChainSize + 1) {
@@ -160,6 +148,7 @@ void AProjectileFlying::HitWithTarget() {
 			}
 			GetProjectileData().ChainSize = 1;
 			CreateProjectilesForTargets(targets, ProjectilesData);
+			AddTargetToQueue(Target);
 			return;
 		}
 	}
@@ -170,7 +159,15 @@ void AProjectileFlying::HitWithTarget() {
 void AProjectileFlying::ApplyEffects() {
 	TArray<UGameObjectCore*> cores;
 	if (GetProjectileData().Radius > 1) {
-		// TODO: find all targets at radius
+		cores = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+			GetProjectileData().TargetChainFinder,
+			Initiator,
+			targetLocation,
+			{},
+			{},
+			{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, Radius },
+			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, Radius }, }
+		);
 	}
 	else {
 		if (IsValid(Target)) {

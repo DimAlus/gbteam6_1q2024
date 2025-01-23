@@ -854,6 +854,9 @@ struct FSkillProjectileData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool SpawnAtNoTargets{ 0 };
+
+	UPROPERTY(Hidden)
+	int ProjectileQueue{0};
 };
 
 

@@ -172,7 +172,9 @@ float USkillHeaverDefaultComponent::GetSkillCooldownPercents(ESkillSlot slot) {
 	return std::min(1.f, (skill.Cooldown - skill.CurrentCooldown) / std::max(skill.Cooldown, 0.01f));
 }
 
-TArray<UGameObjectCore*> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) {
+TArray<UGameObjectCore*> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSlot slot, 
+																		const TMap<UGameObjectCore*, int>& priorityTargets, 
+																		const TSet<UGameObjectCore*>& ignoreTargets) {
 	TArray<UGameObjectCore*> targets{};
 	bool found;
 	const FSkill& skill = GetSkillData(slot, found);
@@ -181,7 +183,9 @@ TArray<UGameObjectCore*> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSl
 			skill.SkillProjectiles[0].TargetFinder,
 			GetCore(),
 			IsValid(centerTargetCore) && centerTargetCore->IsValidLowLevel() ? centerTargetCore : GetCore(),
-			priorityTargets
+			priorityTargets,
+			ignoreTargets,
+			{}
 		);
 	}
 	return targets;

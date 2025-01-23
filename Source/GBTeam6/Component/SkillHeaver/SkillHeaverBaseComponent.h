@@ -55,7 +55,9 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets);
+	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, 
+													const TMap<UGameObjectCore*, int>& priorityTargets, 
+													const TSet<UGameObjectCore*>& ignoreTargets);
 
 
 	UFUNCTION(BlueprintCallable)

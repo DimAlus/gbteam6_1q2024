@@ -18,6 +18,8 @@ class GBTEAM6_API AProjectile : public AActor
 public:	
 	AProjectile();
 
+	virtual void Destroy() override;
+
 	virtual void Initialize(UGameObjectCore* initiator, 
 							const TArray<UGameObjectCore*>& targets,
 							const TArray<FSkillProjectileData>& projectilesData);
@@ -46,7 +48,16 @@ protected:
 
 protected:
 
+	virtual AProjectile* CreateNextProjectile();
 	virtual void ApplyEffects();
 
 	FORCEINLINE FSkillProjectileData& GetProjectileData() { return ProjectilesData[0]; }
+
+protected:
+	static int CurentQueueIndex = 0;
+	static TMap<int, TArray<UGameObjectCore*>> TargetQueues;
+	static TMap<int, int> TargetQueuesSubscribers;
+	int ProjectileQueue;
+
+	void AddTargetToQueue(UGameObjectCore* target);
 };

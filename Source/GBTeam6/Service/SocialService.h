@@ -66,14 +66,27 @@ private:
 
 	bool FilterComparing(float value1, float value2, EFilterCompareType compareType);
 	float GetFilterValue(const ETargetFilterType& filterType, UGameObjectCore* core, FVector centerLocation);
-	bool AtFilter(const FTargetFinder& finder, UGameObjectCore* core, FVector centerLocation);
+	bool AtFilter(const FTargetFinder& finder, 
+					UGameObjectCore* core, 
+					FVector centerLocation, 
+					const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideValues);
 	
 public:
 
 	UFUNCTION(BlueprintCallable)
-	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder, UGameObjectCore* core, UGameObjectCore* centerCore, const TArray<UGameObjectCore*>& priorityTargets);
+	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder,
+													UGameObjectCore* core,
+													UGameObjectCore* centerCore,
+													const TMap<UGameObjectCore*, int>& priorityTargets,
+													const TSet<UGameObjectCore*>& ignoreTargets,
+													const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters);
 
 	UFUNCTION(BlueprintCallable)
-	TArray<UGameObjectCore*> FindTargets(FString targetFinder, UGameObjectCore* core, FVector centerLocation, const TArray<UGameObjectCore*>& priorityTargets);
-	
+	TArray<UGameObjectCore*> FindTargets(FString targetFinder,
+										UGameObjectCore* core,
+										FVector centerLocation,
+										const TMap<UGameObjectCore*, int>& priorityTargets,
+										const TSet<UGameObjectCore*>& ignoreTargets,
+										const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters);
+
 };

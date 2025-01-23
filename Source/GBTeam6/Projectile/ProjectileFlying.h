@@ -42,16 +42,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EProjectileMovement ProjectileMovement{};
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Radius{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int ChainSize{1};
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FString ChainFinder{};
-
-	int CurrentTargetIndex = 0;
 protected:
 	UFUNCTION(BlueprintCallable)
 	UGameObjectCore* GetCurrentTarget();
