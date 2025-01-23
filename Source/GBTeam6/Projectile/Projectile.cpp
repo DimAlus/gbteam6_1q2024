@@ -2,11 +2,17 @@
 
 #include "GBTeam6/Interface/GameObjectCore.h"
 
+#include "GBTeam6/Game/GameInstanceDefault.h"
+
 #include "GBTeam6/Component/Effect/EffectBaseComponent.h"
 
 AProjectile::AProjectile() {
 	PrimaryActorTick.bCanEverTick = false;
 	Initialized = false;
+}
+
+UGameInstanceDefault* AProjectile::GetGameInstanceDefault() {
+	return Cast<UGameInstanceDefault>(GetGameInstance());
 }
 
 
@@ -23,11 +29,9 @@ void AProjectile::Initialize(UGameObjectCore* initiator,
 }
 
 void AProjectile::ApplyEffects() {
-	for (const auto& target : Targets) {
-		if (auto effect = Cast<UEffectBaseComponent>(target->GetComponent(EGameComponentType::Effect))) {
-			for (const auto& eff : Effects) {
-				effect->ApplyEffect(eff);
-			}
+	if (auto effect = Cast<UEffectBaseComponent>(Target->GetComponent(EGameComponentType::Effect))) {
+		for (const auto& eff : GetProjectileData().Effects) {
+			effect->ApplyEffect(eff);
 		}
 	}
 }

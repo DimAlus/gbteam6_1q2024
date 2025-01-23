@@ -323,5 +323,5 @@ UENUM(BlueprintType)
 enum class EProjectileMovement : uint8 {
 	Multiple		UMETA(DisplayName = "Multiple"),
 	Queue			UMETA(DisplayName = "Queue"),
-	Average			UMETA(DisplayName = "Average"),
+	Earth			UMETA(DisplayName = "Earth"),
 };

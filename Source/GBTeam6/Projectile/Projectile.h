@@ -8,6 +8,7 @@
 #include "Projectile.generated.h"
 
 class UGameObjectCore;
+class UGameInstanceDefault;
 
 UCLASS()
 class GBTEAM6_API AProjectile : public AActor
@@ -21,7 +22,7 @@ public:
 							const TArray<UGameObjectCore*>& targets,
 							const TArray<FSkillProjectileData>& projectilesData);
 
-
+	UGameInstanceDefault* GetGameInstanceDefault();
 public:
 
 	UPROPERTY(BlueprintAssignable)
@@ -47,5 +48,5 @@ protected:
 
 	virtual void ApplyEffects();
 
-	FORCEINLINE FSkillProjectileData& GetProjectileData() const { return ProjectilesData[0]; }
+	FORCEINLINE FSkillProjectileData& GetProjectileData() { return ProjectilesData[0]; }
 };

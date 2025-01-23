@@ -1,9 +1,11 @@
 #include "./ProjectileFlying.h"
 
 #include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+
+#include "GBTeam6/Service/SocialService.h"
 
 #include "GBTeam6/Component/Effect/EffectBaseComponent.h"
-#include "ProjectileFlying.h"
 
 AProjectileFlying::AProjectileFlying() : AProjectile() {
 	PrimaryActorTick.bCanEverTick = true;
@@ -13,7 +15,7 @@ AProjectileFlying::AProjectileFlying() : AProjectile() {
 void AProjectileFlying::Initialize(UGameObjectCore* initiator,
 								   const TArray<UGameObjectCore*>& targets,
 								   const TArray<FSkillProjectileData>& projectilesData) {
-	Super::Initialize(initiator, targets, effects, projectilesData);
+	Super::Initialize(initiator, targets, projectilesData);
 	if (targets.Num() * projectilesData.Num() == 0) {
 		return;
 	}
@@ -69,7 +71,7 @@ void AProjectileFlying::CreateProjectilesForTargets(const TArray<UGameObjectCore
 			GetActorLocation(),
 			GetActorRotation()
 		);
-		proj->Initialize(initiator, { targets[i] }, effects, projectilesData);
+		proj->Initialize(Initiator, { targets[i] }, projectilesData);
 	}
 }
 
@@ -107,7 +109,7 @@ void AProjectileFlying::HitWithTarget() {
 	OnEffectApplying.Broadcast();
 
 	if (ProjectilesData.Num() > 1) {
-		TArray<UGameObjectCore*> targets = GetGameInstance()->GetSocialService()->FindTargets(
+		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 			ProjectilesData[1].TargetFinder,
 			Initiator,
 			targetLocation,
@@ -116,9 +118,9 @@ void AProjectileFlying::HitWithTarget() {
 		if (targets.Num() > 0 || ProjectilesData[1].SpawnAtNoTargets) {
 			TArray<FSkillProjectileData> data = ProjectilesData;
 			data.RemoveAt(0);
-			AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(
+			AProjectile* proj = GetGameInstanceDefault()->GetWorld()->SpawnActor<AProjectile>(
 				data[0].ProjectileClass, 
-				castLocation.Length() < 1 ? GetOwner()->GetActorLocation() : castLocation,
+				targetLocation,
 				FRotator()
 			);
 			proj->Initialize(Initiator, targets, data);
@@ -132,8 +134,8 @@ void AProjectileFlying::HitWithTarget() {
 
 	if (ProjectileMovement == EProjectileMovement::Queue) {
 		GetProjectileData().ChainSize--;
-		TArray<UGameObjectCore*> targets = GetGameInstance()->GetSocialService()->FindTargets(
-			GetProjectileData().ChainFinder,
+		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+			GetProjectileData().TargetChainFinder,
 			Initiator,
 			targetLocation,
 			{}
@@ -144,8 +146,8 @@ void AProjectileFlying::HitWithTarget() {
 		}
 	}
 	else if (ProjectileMovement == EProjectileMovement::Multiple) {
-		TArray<UGameObjectCore*> targets = GetGameInstance()->GetSocialService()->FindTargets(
-			GetProjectileData().ChainFinder,
+		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+			GetProjectileData().TargetChainFinder,
 			Initiator,
 			targetLocation,
 			{}

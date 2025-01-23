@@ -405,18 +405,3 @@ struct FGameObjectInitData : public FTableRowBase {
 };
 
 /***********************************************************************************/
-
-
-USTRUCT(BlueprintType)
-struct FProjectileInitializer {
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Radius;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int ChainSize;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString ChainFinder;
-}

@@ -831,7 +831,7 @@ struct FEffect {
 USTRUCT(BlueprintType)
 struct FSkillProjectileData {
 	GENERATED_BODY()
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<AProjectile> ProjectileClass{};
 
@@ -842,7 +842,7 @@ struct FSkillProjectileData {
 	TArray<FEffect> Effects{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "1", ClampMax = "100", UIMin = "0", UIMax = "100"))
-	int ChainSize{1};
+	int ChainSize{ 1 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"ChainSize > 1",
@@ -850,11 +850,11 @@ struct FSkillProjectileData {
 	FString TargetChainFinder{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float Radius{0};
+	float Radius{ 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool SpawnAtNoTargets{0};
-}
+	bool SpawnAtNoTargets{ 0 };
+};
 
 
 USTRUCT(BlueprintType)
