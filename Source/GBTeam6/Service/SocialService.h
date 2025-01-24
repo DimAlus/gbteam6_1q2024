@@ -69,7 +69,7 @@ private:
 	bool AtFilter(const FTargetFinder& finder, 
 					UGameObjectCore* core, 
 					FVector centerLocation, 
-					const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideValues);
+					const TArray<FTargetFilter>& overrideValues);
 	
 public:
 
@@ -79,7 +79,7 @@ public:
 													UGameObjectCore* centerCore,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
 													const TSet<UGameObjectCore*>& ignoreTargets,
-													const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters);
+													const TArray<FTargetFilter>& overrideFilters);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<UGameObjectCore*> FindTargets(FString targetFinder,
@@ -87,6 +87,6 @@ public:
 										FVector centerLocation,
 										const TMap<UGameObjectCore*, int>& priorityTargets,
 										const TSet<UGameObjectCore*>& ignoreTargets,
-										const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters);
+										const TArray<FTargetFilter>& overrideFilters);
 
 };

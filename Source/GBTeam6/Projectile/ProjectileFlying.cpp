@@ -65,14 +65,15 @@ UGameObjectCore* AProjectileFlying::GetCurrentTarget() {
 
 void AProjectileFlying::CreateProjectilesForTargets(const TArray<UGameObjectCore*>& targets, 
 													const TArray<FSkillProjectileData>& projectilesData) {
-	projectilesData[0].ProjectileQueue = ProjectileQueue;
+	TArray<FSkillProjectileData> data = projectilesData;
+	data[0].ProjectileQueue = ProjectileQueue;
 	for (int i = 0; i < targets.Num(); i++) {
 		AProjectileFlying* proj = GetWorld()->SpawnActor<AProjectileFlying>(
 			this->GetClass(),
 			GetActorLocation(),
 			GetActorRotation()
 		);
-		proj->Initialize(Initiator, { targets[i] }, projectilesData);
+		proj->Initialize(Initiator, { targets[i] }, data);
 	}
 }
 
@@ -119,7 +120,8 @@ void AProjectileFlying::HitWithTarget() {
 	}
 
 	TMap<UGameObjectCore*, int> priorities;
-	TArray<UGameObjectCore*>& queueProjectile = TargetQueues[ProjectileQueue];
+	TArray<UGameObjectCore*> queueProjectile = {};
+	GetProjectileQueue(queueProjectile);
 	for (int i = 0; i < queueProjectile.Num(); i++) {
 		priorities.Add(queueProjectile[i], -i-1);
 	}
@@ -165,8 +167,9 @@ void AProjectileFlying::ApplyEffects() {
 			targetLocation,
 			{},
 			{},
-			{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, Radius },
-			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, Radius }, }
+			/*{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, Radius },
+			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, Radius }, }*/
+			{}
 		);
 	}
 	else {

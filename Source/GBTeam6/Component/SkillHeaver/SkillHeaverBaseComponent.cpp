@@ -23,7 +23,7 @@ bool USkillHeaverBaseComponent::TryCastSkill(ESkillSlot slot) {
 	return false;
 }
 
-bool USkillHeaverBaseComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) {
+bool USkillHeaverBaseComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets) {
 	return false;
 }
 

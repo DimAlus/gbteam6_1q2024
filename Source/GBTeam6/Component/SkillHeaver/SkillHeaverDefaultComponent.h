@@ -56,7 +56,7 @@ public:
 	virtual void CancelStartedSkillCast(ESkillSlot slot) override;
 	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation) override;
 	virtual bool TryCastSkill(ESkillSlot slot) override;
-	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) override;
+	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets) override;
 	virtual bool CanCastSkill(ESkillSlot slot) override;
 
 	virtual const FSkill& GetSkillData(ESkillSlot slot, bool& skillFound) override;

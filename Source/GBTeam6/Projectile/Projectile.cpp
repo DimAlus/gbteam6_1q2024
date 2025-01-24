@@ -1,23 +1,36 @@
 #include "./Projectile.h"
+#include <map>
+#include <vector>
 
 #include "GBTeam6/Interface/GameObjectCore.h"
 
 #include "GBTeam6/Game/GameInstanceDefault.h"
 
+#include "GBTeam6/Service/SocialService.h"
+
 #include "GBTeam6/Component/Effect/EffectBaseComponent.h"
 #include "Projectile.h"
+
+struct FProjectileQueueData {
+public:
+	int CurentQueueIndex{ 0 };
+	std::map<int, std::vector<UGameObjectCore*>> Targets{};
+	std::map<int, int> SubscribersCount{};
+};
+
 
 AProjectile::AProjectile() {
 	PrimaryActorTick.bCanEverTick = false;
 	Initialized = false;
 }
 
-void AProjectile::Destroy() {
-	Super::Destroy();
-	if (TargetQueuesSubscribers.Contains(ProjectileQueue)) {
-		if (--TargetQueuesSubscribers[ProjectileQueue] <= 0) {
-			TargetQueuesSubscribers.Remove(ProjectileQueue);
-			TargetQueues.Remove(ProjectileQueue);
+void AProjectile::Destroyed() {
+	Super::Destroyed();
+	auto* queueData = GetProjectileQueueData();
+	if (queueData->SubscribersCount.contains(ProjectileQueue)) {
+		if (--queueData->SubscribersCount[ProjectileQueue] <= 0) {
+			queueData->SubscribersCount.erase(ProjectileQueue);
+			queueData->Targets.erase(ProjectileQueue);
 		}
 	}
 }
@@ -34,18 +47,20 @@ void AProjectile::Initialize(UGameObjectCore* initiator,
 		Destroy();
 		return;
 	}
+	auto* queueData = GetProjectileQueueData();
 	this->Target = targets[0];
 	this->Initiator = initiator;
 	this->ProjectilesData = projectilesData;
 	this->ProjectileQueue = projectilesData[0].ProjectileQueue 
-							? ProjectileQueueProjectileQueue 
-							: ++CurentQueueIndex;
-	if (!TargetQueuesSubscribers.Contains(ProjectileQueue)) {
-		TargetQueuesSubscribers.Add(ProjectileQueue, 0);
-		TargetQueues.Add(ProjectileQueue, {});
+							? ProjectileQueue
+							: ++queueData->CurentQueueIndex;
+
+	if (!queueData->SubscribersCount.contains(ProjectileQueue)) {
+		queueData->SubscribersCount.insert({ ProjectileQueue, 0 });
+		queueData->Targets.insert({ ProjectileQueue, {} });
 	}
-	TargetQueuesSubscribers[ProjectileQueue]++;
-	TargetQueues[ProjectileQueue].Add(this->Target);
+	queueData->SubscribersCount[ProjectileQueue]++;
+	queueData->Targets[ProjectileQueue].push_back(this->Target);
 }
 
 AProjectile* AProjectile::CreateNextProjectile() {
@@ -53,7 +68,7 @@ AProjectile* AProjectile::CreateNextProjectile() {
 		TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 			ProjectilesData[1].TargetFinder,
 			Initiator,
-			targetLocation,
+			GetActorLocation(),
 			{},
 			{},
 			{}
@@ -63,7 +78,7 @@ AProjectile* AProjectile::CreateNextProjectile() {
 			data.RemoveAt(0);
 			AProjectile* proj = GetGameInstanceDefault()->GetWorld()->SpawnActor<AProjectile>(
 				data[0].ProjectileClass, 
-				targetLocation,
+				GetActorLocation(),
 				FRotator()
 			);
 			proj->Initialize(Initiator, targets, data);
@@ -81,8 +96,25 @@ void AProjectile::ApplyEffects() {
 	}
 }
 
+FProjectileQueueData* AProjectile::GetProjectileQueueData() {
+	static FProjectileQueueData data;
+	return &data;
+}
+
+void AProjectile::GetProjectileQueue(TArray<UGameObjectCore*>& queue) {
+	auto* data = GetProjectileQueueData();
+	if (data->SubscribersCount.contains(ProjectileQueue)) {
+		for (UGameObjectCore* core : data->Targets[ProjectileQueue]) {
+			if (IsValid(core)) {
+				queue.Add(core);
+			}
+		}
+	}
+}
+
 void AProjectile::AddTargetToQueue(UGameObjectCore* target) {
-	if (TargetQueuesSubscribers.Contains(ProjectileQueue)) {
-		TargetQueues[ProjectileQueue].Add(target);
+	auto* data = GetProjectileQueueData();
+	if (data->SubscribersCount.contains(ProjectileQueue)) {
+		data->Targets[ProjectileQueue].push_back(target);
 	}
 }

@@ -230,21 +230,21 @@ float USocialService::GetFilterValue(const ETargetFilterType& filterType, UGameO
 bool USocialService::AtFilter(const FTargetFinder& finder, 
 								UGameObjectCore* core, 
 								FVector centerLocation, 
-								const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideValues) {
-	for (const auto& iter : overrideValues) {
-		float value = GetFilterValue(iter.Key.Key, core, centerLocation);
-		if (!FilterComparing(value, iter.Value, iter.Key.Value)) {
+								const TArray<FTargetFilter>& overrideValues) {
+	TSet<TPair<ETargetFilterType, EFilterCompareType>> overrided;
+	for (const auto& filter : overrideValues) {
+		float value = GetFilterValue(filter.Type, core, centerLocation);
+		if (!FilterComparing(value, filter.Value, filter.CompareType)) {
 			return false;
 		}
+		overrided.Add({ filter.Type, filter.CompareType });
 	}
 	for (const auto& filter : finder.Filters) {
-		float value = GetFilterValue(filter.Type, core, centerLocation);
-		float val = filter.Value;
-		if (overrideValues.Contains({ filter.Type, filter.CompareType })) {
-			val = overrideValues[{ filter.Type, filter.CompareType }];
+		if (overrided.Contains({ filter.Type, filter.CompareType })) {
+			continue;
 		}
-		
-		if (!FilterComparing(value, val, filter.CompareType)) {
+		float value = GetFilterValue(filter.Type, core, centerLocation);
+		if (!FilterComparing(value, filter.Value, filter.CompareType)) {
 			return false;
 		}
 	}
@@ -275,8 +275,8 @@ TArray<UGameObjectCore*> USocialService::FindTargetsByCenterCore(FString targetF
 																UGameObjectCore* centerCore,
 																const TMap<UGameObjectCore*, int>& priorityTargets,
 																const TSet<UGameObjectCore*>& ignoreTargets,
-																const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters) {
-	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets);
+																const TArray<FTargetFilter>& overrideFilters) {
+	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets, ignoreTargets, overrideFilters);
 }
 
 TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
@@ -284,7 +284,7 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 													FVector centerLocation,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
 													const TSet<UGameObjectCore*>& ignoreTargets,
-													const TMap<TPair<ETargetFilterType, EFilterCompareType>, float>& overrideFilters) {
+													const TArray<FTargetFilter>& overrideFilters) {
 	const FTargetFinder& finder = GetFinder(targetFinder);
 
 	if (finder.Count <= 0) {

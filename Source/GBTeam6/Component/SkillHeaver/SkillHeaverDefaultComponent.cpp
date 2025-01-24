@@ -125,14 +125,14 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 }
 
 bool USkillHeaverDefaultComponent::TryCastSkill(ESkillSlot slot) {
-	return TryCastSkillWithPriorityTargets(slot, {});
+	return TryCastSkillWithPriorityTargets(slot, {}, {});
 }
 
-bool USkillHeaverDefaultComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets) {
+bool USkillHeaverDefaultComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets) {
 	if (!CanCastSkill(slot)) {
 		return false;
 	}
-	TArray<UGameObjectCore*> targets = FindSkillTargets(slot, priorityTargets);
+	TArray<UGameObjectCore*> targets = FindSkillTargets(slot, priorityTargets, ignoreTargets);
 	if (targets.Num() == 0) {
 		return false;
 	}
