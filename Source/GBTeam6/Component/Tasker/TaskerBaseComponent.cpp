@@ -14,12 +14,25 @@ void UTaskerBaseComponent::SaveComponent(FTaskerSaveData& saveData) {
 void UTaskerBaseComponent::LoadComponent(const FTaskerSaveData& saveData) {
 }
 
-TMap<EResource, int> UTaskerBaseComponent::GetRequests() { 
+void UTaskerBaseComponent::NotTaskProcessStartNow() {
+}
+
+void UTaskerBaseComponent::TaskProcessStartContinue() {
+}
+
+TMap<EResource, int> UTaskerBaseComponent::GetRequests() {
 	return {}; 
 }
 
 TMap<EResource, int> UTaskerBaseComponent::GetOffers() { 
 	return {}; 
+}
+
+void UTaskerBaseComponent::SetCanDeliver(bool canDeliver) {
+}
+
+bool UTaskerBaseComponent::GetCanDeliver() {
+	return false;
 }
 
 bool UTaskerBaseComponent::FindTask() {
@@ -33,10 +46,11 @@ const FGameTask& UTaskerBaseComponent::GetCurrentTask(bool& exists) {
 }
 
 bool UTaskerBaseComponent::ApplyTask() {
+	OnTaskProcessCompleted.Broadcast();
 	return false;
 }
 
-void UTaskerBaseComponent::CancleTask() {
+void UTaskerBaseComponent::CancelTask() {
 }
 
 void UTaskerBaseComponent::AddExpecting(UGameObjectCore* core, const FGameTask& task) {

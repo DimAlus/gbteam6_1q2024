@@ -325,3 +325,18 @@ enum class EProjectileMovement : uint8 {
 	Queue			UMETA(DisplayName = "Queue"),
 	Average			UMETA(DisplayName = "Average"),
 };
+
+
+UENUM(BlueprintType)
+enum class EGameTaskType : uint8 {
+	Receiving		UMETA(DisplayName = "Receiving"),
+	Delivery		UMETA(DisplayName = "Delivery"),
+	Work			UMETA(DisplayName = "Work"),
+};
+
+
+UENUM(BlueprintType)
+enum class ETaskFinderType : uint8 {
+	Delivery		UMETA(DisplayName = "Delivery"),
+	Work			UMETA(DisplayName = "Work"),
+};

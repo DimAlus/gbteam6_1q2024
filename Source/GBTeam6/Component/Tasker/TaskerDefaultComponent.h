@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "./TaskerBaseComponent.h"
 
+#include "GBTeam6/Service/TimerService.h"
+
 #include "TaskerDefaultComponent.generated.h"
 
 
@@ -15,6 +17,7 @@ class GBTEAM6_API UTaskerDefaultComponent : public UTaskerBaseComponent {
 
 protected:
 	virtual void OnCoreCreatedBefore();
+	virtual void DestroyComponent(bool bPromoteChildren) override;
 public:
 	virtual void Initialize(const FTaskerComponentInitializer& initializer) override;
 
@@ -29,15 +32,36 @@ private:
 	TArray<FGameTaskFindData> TaskFinders;
 
 	UGameObjectCore* LastTaskedStorage;
+
+	bool WaitTaskComplete;
+	float ChangeInventoryTaskSpeed = 1.f;
+
+	bool CanDeliver{ true };
+
+	FGameTimerHandle NoneHandle;
+	FGameTimerHandle& TimerHandle{ NoneHandle };
+	FTouchBlueprintableSignature TimerCallback;
+	float UpdateInterval = 0.3f;
+	float WaitTaskTime;
+
+	int WaitTaskProcessStartCount{ 0 };
+	bool IsTaskProcessStarted{ false };
 private:
 	void RegisterTasks(TArray<FGameTask>& tasks);
 
+	UFUNCTION()
+	void Update();
 public:
+	virtual void NotTaskProcessStartNow() override;
+	virtual void TaskProcessStartContinue() override;
+
+	virtual void SetCanDeliver(bool canDeliver) override;
+	virtual bool GetCanDeliver() override;
 
 	virtual bool FindTask() override;
 	virtual const FGameTask& GetCurrentTask(bool& exists) override;
 	virtual bool ApplyTask() override;
-	virtual void CancleTask() override;
+	virtual void CancelTask() override;
 
 	virtual TMap<EResource, int> GetRequests() override;
 	virtual TMap<EResource, int> GetOffers() override;

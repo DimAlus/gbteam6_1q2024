@@ -18,6 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
 
@@ -372,18 +373,15 @@ struct FGameTaskFindData {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSet<ESocialTag> Destinations{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> SourcesIgnores{};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> DestinationsIgnores{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool ForPerformer{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool CheckNeeds{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ETaskFinderType TaskFinderType{};
 };
 
 

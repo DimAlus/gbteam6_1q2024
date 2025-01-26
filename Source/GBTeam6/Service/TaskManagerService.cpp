@@ -2,6 +2,7 @@
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
 #include "GBTeam6/Game/GameStateDefault.h"
 #include "GBTeam6/Game/GameInstanceDefault.h"
@@ -106,10 +107,10 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 	if (findData.ForPerformer) {
 		return FindTaskForPerformer(findData);
 	}
-	UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
+	//UE_LOG_SERVICE(Log, "Start FindTaskByTags for <%s>", *findData.Performer->GetOwnerName());
 	USocialService* social = GameInstance->GetSocialService();
-	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
-	TSet<UGameObjectCore*> destsAll = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, {});
+	TSet<UGameObjectCore*> destsAll = social->GetObjectsByTags(findData.Destinations, {});
 	TSet<UGameObjectCore*> dests = destsAll;
 
 	if (auto tasker = Cast<UTaskerBaseComponent>(findData.Performer->GetComponent(EGameComponentType::Tasker))) {
@@ -152,10 +153,10 @@ TArray<FGameTask> UTaskManagerService::FindTaskByTags(const FGameTaskFindData& f
 
 
 TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindData& findData) { 
-	UE_LOG_SERVICE(Log, "Start FindTaskForPerformer for <%s>", *findData.Performer->GetOwnerName());
+	//UE_LOG_SERVICE(Log, "Start FindTaskForPerformer for <%s>", *findData.Performer->GetOwnerName());
 	USocialService* social = GameInstance->GetSocialService();
 	
-	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, findData.DestinationsIgnores);
+	TSet<UGameObjectCore*> dests = social->GetObjectsByTags(findData.Destinations, {});
 
 	auto OverMap = GetOversByCores({ findData.Performer });
 
@@ -173,7 +174,7 @@ TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindD
 	if (NeedMap.Num() == 0) {
 		return {};
 	}
-	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, findData.SourcesIgnores);
+	TSet<UGameObjectCore*> sources = social->GetObjectsByTags(findData.Sources, {});
 	OverMap = GetOversByCores(sources);
 
 	if (OverMap.Num() == 0) {
@@ -199,4 +200,38 @@ TArray<FGameTask> UTaskManagerService::FindTaskForPerformer(const FGameTaskFindD
 		}
 	}
 	return {};
+}
+
+TArray<FGameTask> UTaskManagerService::FindTask(const FGameTaskFindData& findData) {
+	//UE_LOG_SERVICE(Log, "Start FindTask for <%s>", *findData.Performer->GetOwnerName());
+	TArray<FGameTask> result;
+	auto socialService = GameInstance->GetSocialService();
+	if (findData.TaskFinderType == ETaskFinderType::Work) {
+		const auto& cores = socialService->GetObjectsByTags(findData.Sources, {});
+		for (const auto& core : cores) {
+			if (socialService->GetRelationsBetweenTeams(
+				Cast<USocialBaseComponent>(findData.Performer->GetComponent(EGameComponentType::Social))->GetSocialTeam(),
+				Cast<USocialBaseComponent>(findData.Performer->GetComponent(EGameComponentType::Social))->GetSocialTeam()
+			) != ERelations::Friendly) {
+				continue;
+			}
+			if (auto generator = Cast<UGeneratorBaseComponent>(core->GetComponent(EGameComponentType::Generator))) {
+				if (generator->GetNeedMe(findData.Performer)) {
+					FGameTask task;
+					task.Core = core;
+					task.Resource = EResource::Self;
+					result = { task };
+					break;
+				}
+			}
+		}
+	}
+	else {
+		result = FindTaskByTags(findData);
+	}
+	for (const auto task : result) {
+		UE_LOG_SERVICE(Log, "Found Task <%s> -> <%s>: %s = %d", *findData.Performer->GetOwnerName(), *task.Core->GetOwnerName(),
+			*UEnum::GetValueAsString(task.Resource), task.Count);
+	}
+	return result;
 }

@@ -8,6 +8,7 @@ void UInventoryDefaultComponent::Initialize(const FInventoryComponentInitializer
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	ShowChaging = initializer.ShowInventoryChanging;
 	ShowChagingIgnore = initializer.ShowInventoryChangingIgnore;
+	ChangeInventoryTime = initializer.ChangeInventoryTime;
 }
 
 void UInventoryDefaultComponent::SaveComponent(FInventorySaveData& saveData) {
@@ -84,6 +85,10 @@ bool UInventoryDefaultComponent::TryChangeInventory(const TArray<FPrice>& resour
 	return success;
 }
 
+
+float UInventoryDefaultComponent::GetChangeInventoryTime() {
+	return ChangeInventoryTime;
+}
 
 bool UInventoryDefaultComponent::CanChangeInventory(const TArray<FPrice>& resources, bool reverse) {
 	SavePoint();

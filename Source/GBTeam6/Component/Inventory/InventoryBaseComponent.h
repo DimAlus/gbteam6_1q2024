@@ -29,6 +29,9 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
+	virtual float GetChangeInventoryTime();
+
+	UFUNCTION(BlueprintCallable)
 	virtual bool CanChangeInventory(const TArray<FPrice>& resources, bool reverse);
 
 	UFUNCTION(BlueprintCallable)

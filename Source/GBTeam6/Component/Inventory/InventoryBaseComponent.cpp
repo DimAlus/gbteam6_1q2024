@@ -26,6 +26,10 @@ void UInventoryBaseComponent::SaveComponent(FInventorySaveData& saveData) {
 void UInventoryBaseComponent::LoadComponent(const FInventorySaveData& saveData) {
 }
 
+float UInventoryBaseComponent::GetChangeInventoryTime() {
+	return 0.0f;
+}
+
 bool UInventoryBaseComponent::CanChangeInventory(const TArray<FPrice>& resources, bool reverse) {
 	return false;
 }

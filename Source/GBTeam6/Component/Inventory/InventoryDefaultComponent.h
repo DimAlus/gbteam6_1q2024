@@ -32,11 +32,13 @@ protected:
 	};
 	TArray<FSaveStruct> Saves;
 
+	float ChangeInventoryTime;
 private:
 	void SavePoint();
 	void RollBack(bool isBack);
 	bool TryChangeInventory(const TArray<FPrice>& resources, bool reverse, bool withRb);
 public:
+	virtual float GetChangeInventoryTime() override;
 	virtual bool CanChangeInventory(const TArray<FPrice>& resources, bool reverse) override;
 	virtual bool ChangeInventory(const TArray<FPrice>& resources, bool reverse) override;
 	virtual int GetResourceCount(EResource resource) override;

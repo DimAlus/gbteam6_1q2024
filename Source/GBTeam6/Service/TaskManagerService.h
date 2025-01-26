@@ -46,5 +46,7 @@ public:
 	TArray<FGameTask> FindTaskByTags(const FGameTaskFindData& findData);
 	TArray<FGameTask> FindTaskForPerformer(const FGameTaskFindData& findData);
 
+	TArray<FGameTask> FindTask(const FGameTaskFindData& findData);
+
 	
 };

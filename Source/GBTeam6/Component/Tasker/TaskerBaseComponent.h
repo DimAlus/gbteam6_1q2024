@@ -24,14 +24,36 @@ public:
 	virtual void SaveComponent(FTaskerSaveData& saveData);
 	virtual void LoadComponent(const FTaskerSaveData& saveData);
 
+public:
+	UPROPERTY(BlueprintAssignable)
+	FGameTaskTypeSignature OnTaskProcessBefore;
+
+	UPROPERTY(BlueprintAssignable)
+	FGameTaskTypeSignature OnTaskProcessStarted;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnTaskProcessCompleted;
 
 public:
+
+	UFUNCTION(BlueprintCallable)
+	virtual void NotTaskProcessStartNow();
+
+	UFUNCTION(BlueprintCallable)
+	virtual void TaskProcessStartContinue();
 
 	UFUNCTION(BlueprintCallable)
 	virtual TMap<EResource, int> GetRequests();
 
 	UFUNCTION(BlueprintCallable)
 	virtual TMap<EResource, int> GetOffers();
+
+
+	UFUNCTION(BlueprintCallable)
+	virtual void SetCanDeliver(bool canDeliver);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool GetCanDeliver();
 
 
 	UFUNCTION(BlueprintCallable)
@@ -44,7 +66,7 @@ public:
 	virtual bool ApplyTask();
 	
 	UFUNCTION(BlueprintCallable)
-	virtual void CancleTask();
+	virtual void CancelTask();
 	
 
 	UFUNCTION(BlueprintCallable)

@@ -103,6 +103,9 @@ struct FTaskerComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FGameTaskFindData> TaskFinders{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ChangeInventoryTaskSpeed{ 1.f };
 };
 
 
@@ -244,6 +247,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSet<EResource> ShowInventoryChangingIgnore{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float ChangeInventoryTime{ 0.f };
 };
 
 
