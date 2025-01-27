@@ -166,8 +166,8 @@ void AProjectileFlying::ApplyEffects() {
 			targetLocation,
 			{},
 			{},
-			{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, GetProjectileData().Radius },
-			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, GetProjectileData().Radius }, }
+			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },
+			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, }
 		);
 	}
 	else {

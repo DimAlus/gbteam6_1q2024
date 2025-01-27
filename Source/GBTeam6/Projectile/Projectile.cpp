@@ -51,7 +51,7 @@ void AProjectile::Initialize(UGameObjectCore* initiator,
 	this->Target = targets.Num() ? targets[0] : nullptr;
 	this->Initiator = initiator;
 	this->ProjectilesData = projectilesData;
-	this->TimeLife = projectilesData[0].TimeLife;
+	this->LifeTime = projectilesData[0].TimeLife;
 	this->ProjectileQueue = projectilesData[0].ProjectileQueue 
 							? ProjectileQueue
 							: ++queueData->CurentQueueIndex;

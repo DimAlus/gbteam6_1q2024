@@ -15,10 +15,12 @@ AProjectilePlaced::AProjectilePlaced() : AProjectile() {
 void AProjectilePlaced::Destroyed() {
 	Super::Destroyed();
 	for (const auto& core : AttachedTargets) {
-		if (IsValid(core) && (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect)))) {
-			for (const auto& eff : GetProjectileData().Effects) {
-				if (eff.IsConst) {
-					effect->CancelConstEffect(eff.EffectName);
+		if (IsValid(core)) {
+			if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
+				for (const auto& eff : GetProjectileData().Effects) {
+					if (eff.IsConst) {
+						effect->CancelConstEffect(eff.EffectName);
+					}
 				}
 			}
 		}
@@ -67,20 +69,26 @@ void AProjectilePlaced::ApplyEffects() {
 			Initiator,
 			GetActorLocation(),
 			{},
-			OwnerIgnore ? { OwnerTarget } : {},
-			{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, GetProjectileData().Radius },
-			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, GetProjectileData().Radius }, }
+			OwnerIgnore ? TSet<UGameObjectCore*>({ OwnerTarget }) : TSet<UGameObjectCore*>({}),
+			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },
+			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, }
 		)
 	);
 	for (const auto& core : CurrentTargets.Difference(AttachedTargets)) {
-		if (IsValid(core) && (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect)))) {
+		if (!IsValid(core)) {
+			continue;
+		}
+		if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
 			for (const auto& eff : GetProjectileData().Effects) {
 				effect->ApplyEffect(eff);
 			}
 		}
 	}
 	for (const auto& core : AttachedTargets.Difference(CurrentTargets)) {
-		if (IsValid(core) && (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect)))) {
+		if (!IsValid(core)) {
+			continue;
+		}
+		if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
 			for (const auto& eff : GetProjectileData().Effects) {
 				if (eff.IsConst) {
 					effect->CancelConstEffect(eff.EffectName);

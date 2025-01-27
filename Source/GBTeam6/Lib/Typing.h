@@ -19,9 +19,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -738,6 +738,13 @@ struct FGameEventConextSave {
 USTRUCT(BlueprintType)
 struct FTargetFilter {
 	GENERATED_BODY()
+	FTargetFilter() {}
+
+	FTargetFilter(
+		ETargetFilterType filterType,
+		float value,
+		EFilterCompareType compareType) 
+		: Type(filterType), Value(value), CompareType(compareType) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETargetFilterType Type{};
@@ -873,12 +880,13 @@ struct FSkill {
 	TArray<FSkillProjectileData> SkillProjectiles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetFarFinder{};
+	float RadiusFinderToMove{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Cooldown{1.f};
 	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"false", EditConditionHides))
 	float CurrentCooldown{0.f};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -886,4 +894,8 @@ struct FSkill {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Autouse{true};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"false", EditConditionHides))
+	float IdealDistance{ -1.f };
 };
