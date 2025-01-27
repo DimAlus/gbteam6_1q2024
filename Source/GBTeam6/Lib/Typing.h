@@ -20,6 +20,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -851,6 +852,9 @@ struct FSkillProjectileData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Radius{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TimeLife{ 0 };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool SpawnAtNoTargets{ 0 };

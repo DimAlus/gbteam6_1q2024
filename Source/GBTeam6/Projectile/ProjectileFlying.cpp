@@ -16,7 +16,7 @@ void AProjectileFlying::Initialize(UGameObjectCore* initiator,
 								   const TArray<UGameObjectCore*>& targets,
 								   const TArray<FSkillProjectileData>& projectilesData) {
 	Super::Initialize(initiator, targets, projectilesData);
-	if (targets.Num() * projectilesData.Num() == 0) {
+	if (projectilesData.Num() == 0 || (targets.Num() == 0 && !projectilesData[0].SpawnAtNoTargets)) {
 		return;
 	}
 	if (ProjectileMovement == EProjectileMovement::Multiple 
@@ -27,7 +27,7 @@ void AProjectileFlying::Initialize(UGameObjectCore* initiator,
 		CreateProjectilesForTargets(targetsCopy, projectilesData);
 	}
 
-	targetLocation = Target->GetOwner()->GetActorLocation();
+	targetLocation = IsValid(Target) ? Target->GetOwner()->GetActorLocation() : GetActorLocation();
 	if (ProjectileMovement == EProjectileMovement::Earth) {
 		Target = nullptr;
 	}
@@ -108,7 +108,6 @@ FVector AProjectileFlying::GetCurrentSpeed(float deltaTime) {
 
 void AProjectileFlying::HitWithTarget() {
 	ApplyEffects();
-	OnEffectApplying.Broadcast();
 
 	if (ProjectilesData.Num() > 1) {
 		CreateNextProjectile();
@@ -162,14 +161,13 @@ void AProjectileFlying::ApplyEffects() {
 	TArray<UGameObjectCore*> cores;
 	if (GetProjectileData().Radius > 1) {
 		cores = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-			GetProjectileData().TargetChainFinder,
+			GetProjectileData().TargetFinder,
 			Initiator,
 			targetLocation,
 			{},
 			{},
-			/*{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, Radius },
-			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, Radius }, }*/
-			{}
+			{ { { ETargetFilterType::Distance, EFilterCompareType::Less }, GetProjectileData().Radius },
+			  { { ETargetFilterType::Distance, EFilterCompareType::LessEqual }, GetProjectileData().Radius }, }
 		);
 	}
 	else {
@@ -185,4 +183,5 @@ void AProjectileFlying::ApplyEffects() {
 			}
 		}
 	}
+	OnEffectApplying.Broadcast(cores);
 }

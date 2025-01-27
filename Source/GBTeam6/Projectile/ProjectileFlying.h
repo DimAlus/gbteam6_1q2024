@@ -33,9 +33,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ApplyingDistance{ 50.f };
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LifeTime{ 10.f };
-
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector CurrentSpeed{};
 

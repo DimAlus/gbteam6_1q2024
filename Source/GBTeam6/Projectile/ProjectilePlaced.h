@@ -14,6 +14,7 @@ class GBTEAM6_API AProjectilePlaced : public AProjectile
 public:
 	AProjectilePlaced();
 
+	virtual void Destroyed() override;
 
 	virtual void Initialize(UGameObjectCore* initiator, 
 							const TArray<UGameObjectCore*>& targets,
@@ -27,11 +28,16 @@ protected:
 	bool Connected{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float LifeTime{ 10.f };
+	bool ConnectToInitiator{ true };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool OwnerIgnore{ false };
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Radius{};
+	UGameObjectCore* OwnerTarget{ nullptr };
+
+	TSet<UGameObjectCore*> AttachedTargets;
 
 protected:
-
+	virtual void ApplyEffects() override;
 };

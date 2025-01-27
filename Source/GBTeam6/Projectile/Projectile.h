@@ -32,7 +32,7 @@ public:
 	FTouchSignature OnInitialized;
 
 	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnEffectApplying;
+	FCoresSignature OnEffectApplying;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
@@ -46,6 +46,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool Initialized = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float LifeTime{ 10.f };
 
 protected:
 
