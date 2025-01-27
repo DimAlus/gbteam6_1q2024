@@ -38,7 +38,7 @@ public:
 	virtual bool TryCastSkill(ESkillSlot slot);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets);
+	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanCastSkill(ESkillSlot slot);
@@ -55,7 +55,9 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
-	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, const TArray<UGameObjectCore*>& priorityTargets);
+	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, 
+													const TMap<UGameObjectCore*, int>& priorityTargets, 
+													const TSet<UGameObjectCore*>& ignoreTargets);
 
 
 	UFUNCTION(BlueprintCallable)

@@ -8,6 +8,8 @@
 #include "Projectile.generated.h"
 
 class UGameObjectCore;
+class UGameInstanceDefault;
+struct FProjectileQueueData;
 
 UCLASS()
 class GBTEAM6_API AProjectile : public AActor
@@ -17,31 +19,49 @@ class GBTEAM6_API AProjectile : public AActor
 public:	
 	AProjectile();
 
-	virtual void Initialize(UGameObjectCore* initiator, TArray<UGameObjectCore*> targets, const TArray<FEffect>& effects);
+	virtual void Destroyed() override;
 
+	virtual void Initialize(UGameObjectCore* initiator, 
+							const TArray<UGameObjectCore*>& targets,
+							const TArray<FSkillProjectileData>& projectilesData);
 
+	UGameInstanceDefault* GetGameInstanceDefault();
 public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnInitialized;
 
 	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnEffectApplying;
+	FCoresSignature OnEffectApplying;
 
 protected:
 	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* Initiator;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UGameObjectCore*> Targets;
+	UGameObjectCore* Target;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<FEffect> Effects;
+	TArray<FSkillProjectileData> ProjectilesData;
 
 	UPROPERTY(BlueprintReadOnly)
 	bool Initialized = false;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float LifeTime{ 10.f };
+
 protected:
 
+	virtual AProjectile* CreateNextProjectile();
 	virtual void ApplyEffects();
+
+	FORCEINLINE FSkillProjectileData& GetProjectileData() { return ProjectilesData[0]; }
+
+protected:
+	int ProjectileQueue;
+
+	FProjectileQueueData* GetProjectileQueueData();
+	void GetProjectileQueue(TArray<UGameObjectCore*>& queue);
+
+	void AddTargetToQueue(UGameObjectCore* target);
 };

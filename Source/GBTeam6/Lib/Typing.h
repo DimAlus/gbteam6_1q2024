@@ -21,6 +21,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, Ski
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -826,6 +827,40 @@ struct FEffect {
 };
 
 
+USTRUCT(BlueprintType)
+struct FSkillProjectileData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<AProjectile> ProjectileClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString TargetFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FEffect> Effects{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "1", ClampMax = "100", UIMin = "0", UIMax = "100"))
+	int ChainSize{ 1 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+		"ChainSize > 1",
+		EditConditionHides))
+	FString TargetChainFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Radius{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float TimeLife{ 0 };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool SpawnAtNoTargets{ 0 };
+
+	UPROPERTY()
+	int ProjectileQueue{0};
+};
+
 
 USTRUCT(BlueprintType)
 struct FSkill {
@@ -835,10 +870,7 @@ struct FSkill {
 	FString Name{"None"};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FEffect> Effects{};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetFinder{};
+	TArray<FSkillProjectileData> SkillProjectiles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TargetFarFinder{};
@@ -851,9 +883,6 @@ struct FSkill {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float Mana{100.f};
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSubclassOf<AProjectile> ProjectileClass{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool Autouse{true};
