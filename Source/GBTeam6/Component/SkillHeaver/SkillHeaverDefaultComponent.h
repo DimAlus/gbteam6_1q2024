@@ -31,6 +31,7 @@ private:
 	float CurrentMana;
 	float ManaRegeneration;
 
+	TMap<ESkillSlot, FSkill> SrcSkills;
 	TMap<ESkillSlot, FSkill> Skills;
 	TMap<ESkillSlot, bool> SkillsLock;
 
@@ -62,6 +63,8 @@ public:
 	virtual const FSkill& GetSkillData(ESkillSlot slot, bool& skillFound) override;
 	virtual float GetSkillCooldown(ESkillSlot slot) override;
 	virtual float GetSkillCooldownPercents(ESkillSlot slot) override;
+
+	virtual void SetOverridedSkills(const TMap<ESkillSlot, FSkill>& skills) override;
 
 	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, 
 													const TMap<UGameObjectCore*, int>& priorityTargets, 

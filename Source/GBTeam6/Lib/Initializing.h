@@ -16,6 +16,7 @@ class UEffectBaseComponent;
 class UUIBaseComponent;
 class USoundBaseComponent;
 class USkillHeaverBaseComponent;
+class UAIBaseComponent;
 
 /**
  * 
@@ -354,6 +355,43 @@ struct FSkillHeaverComponentInitData {
 
 /***********************************************************************************/
 /// <summary>
+/// AI Initializing
+/// </summary>
+USTRUCT(BlueprintType)
+struct FAIComponentInitializer {
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsSelectable{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int SelectionPriority{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int AttachedCount{0};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> AttachedTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers{};
+};
+
+USTRUCT(BlueprintType)
+struct FAIComponentInitData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<UAIBaseComponent> ComponentClass{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FAIComponentInitializer ComponentInitializer{};
+};
+
+
+/***********************************************************************************/
+/// <summary>
 /// Game Object Initializing
 /// </summary>
 ///
@@ -408,6 +446,9 @@ struct FGameObjectInitData : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSkillHeaverComponentInitData SkillHeaverComponentInitData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FAIComponentInitData AIComponentInitData{};
 };
 
 /***********************************************************************************/

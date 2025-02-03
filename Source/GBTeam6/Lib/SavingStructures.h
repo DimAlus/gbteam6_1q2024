@@ -117,6 +117,13 @@ public:
 
 
 USTRUCT(BlueprintType)
+struct FAISaveData {
+	GENERATED_BODY()
+public:
+};
+
+
+USTRUCT(BlueprintType)
 struct FGameObjectSaveData {
 	GENERATED_BODY()
 public:
@@ -152,6 +159,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSkillHeaverSaveData SkillHeaverData{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FAISaveData AIData{};
 };
 
 

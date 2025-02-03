@@ -55,6 +55,10 @@ public:
 
 
 	UFUNCTION(BlueprintCallable)
+	virtual void SetOverridedSkills(const TMap<ESkillSlot, FSkill>& skills);
+
+
+	UFUNCTION(BlueprintCallable)
 	virtual TArray<UGameObjectCore*> FindSkillTargets(ESkillSlot slot, 
 													const TMap<UGameObjectCore*, int>& priorityTargets, 
 													const TSet<UGameObjectCore*>& ignoreTargets);

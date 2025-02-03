@@ -44,7 +44,8 @@ enum class EGameComponentType : uint8 {
 	Social		UMETA(DisplayName = "Social"),
 	Sound		UMETA(DisplayName = "Sound"),
 	Collision	UMETA(DisplayName = "Collision"),
-	SkillHeaver	UMETA(DisplayName = "SkillHeaver")
+	SkillHeaver	UMETA(DisplayName = "SkillHeaver"),
+	AI			UMETA(DisplayName = "AI")
 };
 
 UENUM(BlueprintType)
@@ -113,6 +114,8 @@ enum class ERelations : uint8 {
 UENUM(BlueprintType)
 enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
+
+	Selectable			UMETA(DisplayName = "Selectable"),
 
 	Forest				UMETA(DisplayName = "Forest's"),
 	Human				UMETA(DisplayName = "Human's"),
@@ -319,6 +322,7 @@ enum class EEffectType : uint8 {
 
 UENUM(BlueprintType)
 enum class ESkillSlot : uint8 {
+	None			UMETA(DisplayName = "None"),
 	Auto			UMETA(DisplayName = "Auto"),
 	Skill1			UMETA(DisplayName = "First Slot"),
 	Skill2			UMETA(DisplayName = "Second Slot"),

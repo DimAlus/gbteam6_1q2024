@@ -5,10 +5,18 @@
 #include "EnhancedInputSubsystems.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "GameFramework/FloatingPawnMovement.h"
-#include "GBTeam6/Game/GameStateDefault.h"
+
+#include "GBTeam6/Game/GameInstanceDefault.h"
 #include "GBTeam6/Interface/GameObjectInterface.h"
+
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+
 #include "GBTeam6/Service/MessageService.h"
 #include "GBTeam6/Service/TimerService.h"
+#include "GBTeam6/Service/SocialService.h"
+
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
@@ -67,6 +75,10 @@ void APlayerPawnDefault::Tick(float DeltaTime) {
 	UpdateTimeDilation();
 }
 
+UGameInstanceDefault *APlayerPawnDefault::GetGameInstanceDefault() {
+	return Cast<UGameInstanceDefault>(GetGameInstance());
+}
+
 // Called to bind functionality to input
 void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -95,12 +107,21 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Zoom camera binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CameraZoomAction, ETriggerEvent::Triggered, this,
 			&APlayerPawnDefault::CameraZoom);
+
 		// Select action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::SelectStart);
+		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::SelectUpdate);
 		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
-			&APlayerPawnDefault::Select);
+			&APlayerPawnDefault::SelectComplete);
 		// Command action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
+
+		// Skill action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Completed, this,
+			&APlayerPawnDefault::SelectSkillAction);
 		
 		// Set game speed action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
@@ -128,97 +149,248 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 	GetWorld()->LineTraceSingleByChannel(HitResult, MouseWorldLocation, MouseWorldLocation + MouseWorldDirection * 15000, CollisionChannel);
 }
 
-void APlayerPawnDefault::Select(const FInputActionValue& Value) {
-	CallSelect();
-}
 
-void APlayerPawnDefault::Command(const FInputActionValue& Value) {
-	CallCommand();
-}
-
-void APlayerPawnDefault::CallSelect() {
-	UE_LOG(LogTemp, Warning, TEXT("SELECT"));
+void APlayerPawnDefault::SelectStart(const FInputActionValue& Value) {
+	if (SelectedSkill == ESkillSlot::None) {
+		return;
+	}
+	IsSelectionMode = true;
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
-
-	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
-		OnSelect(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
-	}
-	else {
-		OnSelect(Hit.Location, nullptr, false);
-	}
+	SelectionStartLocation = Hit.Location;
 }
 
-void APlayerPawnDefault::OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
-	if (bAltSelectMode)
-	{
-		if (IsObject) {
-			TargetActor = Core->GetOwner();
+void APlayerPawnDefault::SelectUpdate(const FInputActionValue& Value) {
+	const TMap<ESocialTeam, int> teamSelectionPriority = {
+		{ ESocialTeam::None, -1 },
+		{ ESocialTeam::Neutral, 0 },
+		{ ESocialTeam::Friendly, 1 },
+		{ ESocialTeam::Hostile, 0 },
+	}
+	const float ableError = 20.f;
+
+	if (!IsSelectionMode) {
+		return;
+	}
+
+	FVector2D StartLocation;
+	float mouseX, mouseY;
+	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
+	PlayerController->GetMousePosition(mouseX, mouseY);
+
+	FVector2D minLocation = { std::min(mouseX, StartLocation.X) - ableError, std::min(mouseY, StartLocation.Y) - ableError };
+	FVector2D maxLocation = { std::max(mouseX, StartLocation.X) + ableError, std::max(mouseY, StartLocation.Y) + ableError };
+
+
+	TSet<UGameObjectCore*> selection;
+	const TSet<UGameObjectCore*>& cores = GetGameInstanceDefault()->GetSocialService()
+											->GetObjectsByTags({ ESocialTag::Selectable }, {});
+	int currentSelectionTeamPriority = -1;
+	int currentSelectionPriority = -1;
+	for (const auto& core : cores) {
+		if (!IsValid(core) || !IsValid(core->GetOwner())) {
+			continue;
+		}
+		FVector2D loc;
+		PlayerController->ProjectWorldLocationToScreen(core->GetOwner()->GetActorLocation(), loc);
+		if (loc.X != std::clamp(loc.X, minLocation.X, maxLocation.X)
+		||  loc.Y != std::clamp(loc.Y, minLocation.Y, maxLocation.Y)) {
+			continue;
+		}
+		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
+		auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI));
+
+		if (!social || !ai) {
+			continue;
+		}
+
+		int priorityTeam = teamSelectionPriority[social->GetSocialTeam()];
+		if (priorityTeam < currentSelectionTeamPriority) {
+			continue;
+		}
+		else if (priorityTeam > currentSelectionTeamPriority) {
+			currentSelectionTeamPriority = priorityTeam;
+			currentSelectionPriority = ai->GetSelectionPriority();
+			selection = { core };
+		}
+		else if (currentSelectionPriority < ai->GetSelectionPriority()) {
+			currentSelectionPriority = ai->GetSelectionPriority();
+			selection = { core };
 		}
 		else {
-			TargetActor = nullptr;
+			selection.Add(core);
 		}
 	}
-	else
-	{
-		if (IsObject) {
-			SelectedActor = Core->GetOwner();
 
-			if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState())) {
-				GameState->GetMessageService()->Send({ EMessageTag::GOASelect }, Core);
+	for (const auto& core : SelectedCoresTemp) {
+		if (!selection.Contains(core)) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->SetSelectionPreview(false);
 			}
 		}
-		else {
-			SelectedActor = nullptr;
+	}
+	SelectedCoresTemp = selection.ToArray();
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(true);
 		}
 	}
 }
 
-void APlayerPawnDefault::SetAltSelectMode(bool AltSelectModeState)
-{
-	if (AltSelectModeState)	{
-		PlayerController->CurrentMouseCursor = EMouseCursor::Crosshairs;
+void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
+	if (SelectedSkill != ESkillSlot::None) {
+		if (!IsValid(CurrentSelectedCore)) {
+			SelectionSkillCancel();
+			return;
+		}
+		if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+			if (skillHeaver->CanCastSkill(SelectedSkill)) {
+				if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
+					FHitResult Hit;
+					GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+					bool _;
+					TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+						skillHeaver->GetSkillData(SelectedSkill, _).ProjectilesData[0].TargetFinder,
+						CurrentSelectedCore,
+						Hit.Location,
+						{},
+						{},
+						{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
+						  { ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
+					);
+
+					ai->TryCastSkill(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
+				}
+				OnSkillApply.Broadcast();
+			}
+			else {
+				OnSkillCancel.Broadcast();
+			}
+			SelectedSkill = ESkillSlot::None;
+		}
+		return;
 	}
-	else {
-		PlayerController->CurrentMouseCursor = EMouseCursor::Default;
+	if (!IsSelectionMode) {
+		return;
 	}
-	TargetActor = nullptr;
-	bAltSelectMode = AltSelectModeState;
-	OnAltSelectModeChanges.Broadcast(bAltSelectMode);
+	SetSelectedCores(SelectedCoresTemp);
 }
 
-void APlayerPawnDefault::CallCommand() {
-	UE_LOG(LogTemp, Warning, TEXT("COMMAND"));
+void APlayerPawnDefault::CancelSelectProcess() {
+	IsSelectionMode = false;
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(false);
+		}
+	}
+	SelectedCoresTemp.Empty();
+}
+
+
+void APlayerPawnDefault::Command(const FInputActionValue& Value) {
+	if (IsSelectionMode) {
+		CancelSelectProcess();
+		return;
+	}
+	if (SelectedSkill != ESkillSlot::None) {
+		SelectionSkillCancel();
+		return;
+	}
+
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
-
+	UGameObjectCore* targetCore = nullptr;
+	USocialService* socialService = GetGameInstanceDefault()->GetSocailService();
+	ESocialTeam targetSocialTeam = ESocialTeam::None;
+	
 	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
-		OnCommand(Hit.Location, ObjectInterface->GetCore_Implementation(), true);
+		targetCore = ObjectInterface->GetCore_Implementation();
+		if (auto social = Cast<USocialBaseComponent>(targetCore->GetComponent(EGameComponentType::Social))) {
+			targetSocialTeam = social->GetSocialTeam();
+		}
 	}
-	else {
-		OnCommand(Hit.Location, nullptr, false);
+	
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			if (!targetCore) {
+				ai->CommandMove(Hit.Location);
+			}
+			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+				ERelations rel = GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
+				if (rel == ERelations::Friendly) {
+					ai->CommandAttach(targetCore);
+				}
+				else if (rel == ERelations::Enemy) {
+					ai->CommandAttack(targetCore);
+				}
+				else {
+					ai->CommandObject(targetCore);
+				}
+			}
+			else {
+				ai->CommandObject(targetCore);
+			}
+		}
 	}
 }
 
-void APlayerPawnDefault::OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject) {
-	PointOfInterest = Location;
-	SetAltSelectMode(false);
-
-	//if (IsObject) {
-	//	TSet<EMessageTag> MessageTags{};
-	//	MessageTags.Add();
-	//	if (auto GameState = Cast<AGameStateDefault>(GetWorld()->GetGameState()))
-	//	{
-	//		GameState->GetMessageService()->Send({ EMessageTag::GOACommand }, Core);
-	//		
-	//		if (auto ObjectInterface = Cast<IGameObjectInterface>(SelectedActor))
-	//		{
-	//			auto ObjectCore = ObjectInterface->GetCore_Implementation();//(SelectedActor);
-	//			
-	//		}
-	//	}
-	//}
+void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
+	int inputValue = Value.Get<int>();
+	ESkillSlot slot =
+			inputValue == 0 ? ESkillSlot::Auto
+		:	inputValue == 1 ? ESkillSlot::Skill1
+		:	inputValue == 2 ? ESkillSlot::Skill2
+		:	inputValue == 3 ? ESkillSlot::Skill3
+		:	ESkillSlot::None;
+	TrySelectSkill(slot);
 }
+
+void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
+	if (!IsValid(CurrentSelectedCore) || slot == ESkillSlot::None) {
+		return;
+	}
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		if (skillHeaver->CanCastSkill(slot)) {
+			SelectedSkill = slot;
+			OnSkillSelect.Broadcast();
+		}
+	}
+}
+
+void APlayerPawnDefault::SelectionSkillCancel() {
+	if (slot == ESkillSlot::None) {
+		return;
+	}
+	SelectedSkill = ESkillSlot::None;
+	OnSkillCancel.Broadcast();
+}
+
+void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
+	if (SelectedCores.Contains(core)) {
+		SelectionSkillCancel();
+		CurrentSelectedCore = core;
+	}
+}
+
+void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
+	SelectionSkillCancel();
+
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelection(false);
+		}
+	}
+	SelectedCores = cores;
+	CancelSelectProcess();
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelection(true);
+		}
+	}
+	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
+	OnSelectionChanging.Broadcast();
+}
+
 
 void APlayerPawnDefault::QuickSave(const FInputActionValue& Value) {
 	OnQuickSave.Broadcast();

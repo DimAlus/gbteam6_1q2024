@@ -45,9 +45,13 @@ float USkillHeaverBaseComponent::GetSkillCooldownPercents(ESkillSlot slot) {
 	return 0.0f;
 }
 
-TArray<UGameObjectCore*> USkillHeaverBaseComponent::FindSkillTargets(ESkillSlot slot, 
-																	const TMap<UGameObjectCore*, int>& priorityTargets, 
-																	const TSet<UGameObjectCore*>& ignoreTargets) {
+void USkillHeaverBaseComponent::SetOverridedSkills(const TMap<ESkillSlot, FSkill> &skills) {
+	return 0.0f;
+}
+TArray<UGameObjectCore *> USkillHeaverBaseComponent::FindSkillTargets(ESkillSlot slot,
+																	  const TMap<UGameObjectCore *, int> &priorityTargets,
+																	  const TSet<UGameObjectCore *> &ignoreTargets)
+{
 	return TArray<UGameObjectCore*>();
 }
 

@@ -11,6 +11,8 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
+class UGameObjectCore;
+class UGameInstanceDefault;
 class UInputAction;
 class IGameObjectInterface;
 struct FInputActionValue;
@@ -31,6 +33,22 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick (float DeltaTime) override;
+
+	UGameInstanceDefault* GetGameInstanceDefault();
+
+public:
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSelectionChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSkillSelect;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSkillCancel;
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSkillApply;
 
 protected:
 	/** Player controller */
@@ -64,46 +82,45 @@ protected:
 
 	bool isScrollPressed = false;
 
-	UPROPERTY(BlueprintReadWrite)
-	bool bAltSelectMode = false;
-
 	/** Values to write from select and command */
-	UPROPERTY(BlueprintReadWrite)
-	AActor* SelectedActor = nullptr;
-	
-	UPROPERTY(BlueprintReadWrite)
-	AActor* TargetActor = nullptr;
-
-	bool bFastMove = false;
-	float saveCameraHeight;
-	
 	UPROPERTY(BlueprintReadOnly)
-	FVector PointOfInterest;
+	UGameObjectCore* CurrentSelectedCore = nullptr;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<UGameObjectCore*> SelectedCores;
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<UGameObjectCore*> SelectedCoresTemp;
+
+	UPROPERTY(BlueprintReadOnly)
+	bool IsSelectionMode = false;
+
+	UPROPERTY(BlueprintReadOnly)
+	FVector SelectionStartLocation;
+
+	UPROPERTY(BlueprintReadOnly)
+	ESkillSlot SelectedSkill;
 
 protected:
 	
 	/** Select object function*/
-	void Select(const FInputActionValue& Value);
+	void SelectStart(const FInputActionValue& Value);
+	void SelectUpdate(const FInputActionValue& Value);
+	void SelectComplete(const FInputActionValue& Value);
+	void CancelSelectProcess();
 
 	/** Command object function*/
 	void Command(const FInputActionValue& Value);
 
-	/** Select object function*/
-	void CallSelect();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnSelect(FVector Location, UGameObjectCore* Core, bool IsObject);
-	void OnSelect_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
+	void SelectSkillAction(const FInputActionValue& Value);
+	void TrySelectSkill(ESkillSlot slot);
+	void SelectionSkillCancel();
 
-	UPROPERTY(BlueprintAssignable)
-	FAltSelectModeSignature OnAltSelectModeChanges;
 	UFUNCTION(BlueprintCallable)
-	void SetAltSelectMode(bool AltSelectModeState);
+	void SetCurrentSelectedCore(UGameObjectCore* core);
 
-	/** Command object function*/
-	void CallCommand();
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void OnCommand(FVector Location, UGameObjectCore* Core, bool IsObject);
-	void OnCommand_Implementation(FVector Location, UGameObjectCore* Core, bool IsObject);
+	UFUNCTION(BlueprintCallable)
+	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
 
 	void QuickSave(const FInputActionValue& Value);
 	void QuickLoad(const FInputActionValue& Value);
@@ -145,6 +162,9 @@ protected:
 	};
 	CameraSlowingInfo CameraSlowing;
 
+	bool bFastMove = false;
+	float saveCameraHeight;
+	
 	FVector CameraTargetPosition;
 	float CameraTargetRotation; // Rotation target can be more 360 deg => Rotator not usable
 	float CameraTagretHeight;

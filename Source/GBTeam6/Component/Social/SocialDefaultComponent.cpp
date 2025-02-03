@@ -3,6 +3,7 @@
 #include "../../Interface/GameObjectCore.h"
 #include "../Mapping/MappingBaseComponent.h"
 #include "../Health/HealthBaseComponent.h"
+#include "../AI/AIBaseComponent.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	this->UnRegisterObjectInService();
@@ -10,6 +11,12 @@ void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 }
 
 void USocialDefaultComponent::OnCoreCreatedAfter() {
+	if (auto ai = Cast<UAIBaseComponent>(GetCore()->GetComponent(EGameComponentType::AI))) {
+		if (ai->GetIsSelectable()) {
+			SocialTags.AddUnique(ESocialTag::Selectable);
+		}
+	}
+
 	UMappingBaseComponent* mapping = Cast<UMappingBaseComponent>(GetCore()->GetComponent(EGameComponentType::Mapping));
 	if (mapping) {
 		if (mapping->GetIsPlaced()) {
@@ -32,7 +39,7 @@ void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Init
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	SocialTeam = Initializer.SocialTeam;
 	SocialTags = Initializer.SocialTags;
-	HomeObjectTag = Initializer.HomeObjectTag;	
+	HomeObjectTag = Initializer.HomeObjectTag;
 }
 
 void USocialDefaultComponent::SaveComponent(FSocialSaveData& saveData) {

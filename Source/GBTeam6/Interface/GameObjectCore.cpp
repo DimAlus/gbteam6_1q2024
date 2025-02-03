@@ -9,6 +9,7 @@
 #include "../Component/UI/UIBaseComponent.h"
 #include "../Component/Sound/SoundBaseComponent.h"
 #include "../Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "../Component/AI/AIBaseComponent.h"
 #include "../Game/GameStateDefault.h"
 #include "../Game/GameInstanceDefault.h"
 
@@ -156,12 +157,20 @@ void UGameObjectCore::GenerateComponentSetRuntime(const FGameObjectInitData& Ini
 	);
 	BindComponent(EGameComponentType::SkillHeaver, NewSkillHeaverComponent);
 
+	//Create AI component
+	UAIBaseComponent* NewAIComponent = NewObject<UAIBaseComponent>(
+		owner,
+		GetNvlClass(InitData.AIComponentInitData.ComponentClass, UAIBaseComponent::StaticClass())
+	);
+	BindComponent(EGameComponentType::AI, NewAIComponent);
+
 	NewMappingComponent->Initialize(InitData.MappingComponentInitData.ComponentInitializer);
 	NewHealthComponent->Initialize(InitData.HealthComponentInitData.ComponentInitializer);
 	NewInventoryComponent->Initialize(InitData.InventoryComponentInitData.ComponentInitializer);
 	NewGeneratorComponent->Initialize(InitData.GeneratorComponentInitData.ComponentInitializer);
 	NewTaskerComponent->Initialize(InitData.TaskerComponentInitData.ComponentInitializer);
 	NewEffectComponent->Initialize(InitData.EffectComponentInitData.ComponentInitializer);
+	NewAIComponent->Initialize(InitData.AIComponentInitData.ComponentInitializer);
 	NewSocialComponent->Initialize(InitData.SocialComponentInitData.ComponentInitializer);
 	NewUIComponent->Initialize(InitData.UIComponentInitData.ComponentInitializer);
 	NewSoundComponent->Initialize(InitData.SoundComponentInitData.ComponentInitializer);

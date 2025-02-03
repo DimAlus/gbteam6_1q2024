@@ -36,6 +36,7 @@ void USkillHeaverDefaultComponent::Initialize(const FSkillHeaverComponentInitial
 				*UEnum::GetValueAsString(iter.Key), *skill.Name);
 		}
 	}
+	SrcSkills = Skills;
 	TimerCallback.BindUFunction(this, FName("Update"));
 	TimerHandle = GetGameInstance()->GetGameTimerManager()->SetTimer(
 		TimerCallback,
@@ -172,9 +173,18 @@ float USkillHeaverDefaultComponent::GetSkillCooldownPercents(ESkillSlot slot) {
 	return std::min(1.f, (skill.Cooldown - skill.CurrentCooldown) / std::max(skill.Cooldown, 0.01f));
 }
 
-TArray<UGameObjectCore*> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSlot slot, 
-																		const TMap<UGameObjectCore*, int>& priorityTargets, 
-																		const TSet<UGameObjectCore*>& ignoreTargets) {
+void USkillHeaverDefaultComponent::SetOverridedSkills(const TMap<ESkillSlot, FSkill>& skills) {
+	Skills = SrcSkills;
+	for (const auto& iter : skills) {
+		Skills.Add(iter.Key, iter.Value);
+	}
+}
+
+
+TArray<UGameObjectCore *> USkillHeaverDefaultComponent::FindSkillTargets(ESkillSlot slot,
+																		 const TMap<UGameObjectCore *, int> &priorityTargets,
+																		 const TSet<UGameObjectCore *> &ignoreTargets)
+{
 	TArray<UGameObjectCore*> targets{};
 	bool found;
 	const FSkill& skill = GetSkillData(slot, found);
