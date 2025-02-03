@@ -627,6 +627,9 @@ struct FQuestPage {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EQuestPageType Type{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UTexture* BackgroundImage{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

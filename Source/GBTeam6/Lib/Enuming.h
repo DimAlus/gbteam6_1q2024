@@ -171,6 +171,13 @@ enum class EUIGameObjectPanelType : uint8 {
 
 
 UENUM(BlueprintType)
+enum class EQuestPageType : uint8 {
+	Main		UMETA(DisplayName = "Main"),
+	Mini		UMETA(DisplayName = "Mini")
+};
+
+
+UENUM(BlueprintType)
 enum class EMessageTag : uint8 {
 	None			UMETA(DisplayName = "None"),
 	
