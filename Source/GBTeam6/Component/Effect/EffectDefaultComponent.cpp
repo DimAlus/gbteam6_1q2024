@@ -65,6 +65,13 @@ void UEffectDefaultComponent::TimerCallbackFunc() {
 			ActionApplyEffect(effect);
 		}
 	}
+	for (const auto& iter : ConstEffects) {
+		if (iter.Value.Num() > 0 && iter.Value[0].EffectType == EEffectType::Periodic) {
+			for (const auto& effect : iter.Value) {
+				ActionApplyEffect(effect);
+			}
+		}
+	}
 }
 
 void UEffectDefaultComponent::OnDeath() {

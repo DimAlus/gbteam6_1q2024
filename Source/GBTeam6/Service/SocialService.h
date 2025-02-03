@@ -79,7 +79,8 @@ public:
 													UGameObjectCore* centerCore,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
 													const TSet<UGameObjectCore*>& ignoreTargets,
-													const TArray<FTargetFilter>& overrideFilters);
+													const TArray<FTargetFilter>& overrideFilters,
+													bool hasCountConstraints = true);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<UGameObjectCore*> FindTargets(FString targetFinder,
@@ -87,6 +88,7 @@ public:
 										FVector centerLocation,
 										const TMap<UGameObjectCore*, int>& priorityTargets,
 										const TSet<UGameObjectCore*>& ignoreTargets,
-										const TArray<FTargetFilter>& overrideFilters);
+										const TArray<FTargetFilter>& overrideFilters,
+										bool hasCountConstraints = true);
 
 };

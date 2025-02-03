@@ -21,6 +21,7 @@ public:
 
 	virtual void Destroyed() override;
 
+	UFUNCTION(BlueprintCallable)
 	virtual void Initialize(UGameObjectCore* initiator, 
 							const TArray<UGameObjectCore*>& targets,
 							const TArray<FSkillProjectileData>& projectilesData);
