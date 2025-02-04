@@ -6,6 +6,7 @@
 #include "InputAction.h"
 #include "./Enuming.h"
 #include "Typing.generated.h"
+
 DECLARE_LOG_CATEGORY_EXTERN(LgGame, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgPlayer, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LgService, Log, All);
@@ -17,11 +18,14 @@ DECLARE_DYNAMIC_DELEGATE(FTouchBlueprintableSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVectorSignature, FVector, Value);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillVectorCoreSignature, ESkillSlot, SkillSlot, FVector, Location, UGameObjectCore*, Core);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))

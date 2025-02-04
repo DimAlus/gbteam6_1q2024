@@ -20,6 +20,26 @@ public:
 	virtual void LoadComponent(const FAISaveData& saveData);
 
 public:
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSelectionChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FVectorSignature OnCommandMove;
+
+	UPROPERTY(BlueprintAssignable)
+	FCoreSignature OnCommandObject;
+
+	UPROPERTY(BlueprintAssignable)
+	FCoreSignature OnCommandAttack;
+
+	UPROPERTY(BlueprintAssignable)
+	FCoreSignature OnCommandAttach;
+
+	UPROPERTY(BlueprintAssignable)
+	FSkillVectorCoreSignature OnTryCastSkill;
+
+public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsSelectable();
 
@@ -49,36 +69,14 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers();
-public:
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetSelectionPreview(bool isSelected);
-	virtual void SetSelectionPreview_Implementation(bool isSelected);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void SetSelection(bool isSelected);
-	virtual void SetSelection_Implementation(bool isSelected);
+	UFUNCTION(BlueprintCallable)
+	virtual void SetSelectionPreview(bool isSelected);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void SetSelection(bool isSelected);
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CommandMove(FVector location);
-	virtual void CommandMove_Implementation(FVector location);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CommandObject(UGameObjectCore* core);
-	virtual void CommandObject_Implementation(UGameObjectCore* core);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CommandAttack(UGameObjectCore* core);
-	virtual void CommandAttack_Implementation(UGameObjectCore* core);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void CommandAttach(UGameObjectCore* core);
-	virtual void CommandAttach_Implementation(UGameObjectCore* core);
-
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	void TryCastSkill(ESkillSlot slot, FVector location, UGameObjectCore* target);
-	virtual void TryCastSkill_Implementation(ESkillSlot slot, FVector location, UGameObjectCore* target);
-
+	UFUNCTION(BlueprintCallable)
+	virtual void GetSelection(bool& isSelected, bool& isPreview);
 
 };

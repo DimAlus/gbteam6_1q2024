@@ -401,10 +401,10 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 					{},
 					{},
 					{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
-						{ ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
+					  { ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
 				);
 
-				ai->TryCastSkill(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
+				ai->OnTryCastSkill.Broadcast(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
 			}
 			OnSkillApply.Broadcast();
 		}
@@ -432,22 +432,22 @@ void APlayerPawnDefault::CommandDefault() {
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			if (!targetCore) {
-				ai->CommandMove(Hit.Location);
+				ai->OnCommandMove.Broadcast(Hit.Location);
 			}
 			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
 				if (rel == ERelations::Friendly) {
-					ai->CommandAttach(targetCore);
+					ai->OnCommandAttach.Broadcast(targetCore);
 				}
 				else if (rel == ERelations::Hostile) {
-					ai->CommandAttack(targetCore);
+					ai->OnCommandAttack.Broadcast(targetCore);
 				}
 				else {
-					ai->CommandObject(targetCore);
+					ai->OnCommandObject.Broadcast(targetCore);
 				}
 			}
 			else {
-				ai->CommandObject(targetCore);
+				ai->OnCommandObject.Broadcast(targetCore);
 			}
 		}
 	}

@@ -4,7 +4,10 @@
 
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "AIDefaultComponent.h"
 
+#define __SELECTION__ 			1
+#define __SELECTION_PREVIEW__ 	2
 
 void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer) {
 	Super::Initialize(Initializer);
@@ -78,3 +81,26 @@ void UAIDefaultComponent::Detach() {
 UGameObjectCore *UAIDefaultComponent::GetCurrentAttachCore() {
 	return CurrentAttachCore;
 }
+
+void UAIDefaultComponent::SetSelectionPreview(bool isSelected) {
+	selection = isSelected 
+		? selection | __SELECTION_PREVIEW__ 
+		: selection & !__SELECTION_PREVIEW__;
+	OnSelectionChanging.Broadcast();
+}
+
+void UAIDefaultComponent::SetSelection(bool isSelected) {
+	selection = isSelected 
+		? selection | __SELECTION__ 
+		: selection & !__SELECTION__;
+	OnSelectionChanging.Broadcast();
+}
+
+void UAIDefaultComponent::GetSelection(bool &isSelected, bool &isPreview) {
+	isSelected = selection & __SELECTION__;
+	isPreview = selection & __SELECTION_PREVIEW__;
+}
+
+
+#undef __SELECTION__
+#undef __SELECTION_PREVIEW__

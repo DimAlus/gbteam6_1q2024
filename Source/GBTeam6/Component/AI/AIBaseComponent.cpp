@@ -50,23 +50,11 @@ const TMap<ESkillSlot, FSkill>& UAIBaseComponent::GetOverridedSkillsForAttachers
 	return skills;
 }
 
-void UAIBaseComponent::SetSelectionPreview_Implementation(bool isSelected) {
+void UAIBaseComponent::SetSelectionPreview(bool isSelected) {
 }
 
-void UAIBaseComponent::SetSelection_Implementation(bool isSelected) {
+void UAIBaseComponent::SetSelection(bool isSelected) {
 }
 
-void UAIBaseComponent::CommandMove_Implementation(FVector location) {
-}
-
-void UAIBaseComponent::CommandObject_Implementation(UGameObjectCore* core) {
-}
-
-void UAIBaseComponent::CommandAttack_Implementation(UGameObjectCore* core) {
-}
-
-void UAIBaseComponent::CommandAttach_Implementation(UGameObjectCore* core) {
-}
-
-void UAIBaseComponent::TryCastSkill_Implementation(ESkillSlot slot, FVector location, UGameObjectCore* target) {
+void UAIBaseComponent::GetSelection(bool &isSelected, bool &isPreview) {
 }

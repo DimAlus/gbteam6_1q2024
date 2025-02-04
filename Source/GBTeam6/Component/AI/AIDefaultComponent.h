@@ -29,6 +29,8 @@ protected:
 	UGameObjectCore* CurrentAttachCore;
 
 	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
+
+	char selection;
 public:
 
 	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };
@@ -42,5 +44,9 @@ public:
 	virtual void Detach() override;
 	virtual UGameObjectCore* GetCurrentAttachCore() override;
 	FORCEINLINE virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers() override { return OverridedSkillsForAttachers; };
+
+	virtual void SetSelectionPreview(bool isSelected);
+	virtual void SetSelection(bool isSelected);
+	virtual void GetSelection(bool& isSelected, bool& isPreview);
 };
 
