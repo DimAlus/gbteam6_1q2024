@@ -1,7 +1,9 @@
 #include "./AIDefaultComponent.h"
 
-#include "GBTeam/Component/Social/SocialBaseComponent.h"
-#include "GBTeam/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 
 
 void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer) {
@@ -25,12 +27,12 @@ const TSet<UGameObjectCore*> &UAIDefaultComponent::GetAttachedCores() {
 	return AttachedCores;
 }
 
-bool UAIDefaultComponent::CanAttachMe(UGameObjectCore *core) {
+bool UAIDefaultComponent::CanAttachMe(UGameObjectCore* core) {
 	if (AttachedCores.Num() >= AttachedCount || AttachedCores.Contains(core)) {
 		return false;
 	}
 	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		return social->GetSocialTags().Interset(AttachedTags).Num() == AttachedTags.Num();
+		return TSet(social->GetSocialTags()).Intersect(AttachedTags).Num() == AttachedTags.Num();
 	}
 	return false;
 }
@@ -63,8 +65,8 @@ bool UAIDefaultComponent::AttachTo(UGameObjectCore *core) {
 
 void UAIDefaultComponent::Detach() {
 	if (IsValid(CurrentAttachCore)) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->DetachMe(GetCore())
+		if (auto ai = Cast<UAIBaseComponent>(CurrentAttachCore->GetComponent(EGameComponentType::AI))) {
+			ai->DetachMe(GetCore());
 		}
 	}
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(GetCore()->GetComponent(EGameComponentType::SkillHeaver))) {

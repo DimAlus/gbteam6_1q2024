@@ -419,7 +419,7 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 		skillheaver->LoadComponent(objectSaveData.SkillHeaverData);
 	}
 	if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-		ai->LoadComponent(objectsSaveData.AIData);
+		ai->LoadComponent(objectSaveData.AIData);
 	}
 }
 

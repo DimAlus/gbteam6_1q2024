@@ -48,30 +48,37 @@ public:
 	virtual UGameObjectCore* GetCurrentAttachCore();
 
 	UFUNCTION(BlueprintCallable)
-	const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers();
+	virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers();
 public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void SetSelectionPreview(bool isSelected);
+	void SetSelectionPreview(bool isSelected);
+	virtual void SetSelectionPreview_Implementation(bool isSelected);
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void SetSelection(bool isSelected);
-
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void CommandMove(FVector location);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void CommandObject(UGameObjectCore* core);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void CommandAttack(UGameObjectCore* core);
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void CommandAttach(UGameObjectCore* core);
+	void SetSelection(bool isSelected);
+	virtual void SetSelection_Implementation(bool isSelected);
 
 
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-	virtual void TryCastSkill(ESkillSlot slot, FVector location, UGameObjectCore* target);
+	void CommandMove(FVector location);
+	virtual void CommandMove_Implementation(FVector location);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CommandObject(UGameObjectCore* core);
+	virtual void CommandObject_Implementation(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CommandAttack(UGameObjectCore* core);
+	virtual void CommandAttack_Implementation(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void CommandAttach(UGameObjectCore* core);
+	virtual void CommandAttach_Implementation(UGameObjectCore* core);
+
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void TryCastSkill(ESkillSlot slot, FVector location, UGameObjectCore* target);
+	virtual void TryCastSkill_Implementation(ESkillSlot slot, FVector location, UGameObjectCore* target);
 
 
 };

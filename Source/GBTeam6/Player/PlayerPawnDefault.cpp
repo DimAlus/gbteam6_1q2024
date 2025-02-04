@@ -161,20 +161,20 @@ void APlayerPawnDefault::SelectStart(const FInputActionValue& Value) {
 }
 
 void APlayerPawnDefault::SelectUpdate(const FInputActionValue& Value) {
-	const TMap<ESocialTeam, int> teamSelectionPriority = {
+	static TMap<ESocialTeam, int> teamSelectionPriority = {
 		{ ESocialTeam::None, -1 },
 		{ ESocialTeam::Neutral, 0 },
 		{ ESocialTeam::Friendly, 1 },
 		{ ESocialTeam::Hostile, 0 },
-	}
-	const float ableError = 20.f;
+	};
+	static float ableError = 20.f;
 
 	if (!IsSelectionMode) {
 		return;
 	}
 
 	FVector2D StartLocation;
-	float mouseX, mouseY;
+	double mouseX, mouseY;
 	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
 	PlayerController->GetMousePosition(mouseX, mouseY);
 
@@ -229,7 +229,7 @@ void APlayerPawnDefault::SelectUpdate(const FInputActionValue& Value) {
 			}
 		}
 	}
-	SelectedCoresTemp = selection.ToArray();
+	SelectedCoresTemp = selection.Array();
 	for (const auto& core : SelectedCoresTemp) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelectionPreview(true);
@@ -250,7 +250,7 @@ void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
 					GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
 					bool _;
 					TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-						skillHeaver->GetSkillData(SelectedSkill, _).ProjectilesData[0].TargetFinder,
+						skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
 						CurrentSelectedCore,
 						Hit.Location,
 						{},
@@ -300,7 +300,7 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
 	UGameObjectCore* targetCore = nullptr;
-	USocialService* socialService = GetGameInstanceDefault()->GetSocailService();
+	USocialService* socialService = GetGameInstanceDefault()->GetSocialService();
 	ESocialTeam targetSocialTeam = ESocialTeam::None;
 	
 	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
@@ -316,11 +316,11 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 				ai->CommandMove(Hit.Location);
 			}
 			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-				ERelations rel = GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
+				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
 				if (rel == ERelations::Friendly) {
 					ai->CommandAttach(targetCore);
 				}
-				else if (rel == ERelations::Enemy) {
+				else if (rel == ERelations::Hostile) {
 					ai->CommandAttack(targetCore);
 				}
 				else {
@@ -335,7 +335,7 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 }
 
 void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
-	int inputValue = Value.Get<int>();
+	int inputValue = (int)Value.Get<float>();
 	ESkillSlot slot =
 			inputValue == 0 ? ESkillSlot::Auto
 		:	inputValue == 1 ? ESkillSlot::Skill1
@@ -358,7 +358,7 @@ void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
 }
 
 void APlayerPawnDefault::SelectionSkillCancel() {
-	if (slot == ESkillSlot::None) {
+	if (SelectedSkill == ESkillSlot::None) {
 		return;
 	}
 	SelectedSkill = ESkillSlot::None;

@@ -19,8 +19,8 @@ int UAIBaseComponent::GetSelectionPriority() {
 }
 
 const TSet<UGameObjectCore*>& UAIBaseComponent::GetAttachedCores() {
-	const TSet<UGameObjectCore*> cores;
-	return cores;
+	static TSet<UGameObjectCore*> coresNone;
+	return coresNone;
 }
 
 bool UAIBaseComponent::CanAttachMe(UGameObjectCore *core) {
@@ -48,4 +48,25 @@ UGameObjectCore *UAIBaseComponent::GetCurrentAttachCore() {
 const TMap<ESkillSlot, FSkill>& UAIBaseComponent::GetOverridedSkillsForAttachers() {
 	static TMap<ESkillSlot, FSkill> skills;
 	return skills;
+}
+
+void UAIBaseComponent::SetSelectionPreview_Implementation(bool isSelected) {
+}
+
+void UAIBaseComponent::SetSelection_Implementation(bool isSelected) {
+}
+
+void UAIBaseComponent::CommandMove_Implementation(FVector location) {
+}
+
+void UAIBaseComponent::CommandObject_Implementation(UGameObjectCore* core) {
+}
+
+void UAIBaseComponent::CommandAttack_Implementation(UGameObjectCore* core) {
+}
+
+void UAIBaseComponent::CommandAttach_Implementation(UGameObjectCore* core) {
+}
+
+void UAIBaseComponent::TryCastSkill_Implementation(ESkillSlot slot, FVector location, UGameObjectCore* target) {
 }

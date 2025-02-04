@@ -31,8 +31,8 @@ protected:
 	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
 public:
 
-	FORCEINLINE virtual bool GetIsSelectable() override const { return bIsSelectable; };
-	FORCEINLINE virtual int GetSelectionPriority() override const { return selectionPriority; };
+	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };
+	FORCEINLINE virtual int GetSelectionPriority() override { return selectionPriority; };
 
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores() override;
 	virtual bool CanAttachMe(UGameObjectCore* core) override;
@@ -41,6 +41,6 @@ public:
 	virtual bool AttachTo(UGameObjectCore* core) override;
 	virtual void Detach() override;
 	virtual UGameObjectCore* GetCurrentAttachCore() override;
-	FORCEINLINE virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers() override const { return OverridedSkillsForAttachers; };
+	FORCEINLINE virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers() override { return OverridedSkillsForAttachers; };
 };
 
