@@ -351,3 +351,13 @@ enum class ETaskFinderType : uint8 {
 	Delivery		UMETA(DisplayName = "Delivery"),
 	Work			UMETA(DisplayName = "Work"),
 };
+
+
+UENUM(BlueprintType)
+enum class EControlMode : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Default			UMETA(DisplayName = "Default"),
+	Building		UMETA(DisplayName = "Building"),
+	SkillApplying	UMETA(DisplayName = "SkillApplying"),
+	Selection		UMETA(DisplayName = "Selection"),
+};

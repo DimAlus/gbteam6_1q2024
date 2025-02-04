@@ -1,4 +1,5 @@
 #include "PlayerPawnDefault.h"
+#include <map>
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "EnhancedInputComponent.h"
@@ -16,6 +17,7 @@
 #include "GBTeam6/Service/MessageService.h"
 #include "GBTeam6/Service/TimerService.h"
 #include "GBTeam6/Service/SocialService.h"
+#include "GBTeam6/Service/MappingService.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -73,6 +75,10 @@ void APlayerPawnDefault::Tick(float DeltaTime) {
 	LastDeltaTime = DeltaTime;
 	UpdateCamera(DeltaTime);
 	UpdateTimeDilation();
+
+	if (ControlMode == EControlMode::Building) {
+		UpdateBuildingLocation();
+	}
 }
 
 UGameInstanceDefault *APlayerPawnDefault::GetGameInstanceDefault() {
@@ -151,187 +157,52 @@ void APlayerPawnDefault::GetHitUnderMouseCursor(FHitResult& HitResult, ECollisio
 
 
 void APlayerPawnDefault::SelectStart(const FInputActionValue& Value) {
-	if (SelectedSkill == ESkillSlot::None) {
-		return;
-	}
-	IsSelectionMode = true;
-	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
-	SelectionStartLocation = Hit.Location;
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::SelectStartDefault },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectStartDefault },
+		{ EControlMode::Building, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::DoNothing },
+	};
+
+	(this->*(funcs[ControlMode]))();
 }
 
 void APlayerPawnDefault::SelectUpdate(const FInputActionValue& Value) {
-	static TMap<ESocialTeam, int> teamSelectionPriority = {
-		{ ESocialTeam::None, -1 },
-		{ ESocialTeam::Neutral, 0 },
-		{ ESocialTeam::Friendly, 1 },
-		{ ESocialTeam::Hostile, 0 },
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectStartSelection },
+		{ EControlMode::Building, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::DoNothing },
 	};
-	static float ableError = 20.f;
 
-	if (!IsSelectionMode) {
-		return;
-	}
-
-	FVector2D StartLocation;
-	double mouseX, mouseY;
-	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
-	PlayerController->GetMousePosition(mouseX, mouseY);
-
-	FVector2D minLocation = { std::min(mouseX, StartLocation.X) - ableError, std::min(mouseY, StartLocation.Y) - ableError };
-	FVector2D maxLocation = { std::max(mouseX, StartLocation.X) + ableError, std::max(mouseY, StartLocation.Y) + ableError };
-
-
-	TSet<UGameObjectCore*> selection;
-	const TSet<UGameObjectCore*>& cores = GetGameInstanceDefault()->GetSocialService()
-											->GetObjectsByTags({ ESocialTag::Selectable }, {});
-	int currentSelectionTeamPriority = -1;
-	int currentSelectionPriority = -1;
-	for (const auto& core : cores) {
-		if (!IsValid(core) || !IsValid(core->GetOwner())) {
-			continue;
-		}
-		FVector2D loc;
-		PlayerController->ProjectWorldLocationToScreen(core->GetOwner()->GetActorLocation(), loc);
-		if (loc.X != std::clamp(loc.X, minLocation.X, maxLocation.X)
-		||  loc.Y != std::clamp(loc.Y, minLocation.Y, maxLocation.Y)) {
-			continue;
-		}
-		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
-		auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI));
-
-		if (!social || !ai) {
-			continue;
-		}
-
-		int priorityTeam = teamSelectionPriority[social->GetSocialTeam()];
-		if (priorityTeam < currentSelectionTeamPriority) {
-			continue;
-		}
-		else if (priorityTeam > currentSelectionTeamPriority) {
-			currentSelectionTeamPriority = priorityTeam;
-			currentSelectionPriority = ai->GetSelectionPriority();
-			selection = { core };
-		}
-		else if (currentSelectionPriority < ai->GetSelectionPriority()) {
-			currentSelectionPriority = ai->GetSelectionPriority();
-			selection = { core };
-		}
-		else {
-			selection.Add(core);
-		}
-	}
-
-	for (const auto& core : SelectedCoresTemp) {
-		if (!selection.Contains(core)) {
-			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-				ai->SetSelectionPreview(false);
-			}
-		}
-	}
-	SelectedCoresTemp = selection.Array();
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(true);
-		}
-	}
+	(this->*(funcs[ControlMode]))();
 }
 
 void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
-	if (SelectedSkill != ESkillSlot::None) {
-		if (!IsValid(CurrentSelectedCore)) {
-			SelectionSkillCancel();
-			return;
-		}
-		if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
-			if (skillHeaver->CanCastSkill(SelectedSkill)) {
-				if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
-					FHitResult Hit;
-					GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
-					bool _;
-					TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-						skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
-						CurrentSelectedCore,
-						Hit.Location,
-						{},
-						{},
-						{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
-						  { ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
-					);
-
-					ai->TryCastSkill(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
-				}
-				OnSkillApply.Broadcast();
-			}
-			else {
-				OnSkillCancel.Broadcast();
-			}
-			SelectedSkill = ESkillSlot::None;
-		}
-		return;
-	}
-	if (!IsSelectionMode) {
-		return;
-	}
-	SetSelectedCores(SelectedCoresTemp);
-}
-
-void APlayerPawnDefault::CancelSelectProcess() {
-	IsSelectionMode = false;
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(false);
-		}
-	}
-	SelectedCoresTemp.Empty();
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectStartSelection },
+		{ EControlMode::Building, 		&APlayerPawnDefault::SelectCompleteBuilding },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::SelectCompleteSkillApplying },
+	};
+	
+	(this->*(funcs[ControlMode]))();
 }
 
 
 void APlayerPawnDefault::Command(const FInputActionValue& Value) {
-	if (IsSelectionMode) {
-		CancelSelectProcess();
-		return;
-	}
-	if (SelectedSkill != ESkillSlot::None) {
-		SelectionSkillCancel();
-		return;
-	}
-
-	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
-	UGameObjectCore* targetCore = nullptr;
-	USocialService* socialService = GetGameInstanceDefault()->GetSocialService();
-	ESocialTeam targetSocialTeam = ESocialTeam::None;
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::CommandDefault },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SetDefaultMode },
+		{ EControlMode::Building, 		&APlayerPawnDefault::SetDefaultMode },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::SetDefaultMode },
+	};
 	
-	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
-		targetCore = ObjectInterface->GetCore_Implementation();
-		if (auto social = Cast<USocialBaseComponent>(targetCore->GetComponent(EGameComponentType::Social))) {
-			targetSocialTeam = social->GetSocialTeam();
-		}
-	}
-	
-	for (const auto& core : SelectedCores) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			if (!targetCore) {
-				ai->CommandMove(Hit.Location);
-			}
-			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
-				if (rel == ERelations::Friendly) {
-					ai->CommandAttach(targetCore);
-				}
-				else if (rel == ERelations::Hostile) {
-					ai->CommandAttack(targetCore);
-				}
-				else {
-					ai->CommandObject(targetCore);
-				}
-			}
-			else {
-				ai->CommandObject(targetCore);
-			}
-		}
-	}
+	(this->*(funcs[ControlMode]))();
 }
 
 void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
@@ -343,52 +214,6 @@ void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
 		:	inputValue == 3 ? ESkillSlot::Skill3
 		:	ESkillSlot::None;
 	TrySelectSkill(slot);
-}
-
-void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
-	if (!IsValid(CurrentSelectedCore) || slot == ESkillSlot::None) {
-		return;
-	}
-	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
-		if (skillHeaver->CanCastSkill(slot)) {
-			SelectedSkill = slot;
-			OnSkillSelect.Broadcast();
-		}
-	}
-}
-
-void APlayerPawnDefault::SelectionSkillCancel() {
-	if (SelectedSkill == ESkillSlot::None) {
-		return;
-	}
-	SelectedSkill = ESkillSlot::None;
-	OnSkillCancel.Broadcast();
-}
-
-void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
-	if (SelectedCores.Contains(core)) {
-		SelectionSkillCancel();
-		CurrentSelectedCore = core;
-	}
-}
-
-void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
-	SelectionSkillCancel();
-
-	for (const auto& core : SelectedCores) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelection(false);
-		}
-	}
-	SelectedCores = cores;
-	CancelSelectProcess();
-	for (const auto& core : SelectedCores) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelection(true);
-		}
-	}
-	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
-	OnSelectionChanging.Broadcast();
 }
 
 
@@ -461,6 +286,289 @@ void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
 		}
 		SetGameSpeed(speed);
 	}
+}
+
+
+void APlayerPawnDefault::DoNothing() {
+}
+
+void APlayerPawnDefault::SelectStartDefault() {
+	ControlMode = EControlMode::Selection;
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	SelectionStartLocation = Hit.Location;
+}
+
+void APlayerPawnDefault::SelectUpdateSelection() {
+	static TMap<ESocialTeam, int> teamSelectionPriority = {
+		{ ESocialTeam::None, -1 },
+		{ ESocialTeam::Neutral, 0 },
+		{ ESocialTeam::Friendly, 1 },
+		{ ESocialTeam::Hostile, 0 },
+	};
+	static float ableError = 20.f;
+
+	FVector2D StartLocation;
+	double mouseX, mouseY;
+	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
+	PlayerController->GetMousePosition(mouseX, mouseY);
+
+	FVector2D minLocation = { std::min(mouseX, StartLocation.X) - ableError, std::min(mouseY, StartLocation.Y) - ableError };
+	FVector2D maxLocation = { std::max(mouseX, StartLocation.X) + ableError, std::max(mouseY, StartLocation.Y) + ableError };
+
+
+	TSet<UGameObjectCore*> selection;
+	const TSet<UGameObjectCore*>& cores = GetGameInstanceDefault()->GetSocialService()
+											->GetObjectsByTags({ ESocialTag::Selectable }, {});
+	int currentSelectionTeamPriority = -1;
+	int currentSelectionPriority = -1;
+	for (const auto& core : cores) {
+		if (!IsValid(core) || !IsValid(core->GetOwner())) {
+			continue;
+		}
+		FVector2D loc;
+		PlayerController->ProjectWorldLocationToScreen(core->GetOwner()->GetActorLocation(), loc);
+		if (loc.X != std::clamp(loc.X, minLocation.X, maxLocation.X)
+		||  loc.Y != std::clamp(loc.Y, minLocation.Y, maxLocation.Y)) {
+			continue;
+		}
+		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
+		auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI));
+
+		if (!social || !ai) {
+			continue;
+		}
+
+		int priorityTeam = teamSelectionPriority[social->GetSocialTeam()];
+		if (priorityTeam < currentSelectionTeamPriority) {
+			continue;
+		}
+		else if (priorityTeam > currentSelectionTeamPriority) {
+			currentSelectionTeamPriority = priorityTeam;
+			currentSelectionPriority = ai->GetSelectionPriority();
+			selection = { core };
+		}
+		else if (currentSelectionPriority < ai->GetSelectionPriority()) {
+			currentSelectionPriority = ai->GetSelectionPriority();
+			selection = { core };
+		}
+		else {
+			selection.Add(core);
+		}
+	}
+
+	for (const auto& core : SelectedCoresTemp) {
+		if (!selection.Contains(core)) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->SetSelectionPreview(false);
+			}
+		}
+	}
+	SelectedCoresTemp = selection.Array();
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(true);
+		}
+	}
+}
+
+void APlayerPawnDefault::SelectCompleteSelection() {
+	SetSelectedCores(SelectedCoresTemp);
+	ControlMode = EControlMode::Default;
+}
+
+void APlayerPawnDefault::SelectCompleteBuilding() {
+	ControlMode = EControlMode::Default;
+	GetGameInstanceDefault()->GetMappingService()->InstallLocatedCore();
+}
+
+void APlayerPawnDefault::SelectCompleteSkillApplying() {
+	if (!IsValid(CurrentSelectedCore)) {
+		SetDefaultMode();
+		return;
+	}
+	ControlMode = EControlMode::Default;
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		if (skillHeaver->CanCastSkill(SelectedSkill)) {
+			if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
+				FHitResult Hit;
+				GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+				bool _;
+				TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+					skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
+					CurrentSelectedCore,
+					Hit.Location,
+					{},
+					{},
+					{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
+						{ ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
+				);
+
+				ai->TryCastSkill(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
+			}
+			OnSkillApply.Broadcast();
+		}
+		else {
+			OnSkillCancel.Broadcast();
+		}
+		SelectedSkill = ESkillSlot::None;
+	}
+}
+
+void APlayerPawnDefault::CommandDefault() {
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	UGameObjectCore* targetCore = nullptr;
+	USocialService* socialService = GetGameInstanceDefault()->GetSocialService();
+	ESocialTeam targetSocialTeam = ESocialTeam::None;
+	
+	if (auto ObjectInterface = Cast<IGameObjectInterface>(Hit.GetActor())) {
+		targetCore = ObjectInterface->GetCore_Implementation();
+		if (auto social = Cast<USocialBaseComponent>(targetCore->GetComponent(EGameComponentType::Social))) {
+			targetSocialTeam = social->GetSocialTeam();
+		}
+	}
+	
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			if (!targetCore) {
+				ai->CommandMove(Hit.Location);
+			}
+			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
+				if (rel == ERelations::Friendly) {
+					ai->CommandAttach(targetCore);
+				}
+				else if (rel == ERelations::Hostile) {
+					ai->CommandAttack(targetCore);
+				}
+				else {
+					ai->CommandObject(targetCore);
+				}
+			}
+			else {
+				ai->CommandObject(targetCore);
+			}
+		}
+	}
+}
+
+
+void APlayerPawnDefault::SetDefaultMode() {
+	switch (ControlMode)
+	{
+	case EControlMode::Selection:
+		CancelSelectProcess();
+		break;
+	case EControlMode::SkillApplying:
+		SelectionSkillCancel();
+		break;
+	case EControlMode::Building:
+		BuildingCancel();
+		break;
+	case EControlMode::None:
+		ControlMode = EControlMode::Default;
+		break;
+	default:
+		break;
+	}
+}
+
+void APlayerPawnDefault::CancelSelectProcess() {
+	if (ControlMode != EControlMode::Selection) {
+		return;
+	}
+	ControlMode = EControlMode::Default;
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(false);
+		}
+	}
+	SelectedCoresTemp.Empty();
+}
+
+void APlayerPawnDefault::SelectionSkillCancel() {
+	if (ControlMode != EControlMode::SkillApplying) {
+		return;
+	}
+	ControlMode = EControlMode::Default;
+	SelectedSkill = ESkillSlot::None;
+	OnSkillCancel.Broadcast();
+}
+
+void APlayerPawnDefault::BuildingCancel() {
+	if (ControlMode != EControlMode::Building) {
+		return;
+	}
+	UGameObjectCore* core = GetGameInstanceDefault()->GetMappingService()->GetLocatedCore();
+	GetGameInstanceDefault()->GetMappingService()->SetLocatedCore(nullptr);
+	if (IsValid(core)) {
+		core->GetOwner()->Destroy();
+	}
+	ControlMode = EControlMode::Default;
+}
+
+void APlayerPawnDefault::UpdateBuildingLocation() {
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	GetGameInstanceDefault()->GetMappingService()->SetLocatedCoreLocation(Hit.Location);
+}
+
+void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
+	if (!IsValid(CurrentSelectedCore) 
+		|| slot == ESkillSlot::None 
+		|| ControlMode != EControlMode::Default) {
+		return;
+	}
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		if (skillHeaver->CanCastSkill(slot)) {
+			ControlMode = EControlMode::SkillApplying;
+			SelectedSkill = slot;
+			OnSkillSelect.Broadcast();
+		}
+	}
+}
+
+
+void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
+	if (SelectedCores.Contains(core)) {
+		SetDefaultMode();
+		SelectionSkillCancel();
+		CurrentSelectedCore = core;
+	}
+}
+
+void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
+	SetDefaultMode();
+
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelection(false);
+		}
+	}
+	SelectedCores = cores;
+	CancelSelectProcess();
+	for (const auto& core : SelectedCores) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelection(true);
+		}
+	}
+	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
+	OnSelectionChanging.Broadcast();
+}
+
+void APlayerPawnDefault::SetBuildingConstruction(TSubclass<AActor> buildingClass) {
+	SetDefaultMode();
+	AActor* act = GetWorld()->SpawnActor<AActor>(Action.SpawnClass, ActionContext.SelectedLocation + RandVec, rot, par);
+	if (!IsValid(act)) {
+		return;
+	}
+	if (auto go = Cast<IGameObjectInterface>(act)) {
+		UGameObjectCore* core = go->GetCore_Implementation();
+		GetGameInstanceDefault()->GetMappingService()->SetLocatedCore(core);
+		ControlMode = EControlMode::Building;
+	}
+	
 }
 
 void APlayerPawnDefault::UpdateGameSpeed() {

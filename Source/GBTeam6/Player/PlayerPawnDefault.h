@@ -84,6 +84,9 @@ protected:
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
+	EControlMode ControlMode{ EControlMode::Default }
+
+	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* CurrentSelectedCore = nullptr;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -91,9 +94,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	TArray<UGameObjectCore*> SelectedCoresTemp;
-
-	UPROPERTY(BlueprintReadOnly)
-	bool IsSelectionMode = false;
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector SelectionStartLocation;
@@ -107,20 +107,11 @@ protected:
 	void SelectStart(const FInputActionValue& Value);
 	void SelectUpdate(const FInputActionValue& Value);
 	void SelectComplete(const FInputActionValue& Value);
-	void CancelSelectProcess();
 
 	/** Command object function*/
 	void Command(const FInputActionValue& Value);
 
 	void SelectSkillAction(const FInputActionValue& Value);
-	void TrySelectSkill(ESkillSlot slot);
-	void SelectionSkillCancel();
-
-	UFUNCTION(BlueprintCallable)
-	void SetCurrentSelectedCore(UGameObjectCore* core);
-
-	UFUNCTION(BlueprintCallable)
-	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
 
 	void QuickSave(const FInputActionValue& Value);
 	void QuickLoad(const FInputActionValue& Value);
@@ -146,6 +137,37 @@ protected:
 	
 	/** Change game speed input functions */
 	void SetGameSpeedInput(const FInputActionValue& Value);
+
+/**************** Input Actions Processing ****************/
+protected:
+	void DoNothing();
+	
+	void SelectStartDefault();
+	void SelectUpdateSelection();
+	void SelectCompleteSelection();
+	void SelectCompleteBuilding();
+	void SelectCompleteSkillApplying();
+	void CommandDefault();
+
+protected:
+	void SetDefaultMode();
+	void CancelSelectProcess();
+	void SelectionSkillCancel();
+	void BuildingCancel();
+	void UpdateBuildingLocation();
+	
+	UFUNCTION(BlueprintCallable)
+	void TrySelectSkill(ESkillSlot slot);
+
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentSelectedCore(UGameObjectCore* core);
+
+	UFUNCTION(BlueprintCallable)
+	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
+
+	UFUNCTION(BlueprintCallable)
+	void SetBuildingConstruction(TSubclass<AActor> buildingClass);
+	
 
 	/** Change game speed main function */
 	void UpdateGameSpeed();
