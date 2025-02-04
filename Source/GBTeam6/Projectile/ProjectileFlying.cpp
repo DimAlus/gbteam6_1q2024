@@ -82,7 +82,7 @@ FVector AProjectileFlying::GetCurrentSpeed(float deltaTime) {
 	FVector direction = targetLocation - currentLocation;
 	float distance = (direction * FVector(1, 1, 0)).Length();
 	float time = distance / Speed;
-	float zSpeed = direction.Z + 980 * Gravity * time * time / 2;
+	float zSpeed = direction.Z / time + 980 * Gravity * time / 2;
 
 	direction *= FVector(1, 1, 0);
 	direction.Normalize();
@@ -167,7 +167,8 @@ void AProjectileFlying::ApplyEffects() {
 			{},
 			{},
 			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },
-			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, }
+			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, },
+			false
 		);
 	}
 	else {

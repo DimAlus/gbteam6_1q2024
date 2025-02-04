@@ -275,8 +275,9 @@ TArray<UGameObjectCore*> USocialService::FindTargetsByCenterCore(FString targetF
 																UGameObjectCore* centerCore,
 																const TMap<UGameObjectCore*, int>& priorityTargets,
 																const TSet<UGameObjectCore*>& ignoreTargets,
-																const TArray<FTargetFilter>& overrideFilters) {
-	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets, ignoreTargets, overrideFilters);
+																const TArray<FTargetFilter>& overrideFilters,
+																bool hasCountConstraints) {
+	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets, ignoreTargets, overrideFilters, hasCountConstraints);
 }
 
 TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
@@ -284,7 +285,8 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 													FVector centerLocation,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
 													const TSet<UGameObjectCore*>& ignoreTargets,
-													const TArray<FTargetFilter>& overrideFilters) {
+													const TArray<FTargetFilter>& overrideFilters,
+													bool hasCountConstraints) {
 	const FTargetFinder& finder = GetFinder(targetFinder);
 
 	if (finder.Count <= 0) {
@@ -330,7 +332,7 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 				targets.AddTail({ val, obj });
 			}
 
-			if (targets.Num() > finder.Count) {
+			if (hasCountConstraints && targets.Num() > finder.Count) {
 				targets.RemoveNode(targets.GetTail());
 			}
 			
