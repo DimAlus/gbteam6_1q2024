@@ -84,7 +84,7 @@ protected:
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
-	EControlMode ControlMode{ EControlMode::Default }
+	EControlMode ControlMode{ EControlMode::Default };
 
 	UPROPERTY(BlueprintReadOnly)
 	UGameObjectCore* CurrentSelectedCore = nullptr;
@@ -166,7 +166,7 @@ protected:
 	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
 
 	UFUNCTION(BlueprintCallable)
-	void SetBuildingConstruction(TSubclass<AActor> buildingClass);
+	void SetBuildingConstruction(TSubclassOf<AActor> buildingClass);
 	
 
 	/** Change game speed main function */

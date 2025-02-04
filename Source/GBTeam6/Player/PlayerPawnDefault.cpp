@@ -172,7 +172,7 @@ void APlayerPawnDefault::SelectUpdate(const FInputActionValue& Value) {
 	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
 		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
 		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
-		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectStartSelection },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectUpdateSelection },
 		{ EControlMode::Building, 		&APlayerPawnDefault::DoNothing },
 		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::DoNothing },
 	};
@@ -184,7 +184,7 @@ void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
 	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
 		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
 		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
-		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectStartSelection },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::SelectCompleteSelection },
 		{ EControlMode::Building, 		&APlayerPawnDefault::SelectCompleteBuilding },
 		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::SelectCompleteSkillApplying },
 	};
@@ -427,7 +427,11 @@ void APlayerPawnDefault::CommandDefault() {
 		if (auto social = Cast<USocialBaseComponent>(targetCore->GetComponent(EGameComponentType::Social))) {
 			targetSocialTeam = social->GetSocialTeam();
 		}
+		if (auto ai = Cast<UAIBaseComponent>(targetCore->GetComponent(EGameComponentType::AI))) {
+			ai->OnSelectionTouch.Broadcast();
+		}
 	}
+	
 	
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
@@ -539,15 +543,13 @@ void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 }
 
 void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
-	SetDefaultMode();
-
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(false);
 		}
 	}
 	SelectedCores = cores;
-	CancelSelectProcess();
+	SetDefaultMode();
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(true);
@@ -557,9 +559,9 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 	OnSelectionChanging.Broadcast();
 }
 
-void APlayerPawnDefault::SetBuildingConstruction(TSubclass<AActor> buildingClass) {
+void APlayerPawnDefault::SetBuildingConstruction(TSubclassOf<AActor> buildingClass) {
 	SetDefaultMode();
-	AActor* act = GetWorld()->SpawnActor<AActor>(Action.SpawnClass, ActionContext.SelectedLocation + RandVec, rot, par);
+	AActor* act = GetWorld()->SpawnActor<AActor>(buildingClass);
 	if (!IsValid(act)) {
 		return;
 	}

@@ -10,6 +10,10 @@ void UAIBaseComponent::SaveComponent(FAISaveData& saveData) {
 void UAIBaseComponent::LoadComponent(const FAISaveData& saveData) {
 }
 
+float UAIBaseComponent::GetSpeed() {
+	return 0.0f;
+}
+
 bool UAIBaseComponent::GetIsSelectable() {
 	return false;
 }

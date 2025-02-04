@@ -21,6 +21,8 @@ protected:
 	bool bIsSelectable;
 	int selectionPriority;
 
+	float speedDefault;
+	float speedMultiplier = 1.f;
 
 	int AttachedCount;
 	TSet<ESocialTag> AttachedTags;
@@ -32,7 +34,7 @@ protected:
 
 	char selection;
 public:
-
+	FORCEINLINE virtual float GetSpeed() override { return speedMultiplier * speedDefault; };
 	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };
 	FORCEINLINE virtual int GetSelectionPriority() override { return selectionPriority; };
 

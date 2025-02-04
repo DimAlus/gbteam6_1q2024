@@ -16,6 +16,7 @@ void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer)
 	AttachedCount = Initializer.AttachedCount;
 	AttachedTags = Initializer.AttachedTags;
 	OverridedSkillsForAttachers = Initializer.OverridedSkillsForAttachers;
+	speedDefault = Initializer.DefaultSpeed;
 }
 
 void UAIDefaultComponent::SaveComponent(FAISaveData& saveData) {

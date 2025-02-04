@@ -363,6 +363,9 @@ struct FAIComponentInitializer {
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float DefaultSpeed{ 200.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsSelectable{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

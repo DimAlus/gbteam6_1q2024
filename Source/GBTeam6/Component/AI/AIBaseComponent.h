@@ -25,6 +25,12 @@ public:
 	FTouchSignature OnSelectionChanging;
 
 	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSelectionTouch;
+
+	UPROPERTY(BlueprintAssignable)
+	FFloatSignature OnSpeedChanging;
+
+	UPROPERTY(BlueprintAssignable)
 	FVectorSignature OnCommandMove;
 
 	UPROPERTY(BlueprintAssignable)
@@ -40,6 +46,9 @@ public:
 	FSkillVectorCoreSignature OnTryCastSkill;
 
 public:
+	UFUNCTION(BlueprintCallable)
+	virtual float GetSpeed();
+
 	UFUNCTION(BlueprintCallable)
 	virtual bool GetIsSelectable();
 
