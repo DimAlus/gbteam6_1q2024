@@ -104,6 +104,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
 	UInputAction* RotateBuildingAction {nullptr};
 
+	/** Set game roatate building action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+	UInputAction* RotateBuildingSlowlyAction {nullptr};
+
 
 	/** Set game  quick save action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)

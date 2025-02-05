@@ -128,6 +128,12 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		// Skill action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SelectSkillAction);
+
+		// Building action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.RotateBuildingAction, ETriggerEvent::Completed, this,
+			&APlayerPawnDefault::RotateBuilding);
+		EnhancedInputComponent->BindAction(PlayerInputAction.RotateBuildingSlowlyAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::RotateBuildingSlowly);
 		
 		// Set game speed action binding
 		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
@@ -225,6 +231,17 @@ void APlayerPawnDefault::QuickLoad(const FInputActionValue& Value) {
 	OnQuickLoad.Broadcast();
 }
 
+void APlayerPawnDefault::RotateBuilding(const FInputActionValue &Value) {
+	int inputValue = (int)Value.Get<float>();
+	GetGameInstanceDefault()->GetMappingService()->AddLocatedCoreRotation(inputValue);
+}
+
+void APlayerPawnDefault::RotateBuildingSlowly(const FInputActionValue &Value) {
+	float inputValue = Value.Get<float>();
+	GetGameInstanceDefault()->GetMappingService()->AddLocatedCoreRotationSlowly(
+		inputValue * BuildingRotationMultiplier * LastDeltaTime
+	);
+}
 
 void APlayerPawnDefault::CameraMove(const FInputActionValue& Value) {
 	CameraTargetPosition = CameraTargetPosition -
@@ -326,10 +343,11 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		if (!IsValid(core) || !IsValid(core->GetOwner())) {
 			continue;
 		}
-		FVector2D loc;
-		PlayerController->ProjectWorldLocationToScreen(core->GetOwner()->GetActorLocation(), loc);
-		if (loc.X != std::clamp(loc.X, minLocation.X, maxLocation.X)
-		||  loc.Y != std::clamp(loc.Y, minLocation.Y, maxLocation.Y)) {
+		FVector2D loc; float rad;
+		GetActorLocationAtScreen(core->GetOwner(), loc, rad);
+
+		if (loc.X != std::clamp(loc.X, minLocation.X - rad, maxLocation.X + rad)
+		||  loc.Y != std::clamp(loc.Y, minLocation.Y - rad, maxLocation.Y + rad)) {
 			continue;
 		}
 		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
@@ -573,6 +591,35 @@ void APlayerPawnDefault::SetBuildingConstruction(TSubclassOf<AActor> buildingCla
 	
 }
 
+
+void APlayerPawnDefault::GetActorLocationAtScreen(AActor* act, FVector2D& location, float& radius) {
+#if WITH_EDITOR
+	static const auto CVarScreenPercentage = IConsoleManager::Get().FindTConsoleVariableDataFloat(TEXT("r.SCreenPercentage"));
+#endif WITH_EDITOR
+
+    int32 w, h;
+    FVector Viewlocation = GetCameraLocation();
+    float CamFOV = 90.0f; //TODO: Replace With Function that returns camera FOV
+	float ScreenPerc = 1.f;
+#if WITH_EDITOR
+    ScreenPerc = CVarScreenPercentage->GetValueOnGameThread() / 100.0f;
+#endif WITH_EDITOR
+
+    PlayerController->GetViewportSize(w, h);
+
+    float SRad = ScreenPerc * ScreenPerc * (w*w + h*h);
+
+    /* Get Object Bounds (R) */
+    float BoundingRadius = act->GetRootComponent()->Bounds.SphereRadius;
+    float DistanceToObject = FVector(act->GetActorLocation() - Viewlocation).Size();
+
+    /* Get Projected Screen Radius */
+    radius = FMath::Atan(BoundingRadius / DistanceToObject);
+    radius *= SRad / FMath::DegreesToRadians(CamFOV);
+	PlayerController->ProjectWorldLocationToScreen(act->GetActorLocation(), location);
+}
+
+
 void APlayerPawnDefault::UpdateGameSpeed() {
 	float TimeDilation;
 	if (CurrentGamePaused) {
@@ -696,6 +743,7 @@ void APlayerPawnDefault::UpdateCamera(float DeltaTime) {
 	UpdateCameraPosition(DeltaTime);
 	UpdateCameraZoom(DeltaTime);
 	UpdateCameraRotation(DeltaTime);
+	CalculateCameraLocation();
 }
 
 void APlayerPawnDefault::UpdateCameraPosition(float DeltaTime) {
@@ -958,11 +1006,15 @@ FVector APlayerPawnDefault::CalculateVectorSpeed(
 	return direction * directionSpeed;
 }
 
-FVector APlayerPawnDefault::GetCameraLocation() {
+void APlayerPawnDefault::CalculateCameraLocation() {
 	FVector loc = GetActorLocation();
 	FRotator rot = CameraBoom->GetRelativeRotation();
 	FVector dir = rot.RotateVector({ 1, 0, 0 });
-	return loc - dir * CameraBoom->TargetArmLength;
+	CurrentCameraLocation = loc - dir * CameraBoom->TargetArmLength;
+}
+
+FVector APlayerPawnDefault::GetCameraLocation() {
+	return CurrentCameraLocation;
 }
 
 void APlayerPawnDefault::SetCameraHeight(float newHeight) {

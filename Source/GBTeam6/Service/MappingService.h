@@ -107,6 +107,9 @@ public:
 	void AddLocatedCoreRotation(int direction);
 
 	UFUNCTION(BlueprintCallable)
+	void AddLocatedCoreRotationSlowly(float delta);
+
+	UFUNCTION(BlueprintCallable)
 	bool CanSetLocatedCore();
 
 	UFUNCTION(BlueprintCallable)

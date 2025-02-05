@@ -39,14 +39,9 @@ void UMappingDefaultComponent::Initialize(const FMappingComponentInitializer& in
 			square.Size.Y *= -1;
 			square.Location.Y -= square.Size.Y;
 		}
-	}	
-	CurrentRotation = (int)((actorRotation.Yaw + 180 + 45) / 90) % 4;
-	CurrentActorRelaticveRotation = actorRotation.Yaw - CurrentRotation * 90;
-	if (CurrentActorRelaticveRotation <= -180) {
-		CurrentActorRelaticveRotation += 360;
 	}
+	SetFullRotation(actorRotation.Yaw)
 	SetOwnerLocation(actorLocation);
-	UpdateActorRotation();
 }
 
 void UMappingDefaultComponent::SaveComponent(FMappingSaveData& saveData) {
@@ -105,7 +100,7 @@ void UMappingDefaultComponent::UpdateActorLocation() {
 }
 
 void UMappingDefaultComponent::UpdateActorRotation() {
-	GetOwner()->SetActorRotation(FRotator(0, CurrentRotation * 90 + CurrentActorRelaticveRotation, 0));
+	GetOwner()->SetActorRotation(FRotator(0, GetFullRotatuion(), 0));
 	UpdateActorLocation();
 }
 
@@ -124,6 +119,18 @@ void UMappingDefaultComponent::SetOwnerLocation(FVector TargetLocation) {
 		CurrentLocation = newLocation;
 		UpdateActorLocation();
 	}
+}
+
+float UMappingDefaultComponent::GetFullRotatuion() {
+	return CurrentRotation * 90 + CurrentActorRelaticveRotation;
+}
+
+void UMappingDefaultComponent::SetFullRotation(float rotation) {
+	rotation -= std::floor(rotation / 360) * 360;
+	CurrentRotation = std::floor(rotation / 90);
+	//(int)((rotation+ 180 + 45) / 90) % 4;
+	CurrentActorRelaticveRotation = rotation - CurrentRotation * 90;
+	UpdateActorRotation();
 }
 
 void UMappingDefaultComponent::AddRotation(int direction) {

@@ -350,6 +350,15 @@ void UMappingService::AddLocatedCoreRotation(int direction) {
 	}
 }
 
+void UMappingService::AddLocatedCoreRotationSlowly(float delta) {
+	if (IsValid(LocatedCore)) {
+		if (auto mapping = Cast<UMappingBaseComponent>(LocatedCore->GetComponent(EGameComponentType::Mapping))) {
+			mapping->SetFullRotation(mapping->GetFullRotation() + delta);
+			bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
+			UpdateTiles();
+		}
+	}
+}
 
 bool UMappingService::CanSetLocatedCore() { 
 	return IsValid(LocatedCore) && bCanSetLocatedCore;

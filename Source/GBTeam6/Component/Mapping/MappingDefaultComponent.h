@@ -44,6 +44,8 @@ protected:
 	void OnDead();
 public:
 	virtual void SetOwnerLocation(FVector TargetLocation) override;
+	virtual float GetFullRotatuion() override;
+	virtual void SetFullRotation(float rotation) override;
 	virtual void AddRotation(int direction) override;
 	virtual bool SetIsPlaced(bool isPlaced) override;
 	virtual bool GetIsPlaced() override;

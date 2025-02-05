@@ -116,6 +116,9 @@ protected:
 	void QuickSave(const FInputActionValue& Value);
 	void QuickLoad(const FInputActionValue& Value);
 
+	void RotateBuilding(const FInputActionValue& Value);
+	void RotateBuildingSlowly(const FInputActionValue& Value);
+
 	/** Called for camera move input */
 	void CameraMove(const FInputActionValue& Value);
 
@@ -169,10 +172,18 @@ protected:
 	void SetBuildingConstruction(TSubclassOf<AActor> buildingClass);
 	
 
+	UFUNCTION(BlueprintCallable)
+	void GetActorLocationAtScreen(AActor* act, FVector2D& location, float& radius);
+	
+
 	/** Change game speed main function */
 	void UpdateGameSpeed();
 
 	void UpdateTimeDilation();
+
+private:
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Building")
+	float BuildingRotationMultiplier;
 
 /**************** Camera Movement ****************/
 protected:
@@ -203,6 +214,8 @@ protected:
 	float CameraCurrentHeight;
 
 	float CameraDefaultZ;
+
+	FVector CurrentCameraLocation;
 
 	TArray<TTuple<float, float>> CameraZoomRotations;
 	TArray<TTuple<float, float>> CameraCurrentRotationBorders;
@@ -317,6 +330,7 @@ protected:
 		bool& needChangeTarget
 	);
 
+	void CalculateCameraLocation();
 public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetCameraLocation();
