@@ -31,7 +31,7 @@ public:
 	virtual void SetOwnerLocation(FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
-	virtual float GetFullRotatuion();
+	virtual float GetFullRotation();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void SetFullRotation(float rotation);

@@ -18,7 +18,7 @@ void UMappingBaseComponent::LoadComponent(const FMappingSaveData& saveData) {
 void UMappingBaseComponent::SetOwnerLocation(FVector TargetLocation) {
 }
 
-float UMappingBaseComponent::GetFullRotatuion() {
+float UMappingBaseComponent::GetFullRotation() {
 	return 0.0f;
 }
 

@@ -28,7 +28,7 @@ protected:
 	virtual void ClearService() override;
 
 private:
-	UPROPERTY()
+	// UPROPERTY()
 	TArray<ICanSaveInterface*> ProgressSavers;
 
 public:

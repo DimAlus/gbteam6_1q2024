@@ -175,13 +175,16 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	void GetActorLocationAtScreen(AActor* act, FVector2D& location, float& radius);
 	
+	UFUNCTION(BlueprintCallable)
+	FBox GetSelectionBox();
+	
 
 	/** Change game speed main function */
 	void UpdateGameSpeed();
 
 	void UpdateTimeDilation();
 
-private:
+protected:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Building")
 	float BuildingRotationMultiplier;
 

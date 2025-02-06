@@ -312,7 +312,8 @@ void APlayerPawnDefault::DoNothing() {
 void APlayerPawnDefault::SelectStartDefault() {
 	ControlMode = EControlMode::Selection;
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	
+	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
 	SelectionStartLocation = Hit.Location;
 }
 
@@ -330,9 +331,27 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
 	PlayerController->GetMousePosition(mouseX, mouseY);
 
-	FVector2D minLocation = { std::min(mouseX, StartLocation.X) - ableError, std::min(mouseY, StartLocation.Y) - ableError };
-	FVector2D maxLocation = { std::max(mouseX, StartLocation.X) + ableError, std::max(mouseY, StartLocation.Y) + ableError };
 
+	ControlMode = EControlMode::Selection;
+	//FHitResult Hit;
+	//GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	//FVector EndLocation = Hit.Location;
+
+	//// FVector2D minLocation = { std::min(mouseX, StartLocation.X) - ableError, std::min(mouseY, StartLocation.Y) - ableError };
+	//// FVector2D maxLocation = { std::max(mouseX, StartLocation.X) + ableError, std::max(mouseY, StartLocation.Y) + ableError };
+
+	//FVector2D minLocation = { std::min(EndLocation.X, SelectionStartLocation.X) - ableError, std::min(EndLocation.Y, SelectionStartLocation.Y) - ableError };
+	//FVector2D maxLocation = { std::max(EndLocation.X, SelectionStartLocation.X) + ableError, std::max(EndLocation.Y, SelectionStartLocation.Y) + ableError };
+	//FBox box = FBox(TArray<FVector>({
+	//	{ minLocation.X, minLocation.Y, 0 },
+	//	{ minLocation.X, maxLocation.Y, 0 },
+	//	{ maxLocation.X, maxLocation.Y, 0 },
+	//	{ maxLocation.X, minLocation.Y, 0 },
+	//}));
+	FBox box = GetSelectionBox();
+	
+	
+	//DrawDebugBox(GetWorld(), box.GetCenter(), box.GetExtent(), FColor::Cyan);
 
 	TSet<UGameObjectCore*> selection;
 	const TSet<UGameObjectCore*>& cores = GetGameInstanceDefault()->GetSocialService()
@@ -343,11 +362,15 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		if (!IsValid(core) || !IsValid(core->GetOwner())) {
 			continue;
 		}
-		FVector2D loc; float rad;
-		GetActorLocationAtScreen(core->GetOwner(), loc, rad);
+		/*FVector2D loc; float rad;
+		GetActorLocationAtScreen(core->GetOwner(), loc, rad);*/
+		
 
-		if (loc.X != std::clamp(loc.X, minLocation.X - rad, maxLocation.X + rad)
+		/*if (loc.X != std::clamp(loc.X, minLocation.X - rad, maxLocation.X + rad)
 		||  loc.Y != std::clamp(loc.Y, minLocation.Y - rad, maxLocation.Y + rad)) {
+			continue;
+		}*/
+		if (!core->GetOwner()->GetRootComponent()->Bounds.GetBox().IntersectXY(box)) {
 			continue;
 		}
 		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
@@ -410,7 +433,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 		if (skillHeaver->CanCastSkill(SelectedSkill)) {
 			if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
 				FHitResult Hit;
-				GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+				GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
 				bool _;
 				TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 					skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
@@ -532,7 +555,7 @@ void APlayerPawnDefault::BuildingCancel() {
 
 void APlayerPawnDefault::UpdateBuildingLocation() {
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
+	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
 	GetGameInstanceDefault()->GetMappingService()->SetLocatedCoreLocation(Hit.Location);
 }
 
@@ -607,7 +630,7 @@ void APlayerPawnDefault::GetActorLocationAtScreen(AActor* act, FVector2D& locati
 
     PlayerController->GetViewportSize(w, h);
 
-    float SRad = ScreenPerc * ScreenPerc * (w*w + h*h);
+    float SRad = std::sqrt(ScreenPerc * ScreenPerc * (w*w + h*h));
 
     /* Get Object Bounds (R) */
     float BoundingRadius = act->GetRootComponent()->Bounds.SphereRadius;
@@ -617,6 +640,30 @@ void APlayerPawnDefault::GetActorLocationAtScreen(AActor* act, FVector2D& locati
     radius = FMath::Atan(BoundingRadius / DistanceToObject);
     radius *= SRad / FMath::DegreesToRadians(CamFOV);
 	PlayerController->ProjectWorldLocationToScreen(act->GetActorLocation(), location);
+}
+
+FBox APlayerPawnDefault::GetSelectionBox() {
+	FVector2D StartLocation;
+	double mouseX, mouseY;
+	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
+	PlayerController->GetMousePosition(mouseX, mouseY);
+
+	TArray<FVector> points{ /*GetCameraLocation(), GetCameraLocation(), GetCameraLocation(), GetCameraLocation()*/ };
+	for (const auto& p : TArray<FVector2D>{ 
+			{ std::min(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
+			{ std::min(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
+			{ std::max(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
+			{ std::max(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
+		}) {
+		FVector WorldLocation, WorldDirection;
+		PlayerController->DeprojectScreenPositionToWorld(p.X, p.Y, WorldLocation, WorldDirection);
+
+		FCollisionQueryParams QueryParams;
+		FHitResult HitResult;
+		GetWorld()->LineTraceSingleByChannel(HitResult, WorldLocation, WorldLocation + WorldDirection * 15000, ECollisionChannel::ECC_Visibility);
+		points.Add(HitResult.Location);
+	}
+	return FBox(points);
 }
 
 
