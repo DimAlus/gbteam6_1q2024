@@ -71,14 +71,20 @@ void APlayerPawnDefault::BeginPlay()
 }
 
 void APlayerPawnDefault::Tick(float DeltaTime) {
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Building, 		&APlayerPawnDefault::UpdateBuilding },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::UpdateSkillApplying },
+	};
+	
 	Super::Tick(DeltaTime);
 	LastDeltaTime = DeltaTime;
 	UpdateCamera(DeltaTime);
 	UpdateTimeDilation();
 
-	if (ControlMode == EControlMode::Building) {
-		UpdateBuildingLocation();
-	}
+	(this->*(funcs[ControlMode]))();
 }
 
 UGameInstanceDefault *APlayerPawnDefault::GetGameInstanceDefault() {
@@ -397,24 +403,11 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 			selection.Add(core);
 		}
 	}
-
-	for (const auto& core : SelectedCoresTemp) {
-		if (!selection.Contains(core)) {
-			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-				ai->SetSelectionPreview(false);
-			}
-		}
-	}
-	SelectedCoresTemp = selection.Array();
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(true);
-		}
-	}
+	UpdatePreviewSelection(selection);
 }
 
 void APlayerPawnDefault::SelectCompleteSelection() {
-	SetSelectedCores(SelectedCoresTemp);
+	SetSelectedCores(SelectedCoresTemp.Array());
 	ControlMode = EControlMode::Default;
 }
 
@@ -441,8 +434,8 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 					Hit.Location,
 					{},
 					{},
-					{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
-					  { ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
+					{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
+					  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
 				);
 
 				ai->OnTryCastSkill.Broadcast(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
@@ -454,6 +447,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 		}
 		SelectedSkill = ESkillSlot::None;
 	}
+	UpdatePreviewSelection({});
 }
 
 void APlayerPawnDefault::CommandDefault() {
@@ -498,8 +492,48 @@ void APlayerPawnDefault::CommandDefault() {
 	}
 }
 
+void APlayerPawnDefault::UpdateSkillApplying() {
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
+			FHitResult Hit;
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
+			bool _;
+			TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+				skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
+				CurrentSelectedCore,
+				Hit.Location,
+				{},
+				{},
+				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
+				  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
+			);
+			UpdatePreviewSelection(targets.Num() ? TSet<UGameObjectCore*>(taegets[0]) : TSet<UGameObjectCore*>());
+		}
+	}
+}
 
-void APlayerPawnDefault::SetDefaultMode() {
+void APlayerPawnDefault::UpdateBuilding() {
+	UpdateBuildingLocation();
+}
+
+void APlayerPawnDefault::UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores) {
+	for (const auto& core : SelectedCoresTemp) {
+		if (!selection.Contains(core)) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->SetSelectionPreview(false);
+			}
+		}
+	}
+	SelectedCoresTemp = cores;
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(true);
+		}
+	}
+}
+
+void APlayerPawnDefault::SetDefaultMode()
+{
 	switch (ControlMode)
 	{
 	case EControlMode::Selection:
@@ -524,12 +558,7 @@ void APlayerPawnDefault::CancelSelectProcess() {
 		return;
 	}
 	ControlMode = EControlMode::Default;
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(false);
-		}
-	}
-	SelectedCoresTemp.Empty();
+	UpdatePreviewSelection({});
 }
 
 void APlayerPawnDefault::SelectionSkillCancel() {

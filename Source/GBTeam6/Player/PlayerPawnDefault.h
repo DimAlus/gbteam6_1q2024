@@ -93,13 +93,16 @@ protected:
 	TArray<UGameObjectCore*> SelectedCores;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UGameObjectCore*> SelectedCoresTemp;
+	TSet<UGameObjectCore*> SelectedCoresTemp;
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector SelectionStartLocation;
 
 	UPROPERTY(BlueprintReadOnly)
 	ESkillSlot SelectedSkill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Control")
+	float SkillTargerAttachRadius{ 100.f };
 
 protected:
 	
@@ -152,7 +155,12 @@ protected:
 	void SelectCompleteSkillApplying();
 	void CommandDefault();
 
+	void UpdateSkillApplying();
+	void UpdateBuilding();
+	
 protected:
+	void UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores);
+
 	void SetDefaultMode();
 	void CancelSelectProcess();
 	void SelectionSkillCancel();
