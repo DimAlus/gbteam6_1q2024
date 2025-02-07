@@ -914,3 +914,21 @@ struct FSkill {
 											"false", EditConditionHides))
 	float IdealDistance{ -1.f };
 };
+
+
+USTRUCT(BlueprintType)
+struct FGroupData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EGroupFormation GroupFormation{}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector GroupLocation{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float GroupRotation{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int GroupSize{};
+};

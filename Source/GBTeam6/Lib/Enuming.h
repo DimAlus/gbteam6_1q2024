@@ -361,3 +361,10 @@ enum class EControlMode : uint8 {
 	SkillApplying	UMETA(DisplayName = "SkillApplying"),
 	Selection		UMETA(DisplayName = "Selection"),
 };
+
+
+UENUM(BlueprintType)
+enum class EGroupFormation : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Rectangle		UMETA(DisplayName = "Rectangle"),
+};
