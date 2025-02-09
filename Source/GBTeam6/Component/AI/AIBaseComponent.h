@@ -88,4 +88,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void GetSelection(bool& isSelected, bool& isPreview);
 
+	UFUNCTION(BlueprintCallable)
+	virtual void AddSpeed(float multipleSpeed);
+
 };

@@ -14,8 +14,9 @@ AProjectileFlying::AProjectileFlying() : AProjectile() {
 
 void AProjectileFlying::Initialize(UGameObjectCore* initiator,
 								   const TArray<UGameObjectCore*>& targets,
+								   FVector targetLocation,
 								   const TArray<FSkillProjectileData>& projectilesData) {
-	Super::Initialize(initiator, targets, projectilesData);
+	Super::Initialize(initiator, targets, targetLocation, projectilesData);
 	if (projectilesData.Num() == 0 || (targets.Num() == 0 && !projectilesData[0].SpawnAtNoTargets)) {
 		return;
 	}
@@ -27,7 +28,6 @@ void AProjectileFlying::Initialize(UGameObjectCore* initiator,
 		CreateProjectilesForTargets(targetsCopy, projectilesData);
 	}
 
-	targetLocation = IsValid(Target) ? Target->GetOwner()->GetActorLocation() : GetActorLocation();
 	if (ProjectileMovement == EProjectileMovement::Earth) {
 		Target = nullptr;
 	}
@@ -45,7 +45,7 @@ void AProjectileFlying::Tick(float DeltaTime) {
 		return;
 	}
 	if (IsValid(this->Target) && IsValid(this->Target->GetOwner())) {
-		targetLocation = this->Target->GetOwner()->GetActorLocation();
+		TargetLocation = this->Target->GetOwner()->GetActorLocation();
 	}
 	
 	CurrentSpeed = GetCurrentSpeed(DeltaTime);
@@ -53,7 +53,7 @@ void AProjectileFlying::Tick(float DeltaTime) {
 
 	SetActorRotation(CurrentSpeed.Rotation());
 	SetActorLocation(newLocation);
-	if (((newLocation - targetLocation) * FVector(1, 1, 0)).Length() < ApplyingDistance) {
+	if (((newLocation - TargetLocation) * FVector(1, 1, 0)).Length() < ApplyingDistance) {
 		HitWithTarget();
 	}
 }
@@ -73,13 +73,13 @@ void AProjectileFlying::CreateProjectilesForTargets(const TArray<UGameObjectCore
 			GetActorLocation(),
 			GetActorRotation()
 		);
-		proj->Initialize(Initiator, { targets[i] }, data);
+		proj->Initialize(Initiator, { targets[i] }, {}, data);
 	}
 }
 
 FVector AProjectileFlying::GetCurrentSpeed(float deltaTime) {
 	FVector currentLocation = GetActorLocation();
-	FVector direction = targetLocation - currentLocation;
+	FVector direction = TargetLocation - currentLocation;
 	float distance = (direction * FVector(1, 1, 0)).Length();
 	float time = distance / Speed;
 	float zSpeed = direction.Z / time + 980 * Gravity * time / 2;
@@ -89,19 +89,19 @@ FVector AProjectileFlying::GetCurrentSpeed(float deltaTime) {
 	FVector currentSpeed = direction * Speed + FVector(0, 0, zSpeed);
 
 	FVector newLocation = currentLocation + currentSpeed * deltaTime;
-	if (targetLocation.X == std::clamp(
-		targetLocation.X,
+	if (TargetLocation.X == std::clamp(
+		TargetLocation.X,
 		std::min(currentLocation.X, newLocation.X),
 		std::max(currentLocation.X, newLocation.X)
 	)) {
-		newLocation.X = targetLocation.X;
+		newLocation.X = TargetLocation.X;
 	}
-	if (targetLocation.Y == std::clamp(
-		targetLocation.Y,
+	if (TargetLocation.Y == std::clamp(
+		TargetLocation.Y,
 		std::min(currentLocation.Y, newLocation.Y),
 		std::max(currentLocation.Y, newLocation.Y)
 	)) {
-		newLocation.Y = targetLocation.Y;
+		newLocation.Y = TargetLocation.Y;
 	}
 	return (newLocation - currentLocation) / deltaTime;
 }
@@ -128,7 +128,7 @@ void AProjectileFlying::HitWithTarget() {
 	TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 		GetProjectileData().TargetChainFinder,
 		Initiator,
-		targetLocation,
+		TargetLocation,
 		priorities,
 		{ Target },
 		{}
@@ -163,7 +163,7 @@ void AProjectileFlying::ApplyEffects() {
 		cores = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 			GetProjectileData().TargetFinder,
 			Initiator,
-			targetLocation,
+			TargetLocation,
 			{},
 			{},
 			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },

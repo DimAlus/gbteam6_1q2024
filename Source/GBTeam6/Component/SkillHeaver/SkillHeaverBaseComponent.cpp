@@ -15,7 +15,7 @@ void USkillHeaverBaseComponent::CancelSkillCast() {
 void USkillHeaverBaseComponent::CancelStartedSkillCast(ESkillSlot slot) {
 }
 
-bool USkillHeaverBaseComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation = {}) {
+bool USkillHeaverBaseComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation, FVector castLocation = {}) {
 	return false;
 }
 
@@ -24,6 +24,10 @@ bool USkillHeaverBaseComponent::TryCastSkill(ESkillSlot slot) {
 }
 
 bool USkillHeaverBaseComponent::TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets) {
+	return false;
+}
+
+bool USkillHeaverBaseComponent::TryCastSkillAtLocation(ESkillSlot slot, FVector TargetLocation) {
 	return false;
 }
 

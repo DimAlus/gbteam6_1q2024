@@ -8,6 +8,7 @@
 #include "GBTeam6/Component/Effect/EffectBaseComponent.h"
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 
+#define __NOTSETED_DISTANCE__ 999999.f
 
 void USkillHeaverDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	TimerHandle.Invalidate();
@@ -22,17 +23,37 @@ void USkillHeaverDefaultComponent::Initialize(const FSkillHeaverComponentInitial
 	for (const auto& iter : Initializer.Skills) {
 		FSkill skill = iter.Value;
 		skill.CurrentCooldown = 0;
-		
+
 		if (skill.Name.IsEmpty()) {
 			skill.Name = FString::Printf(TEXT("#%s_%s"), *GetNameSafe(GetOwner()), *UEnum::GetValueAsString(iter.Key));
 		}
 
+
 		if (skill.SkillProjectiles.Num() > 0) {
+			const FTargetFinder& fnd = GetGameInstance()->GetSocialService()->GetFinder(skill.SkillProjectiles[0].TargetFinder);
+			float maxDistance = __NOTSETED_DISTANCE__;
+			float minDistance = 0;
+			for (const FTargetFilter& filter : fnd.Filters) {
+				//filter.CompareType == EFilterCompareType::
+				if (filter.Type == ETargetFilterType::Distance) {
+					if (filter.CompareType == EFilterCompareType::Less || filter.CompareType == EFilterCompareType::LessEqual) {
+						maxDistance = std::min(maxDistance, filter.Value);
+					}
+					else if (filter.CompareType == EFilterCompareType::More || filter.CompareType == EFilterCompareType::MoreEqual) {
+						minDistance = std::min(minDistance, filter.Value);
+					}
+				}
+			}
+			if (maxDistance != __NOTSETED_DISTANCE__) {
+				skill.IdealDistance = std::lerp(minDistance, maxDistance, 0.75);
+			}
+
+
 			this->Skills.Add(iter.Key, skill);
 			this->SkillsLock.Add(iter.Key, false);
 		}
 		else {
-			UE_LOG_COMPONENT(Error, "Can't initialize skill <%s>(<%s>): Projectile data not found!", 
+			UE_LOG_COMPONENT(Error, "Can't initialize skill <%s>(<%s>): Projectile data not found!",
 				*UEnum::GetValueAsString(iter.Key), *skill.Name);
 		}
 	}
@@ -71,7 +92,7 @@ void USkillHeaverDefaultComponent::Update() {
 			TryCastSkill(iter.Key);
 		}
 	}
-	
+
 }
 
 void USkillHeaverDefaultComponent::LevelChanged(int newLevel) {
@@ -96,11 +117,14 @@ void USkillHeaverDefaultComponent::CancelStartedSkillCast(ESkillSlot slot) {
 }
 
 
-bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation = {}) {
-	if (!targets.Num() || !SkillsLock[slot]) {
+bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation, FVector castLocation = {}) {
+	if (!SkillsLock[slot]) {
 		return false;
 	}
 	FSkill& skill = Skills[slot];
+	if (!(skill.SkillProjectiles[0].SpawnAtNoTargets || targets.Num())) {
+		return false;
+	}
 	UE_LOG_COMPONENT(Log, "Cast Skill <%s>: <%s>", *UEnum::GetValueAsString(slot), *skill.Name);
 	if (IsValid(skill.SkillProjectiles[0].ProjectileClass)) {
 		AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(
@@ -108,7 +132,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 			castLocation.Length() < 1 ? GetOwner()->GetActorLocation() : castLocation,
 			FRotator()
 		);
-		proj->Initialize(GetCore(), targets, skill.SkillProjectiles);
+		proj->Initialize(GetCore(), targets, targetLocation, skill.SkillProjectiles);
 	}
 	else {
 		for (const auto& target : targets) {
@@ -139,9 +163,23 @@ bool USkillHeaverDefaultComponent::TryCastSkillWithPriorityTargets(ESkillSlot sl
 	}
 	bCancelSkill = false;
 	SkillsLock[slot] = true;
-	this->OnSkillIntention.Broadcast(slot, targets);
+	this->OnSkillIntention.Broadcast(slot, targets, {});
 	if (!bCancelSkill) {
-		CastSkill(slot, targets);
+		CastSkill(slot, targets, {});
+	}
+	this->CurrentMana = std::max(0.f, this->CurrentMana - Skills[slot].Mana);
+	return true;
+}
+
+bool USkillHeaverDefaultComponent::TryCastSkillAtLocation(ESkillSlot slot, FVector TargetLocation) {
+	if (!CanCastSkill(slot)) {
+		return false;
+	}
+	bCancelSkill = false;
+	SkillsLock[slot] = true;
+	this->OnSkillIntention.Broadcast(slot, {}, TargetLocation);
+	if (!bCancelSkill) {
+		CastSkill(slot, {}, TargetLocation);
 	}
 	this->CurrentMana = std::max(0.f, this->CurrentMana - Skills[slot].Mana);
 	return true;

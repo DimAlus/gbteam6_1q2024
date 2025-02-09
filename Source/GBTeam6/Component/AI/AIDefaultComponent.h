@@ -50,5 +50,7 @@ public:
 	virtual void SetSelectionPreview(bool isSelected);
 	virtual void SetSelection(bool isSelected);
 	virtual void GetSelection(bool& isSelected, bool& isPreview);
+
+	virtual void AddSpeed(float multipleSpeed) override;
 };
 

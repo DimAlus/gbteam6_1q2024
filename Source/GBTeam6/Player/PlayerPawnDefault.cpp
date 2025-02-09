@@ -132,6 +132,8 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			&APlayerPawnDefault::Command);
 
 		// Skill action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::SelectSkillTriggerAction);
 		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SelectSkillAction);
 
@@ -142,7 +144,9 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			&APlayerPawnDefault::RotateBuildingSlowly);
 		
 		// Set game speed action binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::SetGameSpeedTriggeredInput);
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SetGameSpeedInput);
 		
 		// Set game save action binding
@@ -217,15 +221,19 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 	(this->*(funcs[ControlMode]))();
 }
 
-void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
+void APlayerPawnDefault::SelectSkillTriggerAction(const FInputActionValue& Value){
 	int inputValue = (int)Value.Get<float>();
-	ESkillSlot slot =
-			inputValue == 0 ? ESkillSlot::Auto
-		:	inputValue == 1 ? ESkillSlot::Skill1
-		:	inputValue == 2 ? ESkillSlot::Skill2
-		:	inputValue == 3 ? ESkillSlot::Skill3
-		:	ESkillSlot::None;
-	TrySelectSkill(slot);
+	LastSelectedSkillSlot =
+		inputValue == 0 ? ESkillSlot::Auto
+		: inputValue == 1 ? ESkillSlot::Skill1
+		: inputValue == 2 ? ESkillSlot::Skill2
+		: inputValue == 3 ? ESkillSlot::Skill3
+		: ESkillSlot::None;
+}
+
+void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
+	TrySelectSkill(LastSelectedSkillSlot);
+	LastSelectedSkillSlot = ESkillSlot::None;
 }
 
 
@@ -298,16 +306,19 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 }
 
 
+void APlayerPawnDefault::SetGameSpeedTriggeredInput(const FInputActionValue& Value) {
+	LastSelectedGameSpeed = Value.Get<float>();
+}
+
 void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
-	int speed = Value.Get<float>();
-	if (speed <= 0) {
+	if (std::abs(LastSelectedGameSpeed) <= 0.1) {
 		SetGamePaused(!CurrentGamePaused);
 	}
 	else {
 		if (CurrentGamePaused) {
 			SetGamePaused(false);
 		}
-		SetGameSpeed(speed);
+		SetGameSpeed(LastSelectedGameSpeed);
 	}
 }
 
@@ -507,7 +518,7 @@ void APlayerPawnDefault::UpdateSkillApplying() {
 				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
 				  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
 			);
-			UpdatePreviewSelection(targets.Num() ? TSet<UGameObjectCore*>(taegets[0]) : TSet<UGameObjectCore*>());
+			UpdatePreviewSelection(targets.Num() ? TSet<UGameObjectCore*>({ targets[0] }) : TSet<UGameObjectCore*>());
 		}
 	}
 }
@@ -518,7 +529,7 @@ void APlayerPawnDefault::UpdateBuilding() {
 
 void APlayerPawnDefault::UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores) {
 	for (const auto& core : SelectedCoresTemp) {
-		if (!selection.Contains(core)) {
+		if (!cores.Contains(core)) {
 			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 				ai->SetSelectionPreview(false);
 			}
@@ -702,7 +713,7 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 		TimeDilation = 0.0001f;
 	}
 	else {
-		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
+		TimeDilation = std::pow(2, CurrentGameSpeed - (CurrentGameSpeed < 0 ? 0 : 1));
 	}
 	if (TimeDilation >= 0.0001f) {	
 		newTimeDilation = 1.f / TimeDilation;

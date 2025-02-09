@@ -19,12 +19,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVectorSignature, FVector, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, SkillSlot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, Core);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillSlotTargetsVectorSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets, FVector, Location);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillVectorCoreSignature, ESkillSlot, SkillSlot, FVector, Location, UGameObjectCore*, Core);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \

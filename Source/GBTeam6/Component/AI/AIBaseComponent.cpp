@@ -62,3 +62,6 @@ void UAIBaseComponent::SetSelection(bool isSelected) {
 
 void UAIBaseComponent::GetSelection(bool &isSelected, bool &isPreview) {
 }
+
+void UAIBaseComponent::AddSpeed(float multipleSpeed) {
+}

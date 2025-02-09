@@ -24,6 +24,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Initialize(UGameObjectCore* initiator, 
 							const TArray<UGameObjectCore*>& targets,
+							FVector targetLocation,
 							const TArray<FSkillProjectileData>& projectilesData);
 
 	UGameInstanceDefault* GetGameInstanceDefault();
@@ -43,6 +44,9 @@ protected:
 	UGameObjectCore* Target;
 
 	UPROPERTY(BlueprintReadOnly)
+	FVector TargetLocation;
+
+	UPROPERTY(BlueprintReadOnly)
 	TArray<FSkillProjectileData> ProjectilesData;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -56,6 +60,7 @@ protected:
 	virtual AProjectile* CreateNextProjectile();
 	virtual void ApplyEffects();
 
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FSkillProjectileData& GetProjectileData() { return ProjectilesData[0]; }
 
 protected:

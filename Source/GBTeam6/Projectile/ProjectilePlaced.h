@@ -18,6 +18,7 @@ public:
 
 	virtual void Initialize(UGameObjectCore* initiator, 
 							const TArray<UGameObjectCore*>& targets,
+							FVector targetLocation,
 							const TArray<FSkillProjectileData>& projectilesData) override;
 
 	virtual void Tick(float DeltaTime) override;

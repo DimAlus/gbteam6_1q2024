@@ -114,6 +114,7 @@ protected:
 	/** Command object function*/
 	void Command(const FInputActionValue& Value);
 
+	void SelectSkillTriggerAction(const FInputActionValue& Value);
 	void SelectSkillAction(const FInputActionValue& Value);
 
 	void QuickSave(const FInputActionValue& Value);
@@ -141,6 +142,8 @@ protected:
 	/** Called for camera zoom input */
 	void CameraZoom(const FInputActionValue& Value);
 	
+	/** Change game speed input functions */
+	void SetGameSpeedTriggeredInput(const FInputActionValue& Value);
 	/** Change game speed input functions */
 	void SetGameSpeedInput(const FInputActionValue& Value);
 
@@ -193,6 +196,9 @@ protected:
 	void UpdateTimeDilation();
 
 protected:
+	ESkillSlot LastSelectedSkillSlot;
+	float LastSelectedGameSpeed;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Building")
 	float BuildingRotationMultiplier;
 

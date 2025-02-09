@@ -102,6 +102,10 @@ void UAIDefaultComponent::GetSelection(bool &isSelected, bool &isPreview) {
 	isPreview = selection & __SELECTION_PREVIEW__;
 }
 
+void UAIDefaultComponent::AddSpeed(float multipleSpeed) {
+	speedMultiplier *= multipleSpeed;
+}
+
 
 #undef __SELECTION__
 #undef __SELECTION_PREVIEW__

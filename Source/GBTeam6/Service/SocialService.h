@@ -62,7 +62,6 @@ private:
 
 private:
 	void LoadFinders();
-	const FTargetFinder& GetFinder(FString finderName);
 
 	bool FilterComparing(float value1, float value2, EFilterCompareType compareType);
 	float GetFilterValue(const ETargetFilterType& filterType, UGameObjectCore* core, FVector centerLocation);
@@ -72,6 +71,7 @@ private:
 					const TArray<FTargetFilter>& overrideValues);
 	
 public:
+	const FTargetFinder& GetFinder(FString finderName);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<UGameObjectCore*> FindTargetsByCenterCore(FString targetFinder,
