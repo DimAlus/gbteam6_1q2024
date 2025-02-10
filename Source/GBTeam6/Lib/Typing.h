@@ -923,6 +923,9 @@ struct FGroupData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int GroupId{}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EGroupFormation GroupFormation{}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -932,5 +935,5 @@ struct FGroupData {
 	float GroupRotation{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int GroupSize{};
+	TArray<UGameObjectCore*> Cores{};
 };

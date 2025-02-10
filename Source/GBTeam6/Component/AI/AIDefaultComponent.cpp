@@ -2,6 +2,8 @@
 
 #include "GBTeam6/Interface/GameObjectCore.h"
 
+#include "GBTeam6/Service/GroupService.h"
+
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 #include "AIDefaultComponent.h"
@@ -27,7 +29,18 @@ void UAIDefaultComponent::LoadComponent(const FAISaveData& saveData) {
 	Super::LoadComponent(saveData);
 }
 
-const TSet<UGameObjectCore*> &UAIDefaultComponent::GetAttachedCores() {
+void UAIDefaultComponent::OnCoreCreatedAfter() {
+	if (auto health = Cast<UHealthBaseComponent>(GetCore()->GetComponent(EGameComponentType::Health))) {
+		health->OnDeath.AddDynamic(this, &UAIDefaultComponent::OnDeath);
+	}
+}
+
+void UAIDefaultComponent::OnDead() {
+	GetGameInstance()->GetGroupService()->Ungroup(GetCore());
+}
+
+const TSet<UGameObjectCore *> &UAIDefaultComponent::GetAttachedCores()
+{
 	return AttachedCores;
 }
 

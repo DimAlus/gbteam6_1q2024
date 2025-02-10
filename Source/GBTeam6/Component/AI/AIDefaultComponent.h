@@ -17,6 +17,7 @@ public:
 	virtual void SaveComponent(FAISaveData& saveData) override;
 	virtual void LoadComponent(const FAISaveData& saveData) override;
 
+	virtual void OnCoreCreatedAfter() override;
 protected:
 	bool bIsSelectable;
 	int selectionPriority;
@@ -33,6 +34,8 @@ protected:
 	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
 
 	char selection;
+private:
+	void OnDead();
 public:
 	FORCEINLINE virtual float GetSpeed() override { return speedMultiplier * speedDefault; };
 	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };

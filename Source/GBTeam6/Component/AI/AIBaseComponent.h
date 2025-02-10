@@ -22,6 +22,9 @@ public:
 public:
 
 	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGroupDataChanging;
+
+	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnSelectionChanging;
 
 	UPROPERTY(BlueprintAssignable)

@@ -19,7 +19,7 @@ protected:
 	
 private:
 
-	TMap<UGameObjectCore*, TPair<int, int>> CoreGroups;
+	TMap<UGameObjectCore*, FGroupData&> CoreGroups;
 	TMap<int, FGroupData> GroupsData;
 
 	int GetNextGroupId();
@@ -41,6 +41,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const FGroupData& GetGroupData(int groupId);
+
+	UFUNCTION(BlueprintCallable)
+	const FGroupData& GetMyGroupData(UGameObjectCore* core, bool& found);
 
 	UFUNCTION(BlueprintCallable)
 	void SetGroupData(int groupId, const FGroupData& groupData);

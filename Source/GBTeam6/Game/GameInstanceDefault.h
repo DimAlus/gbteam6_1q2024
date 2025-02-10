@@ -16,6 +16,7 @@ class USocialService;
 class UConfigService;
 class USoundService;
 class UTimerService;
+class UGroupService;
 class USaveService;
 
 /**
@@ -120,6 +121,8 @@ private:
 	UConfigService* ConfigService{ nullptr };
 	UPROPERTY()
 	UTimerService* TimerService{ nullptr };
+	UPROPERTY()
+	UGroupService* GroupService{ nullptr };
 
 	bool bServicesInitialized = false;
 
@@ -158,6 +161,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE class UTimerService* GetGameTimerManager() const { return TimerService; }
 
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE class UGroupService* GetGroupService() const { return GroupService; }
 
 
 };

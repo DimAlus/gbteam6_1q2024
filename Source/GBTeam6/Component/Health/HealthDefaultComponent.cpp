@@ -8,7 +8,7 @@ UHealthDefaultComponent::UHealthDefaultComponent() {
 }
 
 void UHealthDefaultComponent::OnCoreCreatedBefore() {
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
+	// GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
 }
 
 

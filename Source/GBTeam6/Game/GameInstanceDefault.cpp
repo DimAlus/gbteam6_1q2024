@@ -140,14 +140,7 @@ void UGameInstanceDefault::CreateServices() {
 	this->MappingService = NewObject<UMappingService>();
 	this->TaskManagerService = NewObject<UTaskManagerService>();
 	this->GameEventsService = NewObject<UGameEventsService>();
-	/*this->SaveService = NewObject<USaveService>(this, "SaveService", EObjectFlags::RF_MarkAsRootSet);
-	this->ConfigService = NewObject<UConfigService>(this, "ConfigService", EObjectFlags::RF_MarkAsRootSet);
-	this->MessageService = NewObject<UMessageService>(this, "MessageService", EObjectFlags::RF_MarkAsRootSet);
-	this->SoundService = NewObject<USoundService>(this, "SoundService", EObjectFlags::RF_MarkAsRootSet);
-	this->SocialService = NewObject<USocialService>(this, "SocialService", EObjectFlags::RF_MarkAsRootSet);
-	this->MappingService = NewObject<UMappingService>(this, "MappingService", EObjectFlags::RF_MarkAsRootSet);
-	this->TaskManagerService = NewObject<UTaskManagerService>(this, "TaskManagerService", EObjectFlags::RF_MarkAsRootSet);
-	this->GameEventsService = NewObject<UGameEventsService>(this, "GameEventsService", EObjectFlags::RF_MarkAsRootSet);*/
+	this->GroupService = NewObject<UGroupervice>();
 
 	Cast<UAGameService>(this->SaveService)->GameInstance
 		= Cast<UAGameService>(this->TimerService)->GameInstance
@@ -157,6 +150,7 @@ void UGameInstanceDefault::CreateServices() {
 		= Cast<UAGameService>(this->SocialService)->GameInstance
 		= Cast<UAGameService>(this->MappingService)->GameInstance
 		= Cast<UAGameService>(this->TaskManagerService)->GameInstance
+		= Cast<UAGameService>(this->GroupService)->GameInstance
 		= Cast<UAGameService>(this->GameEventsService)->GameInstance = this;
 }
 
@@ -177,6 +171,7 @@ void UGameInstanceDefault::InitializeServices() {
 	Cast<UAGameService>(this->MappingService)->InitializeService();
 	Cast<UAGameService>(this->TaskManagerService)->InitializeService();
 	Cast<UAGameService>(this->GameEventsService)->InitializeService();
+	Cast<UAGameService>(this->GroupService)->InitializeService();
 }
 
 void UGameInstanceDefault::ClearServices() {
@@ -193,4 +188,5 @@ void UGameInstanceDefault::ClearServices() {
 	if (auto s = Cast<UAGameService>(this->TaskManagerService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->GameEventsService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->TimerService)) s->ClearService();
+	if (auto s = Cast<UAGameService>(this->GroupService)) s->ClearService();
 }
