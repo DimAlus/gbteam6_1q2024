@@ -18,6 +18,7 @@
 #include "GBTeam6/Service/TimerService.h"
 #include "GBTeam6/Service/SocialService.h"
 #include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/GroupService.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -476,6 +477,11 @@ void APlayerPawnDefault::CommandDefault() {
 		if (auto ai = Cast<UAIBaseComponent>(targetCore->GetComponent(EGameComponentType::AI))) {
 			ai->OnSelectionTouch.Broadcast();
 		}
+	}
+	if (!targetCore) {
+		FGroupData grp;
+		grp.GroupLocation = Hit.Location;
+		GetGameInstanceDefault()->GetGroupService()->Group(SelectedCores, grp);
 	}
 	
 	

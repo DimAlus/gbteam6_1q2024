@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../BaseComponent.h"
+#include "GBTeam6/Component/BaseComponent.h"
 #include "EffectBaseComponent.generated.h"
 
 /**
