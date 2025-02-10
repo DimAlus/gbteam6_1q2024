@@ -53,6 +53,9 @@ public:
 	FObjectLevelSignature OnObjectLevelChanged;
 
 	UPROPERTY(BlueprintAssignable)
+	FConstructionStageSignature OnConstructionStageChanged;
+
+	UPROPERTY(BlueprintAssignable)
 	FActorStringSignature OnSpawnActor;
 
 	int Level = 0;

@@ -27,6 +27,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillS
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillSlotTargetsVectorSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets, FVector, Location);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillVectorCoreSignature, ESkillSlot, SkillSlot, FVector, Location, UGameObjectCore*, Core);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FConstructionStageSignature, int, CurrentLevel, float, Progress, int, Stage);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))

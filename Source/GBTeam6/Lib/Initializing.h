@@ -75,6 +75,9 @@ struct FGeneratorComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float WorkPower{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int ConstructionStages{1};
 };
 
 

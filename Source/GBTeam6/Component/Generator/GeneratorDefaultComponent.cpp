@@ -57,6 +57,12 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				}
 			}
 
+			if (thread.GeneratorName == "Construction") {
+				float perc = info.Barter.WorkSize / thread.Power;
+				if (1 - perc * ConstructionStages % 1 <= DeltaPower * DeltaTime) {
+					OnConstructionStageChanged.Broadcast(GetLevel(), perc, (int)(perc * ConstructionStages) + 1);
+				}
+			}
 			thread.Power += DeltaPower * DeltaTime;
 			if (thread.Power >= info.Barter.WorkSize) {
 				DismissWorkers(info.ThreadName);
@@ -101,6 +107,7 @@ void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 
 	this->WorkPower = initializer.WorkPower;
+	this->ConstructionStages = initializer.ConstructionStages;
 
 	this->Generators = initializer.Generators;
 
