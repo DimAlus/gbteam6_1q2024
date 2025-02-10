@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "AGameService.generated.h"
 
 class UGameInstanceDefault;

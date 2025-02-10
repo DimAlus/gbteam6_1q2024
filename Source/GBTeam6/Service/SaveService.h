@@ -4,7 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "./AGameService.h"
-#include "../Interface/CanSaveInterface.h"
+#include "GBTeam6/Interface/CanSaveInterface.h"
 
 #include "SaveService.generated.h"
 

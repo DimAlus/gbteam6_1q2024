@@ -4,7 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "./AGameService.h"
-#include "../Interface/MessageObserver.h"
+#include "GBTeam6/Interface/MessageObserver.h"
 
 #include "SoundService.generated.h"
 

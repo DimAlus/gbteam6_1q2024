@@ -1,13 +1,17 @@
 #include "./GeneratorDefaultComponent.h"
-#include "../../Game/GameStateDefault.h"
-#include "../../Interface/GameObjectCore.h"
-#include "../../Interface/GameObjectInterface.h"
-#include "../Inventory/InventoryBaseComponent.h"
-#include "../Health/HealthBaseComponent.h"
-#include "../Mapping/MappingBaseComponent.h"
-#include "../Social/SocialBaseComponent.h"
-#include "../../Service/MessageService.h"
-#include "../../Service/SocialService.h"
+
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+
+#include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/SocialService.h"
+
 #include "GeneratorDefaultComponent.h"
 
 UGeneratorDefaultComponent::UGeneratorDefaultComponent() : UGeneratorBaseComponent() {

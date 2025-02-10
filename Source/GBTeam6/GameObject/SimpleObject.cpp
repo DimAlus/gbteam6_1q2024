@@ -1,10 +1,13 @@
 #include "./SimpleObject.h"
-#include "../Component/Mapping/MappingDefaultComponent.h"
-#include "../Game/GameStateDefault.h"
-#include "../Service/SaveService.h"
+
+#include "GBTeam6/Component/Mapping/MappingDefaultComponent.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/TaskManagerService.h"
+
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
-#include "GBTeam6/Service/TaskManagerService.h"
 
 ASimpleObject::ASimpleObject() {
 	PrimaryActorTick.bCanEverTick = false;

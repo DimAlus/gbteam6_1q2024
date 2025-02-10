@@ -1,11 +1,14 @@
 #include "./SoundService.h"
 
-#include "../Game/GameInstanceDefault.h"
-#include "./MessageService.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+
+#include "GBTeam6/Service/MessageService.h"
+
+#include "GBTeam6/Component/Sound/SoundBaseComponent.h"
+
 #include "Components/AudioComponent.h"
 #include "GameFramework/GameStateBase.h"
-#include "GBTeam6/Component/Sound/SoundBaseComponent.h"
-#include "GBTeam6/Interface/GameObjectCore.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 

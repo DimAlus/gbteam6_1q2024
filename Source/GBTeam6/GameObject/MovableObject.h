@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "../Component/Health/HealthBaseComponent.h"
-#include "../Interface/GameObjectInterface.h"
-#include "../Interface/GameObjectCore.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 #include "MovableObject.generated.h"
 
 

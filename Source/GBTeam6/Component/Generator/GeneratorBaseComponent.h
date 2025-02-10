@@ -4,7 +4,7 @@
 #include "Components/ActorComponent.h"
 
 #include "../BaseComponent.h"
-#include "../../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "GeneratorBaseComponent.generated.h"
 

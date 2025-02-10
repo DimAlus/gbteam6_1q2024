@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "GameObjectCore.generated.h"
 
 

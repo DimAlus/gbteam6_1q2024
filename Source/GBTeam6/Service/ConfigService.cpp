@@ -1,10 +1,9 @@
 #include "ConfigService.h"
-#include "ConfigService.h"
-#include "../Service/ConfigService.h"
-#include "../Service/SaveService.h"
-#include "../Lib/Save/SaveConfig.h"
+#include "GBTeam6/Service/ConfigService.h"
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Lib/Save/SaveConfig.h"
 
-#include "../Game/GameInstanceDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 void UConfigService::InitializeService() {
 	UAGameService::InitializeService();

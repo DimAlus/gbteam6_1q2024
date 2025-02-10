@@ -1,9 +1,9 @@
 #include "./MovableObject.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/FloatingPawnMovement.h"
-#include "../Component/Mapping/MappingBaseComponent.h"
-#include "../Game/GameStateDefault.h"
-#include "../Service/SaveService.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Service/SaveService.h"
 #include "Components/CapsuleComponent.h"
 
 AMovableObject::AMovableObject() {

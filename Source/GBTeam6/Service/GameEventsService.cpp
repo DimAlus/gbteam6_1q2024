@@ -1,14 +1,15 @@
-#include "../Service/GameEventsService.h"
+#include "./GameEventsService.h"
+
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
-#include "GBTeam6/Interface/GameObjectInterface.h"
-#include "GBTeam6/Game/GameStateDefault.h"
+
 #include "GBTeam6/Service/SocialService.h"
 #include "GBTeam6/Service/SaveService.h"
-
-#include "../Game/GameInstanceDefault.h"
 
 #include "GameEventsService.h"
 

@@ -1,5 +1,5 @@
 #include "./TimerService.h"
-#include "../Game/GameInstanceDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 UTimerService::UTimerService() {
 	// this->GetTickableTickType()

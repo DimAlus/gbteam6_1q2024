@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Components/ActorComponent.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "./GameObjectCore.h"
 #include "GameObjectInterface.generated.h"
 

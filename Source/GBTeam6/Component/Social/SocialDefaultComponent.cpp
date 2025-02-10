@@ -1,9 +1,9 @@
 #include "./SocialDefaultComponent.h"
 
-#include "../../Interface/GameObjectCore.h"
-#include "../Mapping/MappingBaseComponent.h"
-#include "../Health/HealthBaseComponent.h"
-#include "../AI/AIBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
 
 void USocialDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	this->UnRegisterObjectInService();

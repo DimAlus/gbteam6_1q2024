@@ -4,7 +4,7 @@
 #include "GameFramework/Pawn.h"
 #include "Misc/Crc.h"
 
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "PlayerPawnDefault.generated.h"
 

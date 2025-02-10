@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "GameInstanceDefault.generated.h"
 
