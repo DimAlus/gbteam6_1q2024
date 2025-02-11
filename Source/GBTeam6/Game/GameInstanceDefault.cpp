@@ -16,6 +16,7 @@
 #include "GBTeam6/Service/GameEventsService.h"
 #include "GBTeam6/Service/ConfigService.h"
 #include "GBTeam6/Service/TimerService.h"
+#include "GBTeam6/Service/GroupService.h"
 
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
@@ -140,7 +141,7 @@ void UGameInstanceDefault::CreateServices() {
 	this->MappingService = NewObject<UMappingService>();
 	this->TaskManagerService = NewObject<UTaskManagerService>();
 	this->GameEventsService = NewObject<UGameEventsService>();
-	this->GroupService = NewObject<UGroupervice>();
+	this->GroupService = NewObject<UGroupService>();
 
 	Cast<UAGameService>(this->SaveService)->GameInstance
 		= Cast<UAGameService>(this->TimerService)->GameInstance

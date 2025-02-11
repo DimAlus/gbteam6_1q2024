@@ -27,19 +27,19 @@ int UGroupService::Group(const TArray<UGameObjectCore*>& cores, const FGroupData
 	if (cores.Num()) {
 		Ungroup(cores);
 		if (cores.Num() == 1) {
-			return;
+			return 0;
 		}		
-		int groupID = GetNextGroupId();
+		int groupId = GetNextGroupId();
 		FGroupData grpData = data;
-		grpData.GroupId = groupID;
+		grpData.GroupId = groupId;
 		grpData.Cores = cores;
 		GroupsData.Add(groupId, grpData);
 		
-		FGroupData& grpref = GroupsData[groupId];
+		FGroupData* grpref = &GroupsData[groupId];
 		for (const auto& core : cores) {
 			CoreGroups.Add(core, grpref);
 		}
-		return groupID;
+		return groupId;
 	}
 	return 0;
 }
@@ -47,7 +47,7 @@ int UGroupService::Group(const TArray<UGameObjectCore*>& cores, const FGroupData
 void UGroupService::Ungroup(const TArray<UGameObjectCore*>& cores) {
 	for (const auto& core : cores) {
 		if (CoreGroups.Contains(core)) {
-			FGroupData& grp = CoreGroups[core];
+			FGroupData& grp = *CoreGroups[core];
 			if (grp.Cores.Num() <= 1) {
 				GroupsData.Remove(grp.GroupId);
 			} else {
@@ -62,33 +62,34 @@ void UGroupService::Ungroup(const TArray<UGameObjectCore*>& cores) {
 /********************
  * Location Finders
  ********************/
+#define __CORES_DISTANCE__ 100.f
 
 FVector GetRandomLocationByIndex(int index) {
 	static std::map<int, FVector> vec;
 	if (vec.find(index) == vec.end()) {
-		float f = CoresDistance / 2.f;
+		float f = __CORES_DISTANCE__ / 2.f;
 		vec[index] = FVector(FMath::FRandRange(-f, f), FMath::FRandRange(-f, f), 0);
 	}
 	return vec[index];
 }
 
 FVector GetLocationNone(const FGroupData& group, int index) {
-	int rows = std::ceil(group.GroupSize / 5 * 2);
-	int cols = std::ceil(group.GroupSize / 5 * 3);
+	int rows = std::ceil(group.Cores.Num() / 5 * 2);
+	int cols = std::ceil(group.Cores.Num() / 5 * 3);
 	
 	return group.GroupLocation - FVector(
-			(rows / 2.f - index / cols) * CoresDistance, 
-			(cols / 2.f - index % cols) * CoresDistance, 
+			(rows / 2.f - index / cols) * __CORES_DISTANCE__,
+			(cols / 2.f - index % cols) * __CORES_DISTANCE__,
 			0
 		) + GetRandomLocationByIndex(index);
 }
 
 FVector GetLocationRectangle(const FGroupData& group, int index) {
-	int rows = std::ceil(group.GroupSize / 5 * 2);
-	int cols = std::ceil(group.GroupSize / 5 * 3);
+	int rows = std::ceil(group.Cores.Num() / 5 * 2);
+	int cols = std::ceil(group.Cores.Num() / 5 * 3);
 	return group.GroupLocation - FVector(
-		(rows / 2.f - index / cols) * CoresDistance, 
-		(cols / 2.f - index % cols) * CoresDistance, 
+		(rows / 2.f - index / cols) * __CORES_DISTANCE__,
+		(cols / 2.f - index % cols) * __CORES_DISTANCE__,
 		0
 	);
 }
@@ -124,7 +125,7 @@ const FGroupData& UGroupService::GetMyGroupData(UGameObjectCore *core, bool &fou
 		return voidData;
 	}
 	found = true;
-	return CoreGroups[core];
+	return *CoreGroups[core];
 }
 
 
@@ -136,7 +137,7 @@ void UGroupService::SetGroupData(int groupId, const FGroupData &groupData) {
 		data.GroupRotation = groupData.GroupRotation;
 
 		for (const auto& core : data.Cores) {
-			if (auto ai = Cast<AIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 				ai->OnGroupDataChanging.Broadcast();
 			}
 		}

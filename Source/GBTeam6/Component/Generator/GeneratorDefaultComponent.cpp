@@ -63,8 +63,9 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 
 			if (thread.GeneratorName == "Construction") {
 				float perc = info.Barter.WorkSize / thread.Power;
-				if (1 - perc * ConstructionStages % 1 <= DeltaPower * DeltaTime) {
-					OnConstructionStageChanged.Broadcast(GetLevel(), perc, (int)(perc * ConstructionStages) + 1);
+				float parts = perc * ConstructionStages;
+				if ((int)(parts + 1) - parts <= DeltaPower * DeltaTime) {
+					OnConstructionStageChanged.Broadcast(GetLevel(), perc, (int)(parts) + 1);
 				}
 			}
 			thread.Power += DeltaPower * DeltaTime;

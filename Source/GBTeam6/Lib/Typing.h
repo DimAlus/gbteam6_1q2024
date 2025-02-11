@@ -923,10 +923,10 @@ struct FGroupData {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int GroupId{}
+	int GroupId{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	EGroupFormation GroupFormation{}
+	EGroupFormation GroupFormation{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector GroupLocation{};

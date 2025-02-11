@@ -34,7 +34,8 @@ protected:
 	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
 
 	char selection;
-private:
+protected:
+	UFUNCTION()
 	void OnDead();
 public:
 	FORCEINLINE virtual float GetSpeed() override { return speedMultiplier * speedDefault; };

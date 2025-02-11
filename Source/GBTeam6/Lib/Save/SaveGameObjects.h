@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/SaveGame.h"
 
-#include "GBTeam6/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "./SaveDefault.h"
 
 #include "SaveGameObjects.generated.h"

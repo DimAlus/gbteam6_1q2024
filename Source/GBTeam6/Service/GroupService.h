@@ -19,16 +19,16 @@ protected:
 	
 private:
 
-	TMap<UGameObjectCore*, FGroupData&> CoreGroups;
+	TMap<UGameObjectCore*, FGroupData*> CoreGroups;
 	TMap<int, FGroupData> GroupsData;
 
 	int GetNextGroupId();
 
-	float CoresDistance = 100.f;
+	// float CoresDistance = 100.f;
 public:
 
 	UFUNCTION(BlueprintCallable)
-	int Group(const TArray<UGameObjectCore*>& cores, FGroupData data);
+	int Group(const TArray<UGameObjectCore*>& cores, const FGroupData& data);
 
 	UFUNCTION(BlueprintCallable)
 	void Ungroup(const TArray<UGameObjectCore*>& cores);
