@@ -87,11 +87,12 @@ FVector GetLocationNone(const FGroupData& group, int index) {
 FVector GetLocationRectangle(const FGroupData& group, int index) {
 	int rows = std::max(1.f, std::ceil(group.Cores.Num() / 5.f * 2));
 	int cols = std::max(1.f, std::ceil(group.Cores.Num() / 5.f * 3));
-	return group.GroupLocation - FVector(
+	FRotator rot = FRotator(0, 0, -group.GroupRotation);
+	return group.GroupLocation - rot.RatateVector(FVector(
 		(rows / 2.f - index / cols) * __CORES_DISTANCE__,
 		(cols / 2.f - index % cols) * __CORES_DISTANCE__,
 		0
-	);
+	));
 }
 
 FVector UGroupService::GetLocation(const FGroupData &group, int index) {

@@ -81,6 +81,8 @@ protected:
 	float newTimeDilation = 1.f;
 
 	bool isScrollPressed = false;
+	FVector commandStartLocation;
+	int CurrentSelectedGroup = 0;
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
@@ -112,6 +114,7 @@ protected:
 	void SelectComplete(const FInputActionValue& Value);
 
 	/** Command object function*/
+	void CommandStart(const FInputActionValue& Value);
 	void Command(const FInputActionValue& Value);
 
 	void SelectSkillTriggerAction(const FInputActionValue& Value);

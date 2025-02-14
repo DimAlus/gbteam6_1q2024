@@ -129,6 +129,8 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SelectComplete);
 		// Command action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::CommandStart);
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
 
@@ -209,8 +211,14 @@ void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
 	(this->*(funcs[ControlMode]))();
 }
 
+void APlayerPawnDefault::CommandStart(const FInputActionValue &Value) {
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
+	commandStartLocation = Hit.Location;
+}
 
-void APlayerPawnDefault::Command(const FInputActionValue& Value) {
+void APlayerPawnDefault::Command(const FInputActionValue &Value)
+{
 	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
 		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
 		{ EControlMode::Default, 		&APlayerPawnDefault::CommandDefault },
@@ -478,17 +486,25 @@ void APlayerPawnDefault::CommandDefault() {
 			ai->OnSelectionTouch.Broadcast();
 		}
 	}
+
 	if (!targetCore) {
 		FGroupData grp;
-		grp.GroupLocation = Hit.Location;
-		GetGameInstanceDefault()->GetGroupService()->Group(SelectedCores, grp);
+		FVector grpStart = commandStartLocation.Length > 1 
+					? commandStartLocation : Hit.Location + FVector(0, 1, 0);
+		grp.GroupLocation = (Hit.Location + grpStart) / 2;
+		grp.GroupRotation = FRotator(Hit.Location - grpStart).Roll - 90.f;
+		if (CurrentSelectedGroup) {
+			GetGameInstanceDefault()->GetGroupService()->SetGroupData(CurrentSelectedGroup, grp);
+		}
+		else {
+			CurrentSelectedGroup = GetGameInstanceDefault()->GetGroupService()->Group(SelectedCores, grp);
+		}
 	}
-	
 	
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			if (!targetCore) {
-				ai->OnCommandMove.Broadcast(Hit.Location);
+				// ai->OnCommandMove.Broadcast(Hit.Location);
 			}
 			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
@@ -630,6 +646,7 @@ void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 }
 
 void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
+	CurrentSelectedGroup = 0;
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(false);
