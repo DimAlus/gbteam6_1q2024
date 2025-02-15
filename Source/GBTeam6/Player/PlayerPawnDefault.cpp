@@ -489,10 +489,11 @@ void APlayerPawnDefault::CommandDefault() {
 
 	if (!targetCore) {
 		FGroupData grp;
-		FVector grpStart = commandStartLocation.Length > 1 
+		FVector grpStart = commandStartLocation.Length() > 1
 					? commandStartLocation : Hit.Location + FVector(0, 1, 0);
 		grp.GroupLocation = (Hit.Location + grpStart) / 2;
-		grp.GroupRotation = FRotator(Hit.Location - grpStart).Roll - 90.f;
+		FRotator rot = (Hit.Location - grpStart).Rotation();
+		grp.GroupRotation = rot.Yaw - 90.f;
 		if (CurrentSelectedGroup) {
 			GetGameInstanceDefault()->GetGroupService()->SetGroupData(CurrentSelectedGroup, grp);
 		}

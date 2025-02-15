@@ -26,9 +26,6 @@ int UGroupService::GetNextGroupId() {
 int UGroupService::Group(const TArray<UGameObjectCore*>& cores, const FGroupData& data) {
 	if (cores.Num()) {
 		Ungroup(cores);
-		if (cores.Num() == 1) {
-			return 0;
-		}		
 		int groupId = GetNextGroupId();
 		FGroupData grpData = data;
 		grpData.GroupId = groupId;
@@ -76,19 +73,20 @@ FVector GetRandomLocationByIndex(int index) {
 FVector GetLocationNone(const FGroupData& group, int index) {
 	int rows = std::ceil(group.Cores.Num() / 5.f * 2);
 	int cols = std::ceil(group.Cores.Num() / 5.f * 3);
+	FRotator rot = FRotator(0, 0, -group.GroupRotation);
 	
-	return group.GroupLocation - FVector(
+	return group.GroupLocation - rot.RotateVector(FVector(
 			(rows / 2.f - index / cols) * __CORES_DISTANCE__,
 			(cols / 2.f - index % cols) * __CORES_DISTANCE__,
 			0
-		) + GetRandomLocationByIndex(index);
+		) + GetRandomLocationByIndex(index));
 }
 
 FVector GetLocationRectangle(const FGroupData& group, int index) {
 	int rows = std::max(1.f, std::ceil(group.Cores.Num() / 5.f * 2));
 	int cols = std::max(1.f, std::ceil(group.Cores.Num() / 5.f * 3));
 	FRotator rot = FRotator(0, 0, -group.GroupRotation);
-	return group.GroupLocation - rot.RatateVector(FVector(
+	return group.GroupLocation - rot.RotateVector(FVector(
 		(rows / 2.f - index / cols) * __CORES_DISTANCE__,
 		(cols / 2.f - index % cols) * __CORES_DISTANCE__,
 		0
