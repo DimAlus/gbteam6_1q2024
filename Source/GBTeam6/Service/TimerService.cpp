@@ -19,8 +19,9 @@ void UTimerService::ClearService() {
 void UTimerService::Tick(float DeltaTime) {
 	if (Initialized) {
 		bool paused = GameInstance->GetWorld()->IsPaused();
+		float TimeDilation = UTyping::GetCurrentTimeDilation();
 		for (int i = Handles.Num() - 1; i >= 0; i--) {
-			Handles[i].Tick(DeltaTime, CustomTimeDilation, paused);
+			Handles[i].Tick(DeltaTime, TimeDilation, paused);
 			if (!Handles[i].IsValid()) {
 				Handles.RemoveAtSwap(i);
 			}

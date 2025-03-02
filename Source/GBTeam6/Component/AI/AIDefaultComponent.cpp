@@ -119,6 +119,7 @@ void UAIDefaultComponent::GetSelection(bool &isSelected, bool &isPreview) {
 
 void UAIDefaultComponent::AddSpeed(float multipleSpeed) {
 	speedMultiplier *= multipleSpeed;
+	OnSpeedChanging.Broadcast(GetSpeed());
 }
 
 

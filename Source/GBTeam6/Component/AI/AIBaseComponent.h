@@ -56,7 +56,7 @@ public:
 	virtual bool GetIsSelectable();
 
 	UFUNCTION(BlueprintCallable)
-	virtual int GetSelectionPriority();
+	virtual ESelectionPriorityType GetSelectionPriority();
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores();

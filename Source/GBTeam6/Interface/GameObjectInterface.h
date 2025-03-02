@@ -29,5 +29,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
 	void CreateCore();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FVector GetLocationByType(ELocationType LocationType, bool& found);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FVector GetLocationByTypes(const TArray<ELocationType>& LocationTypes, bool& found);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FBoxSphereBounds GetObjectBounds();
 	
 };

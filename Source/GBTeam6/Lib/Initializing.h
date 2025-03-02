@@ -372,7 +372,7 @@ public:
 	bool IsSelectable{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SelectionPriority{};
+	ESelectionPriorityType SelectionPriority{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int AttachedCount{0};

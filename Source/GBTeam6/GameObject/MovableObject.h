@@ -22,6 +22,9 @@ public:
 	AMovableObject();
 
 	virtual void CreateCore_Implementation() override;
+	virtual FVector GetLocationByType_Implementation(ELocationType LocationType, bool& found) override;
+	virtual FVector GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) override;
+	virtual FBoxSphereBounds GetObjectBounds_Implementation() override;
 
 	virtual void Destroyed() override;
 protected:

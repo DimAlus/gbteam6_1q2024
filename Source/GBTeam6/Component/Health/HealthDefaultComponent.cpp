@@ -98,6 +98,7 @@ void UHealthDefaultComponent::ChangeHealth(float deltaHealth) {
 		OnChangeHealth.Broadcast();
 
 		if (CurrentHealth <= 0.00001f) {
+			GetCore()->SetDead();
 			CurrentHealth = 0.f;
 			bDead = true;
 			UE_LOG_COMPONENT(Log, "Death");

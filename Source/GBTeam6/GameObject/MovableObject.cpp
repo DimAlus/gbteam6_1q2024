@@ -49,6 +49,31 @@ void AMovableObject::CreateCore_Implementation() {
 	}
 }
 
+FVector AMovableObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
+	if (LocationType == ELocationType::Actor) {
+		found = true;
+		return GetActorLocation();
+	}
+	found = false;
+	return FVector();
+}
+
+FVector AMovableObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
+	FVector v;
+	for (const auto& type : LocationTypes) {
+		v = IGameObjectInterface::Execute_GetLocationByType(this, type, found);
+		if (found) {
+			return v;
+		}
+	}
+	found = false;
+	return FVector();
+}
+
+FBoxSphereBounds AMovableObject::GetObjectBounds_Implementation() {
+	return FBoxSphereBounds(GetCapsuleComponent()->Bounds.GetBox().GetCenter(), GetCapsuleComponent()->GetComponentScale() * 50, 0);
+}
+
 void AMovableObject::Destroyed() {
 	if (GameObjectCore) {
 		GameObjectCore->DestroyOwner();

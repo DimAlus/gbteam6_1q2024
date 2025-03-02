@@ -20,7 +20,7 @@ public:
 	virtual void OnCoreCreatedAfter() override;
 protected:
 	bool bIsSelectable;
-	int selectionPriority;
+	ESelectionPriorityType selectionPriority;
 
 	float speedDefault;
 	float speedMultiplier = 1.f;
@@ -40,7 +40,7 @@ protected:
 public:
 	FORCEINLINE virtual float GetSpeed() override { return speedMultiplier * speedDefault; };
 	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };
-	FORCEINLINE virtual int GetSelectionPriority() override { return selectionPriority; };
+	FORCEINLINE virtual ESelectionPriorityType GetSelectionPriority() override { return selectionPriority; };
 
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores() override;
 	virtual bool CanAttachMe(UGameObjectCore* core) override;

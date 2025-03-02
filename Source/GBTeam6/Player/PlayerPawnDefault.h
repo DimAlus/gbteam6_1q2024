@@ -50,6 +50,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnSkillApply;
 
+	UPROPERTY(BlueprintAssignable)
+	FVectorSignature OnCommand;
+
 protected:
 	/** Player controller */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Controller,  meta = (AllowPrivateAccess = "true"))
@@ -83,6 +86,8 @@ protected:
 	bool isScrollPressed = false;
 	FVector commandStartLocation;
 	int CurrentSelectedGroup = 0;
+
+	TMap<ESelectionPriorityType, int> SelectionPriority;
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
@@ -183,15 +188,37 @@ protected:
 	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
 
 	UFUNCTION(BlueprintCallable)
+	UGameObjectCore* GetCurrentSelectedCore();
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UGameObjectCore*>& GetSelectedCores();
+
+	UFUNCTION(BlueprintCallable)
 	void SetBuildingConstruction(TSubclassOf<AActor> buildingClass);
 	
 
 	UFUNCTION(BlueprintCallable)
 	void GetActorLocationAtScreen(AActor* act, FVector2D& location, float& radius);
 	
+	/**
+	* Returns Array of vectors with selection data:
+	* 0 - CameraLocation
+	* 1 - CameraDirection
+	* 2 - BottomLocation
+	* 3 - Bottom Normal
+	* 4-7 - Normals of selection Pyramide (directed into)
+	*/
 	UFUNCTION(BlueprintCallable)
-	FBox GetSelectionBox();
+	TArray<FVector> GetSelectionNormals();
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FVector> GetBoxPoints(FBox box, FRotator rotation);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetAtSelection(FBox box, FRotator rotation, const TArray<FVector>& selectionData);
 	
+	UFUNCTION()
+	void OnDeadSelectedCore();
 
 	/** Change game speed main function */
 	void UpdateGameSpeed();

@@ -44,7 +44,18 @@ FString GetLevelName(ULevel* level);
 UCLASS()
 class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
-	
+
+private:
+	static float UpdateCurrentTimeDilation(float newTimeDilation = -1);
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="DateTime")
+	static FDateTime GetNow();
+
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game")
+	static void SetCurrentTimeDilation(float newTimeDilation = -1);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game")
+	static float GetCurrentTimeDilation();
 };
 
 
@@ -936,4 +947,17 @@ struct FGroupData {
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<UGameObjectCore*> Cores{};
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FTRSelectionPriority : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESelectionPriorityType Selectionpriority{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PriorityValue{};
 };

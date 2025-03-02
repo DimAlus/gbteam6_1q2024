@@ -45,7 +45,7 @@ void UGameInstanceDefault::Init() {
 
 	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* world) { 
-			this->GameLoading(); 
+			this->GameLoading(world); 
 		}
 	);
 
@@ -64,7 +64,7 @@ void UGameInstanceDefault::Init() {
 	this->OnChangeMap(GetWorld(), reg.GetCaptureGroup(1), mapName);
 
 	GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
-		GameLoading();
+		GameLoading(this->GetWorld());
 	});
 	
 }
@@ -83,19 +83,19 @@ void UGameInstanceDefault::OnChangeMap(UWorld* world, FString FolderName, FStrin
 	InitializeServices();
 }
 
-void UGameInstanceDefault::GameLoading() {
+void UGameInstanceDefault::GameLoading(UWorld* world) {
 	UE_LOG(LgGame, Log, TEXT("Start loading game."));
 	if (!IsMenuMap) {
 		if (IsDevelopmentMap) {
 			APaperTileMapActor* tma = nullptr;
-			for (TActorIterator<APaperTileMapActor> It(GetWorld(), APaperTileMapActor::StaticClass()); It; ++It) {
+			for (TActorIterator<APaperTileMapActor> It(world, APaperTileMapActor::StaticClass()); It; ++It) {
 				tma = *It;
 				break;
 			}
 			if (IsValid(tma)) {
 				GetMappingService()->GenerateMap(tma->GetRenderComponent()->TileMap, "Tiles");
 
-				GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
+				world->GetTimerManager().SetTimerForNextTick([this]() {
 					GetSaveService()->SaveGame(this->GameSaveSlot, true);
 				});
 			}
@@ -104,7 +104,7 @@ void UGameInstanceDefault::GameLoading() {
 			}
 		}
 		else {
-			this->GetSaveService()->LoadGame(GameSaveSlot, false);
+			this->GetSaveService()->LoadGame(GameSaveSlot, false, world);
 			GameEventsService->bIsPaused = false;
 		}
 	}

@@ -1,6 +1,7 @@
 #include "./SkillHeaverDefaultComponent.h"
 
 #include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
 #include "GBTeam6/Game/GameInstanceDefault.h"
 #include "GBTeam6/Service/SocialService.h"
 #include "GBTeam6/Projectile/Projectile.h"
@@ -127,11 +128,11 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	}
 	UE_LOG_COMPONENT(Log, "Cast Skill <%s>: <%s>", *UEnum::GetValueAsString(slot), *skill.Name);
 	if (IsValid(skill.SkillProjectiles[0].ProjectileClass)) {
-		AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(
-			skill.SkillProjectiles[0].ProjectileClass, 
-			castLocation.Length() < 1 ? GetOwner()->GetActorLocation() : castLocation,
-			FRotator()
-		);
+		bool _ = true;
+		FVector loc = castLocation.Length() < 1 
+			? IGameObjectInterface::Execute_GetLocationByTypes(GetOwner(), { ELocationType::SkillCast, ELocationType::Actor }, _)
+			: castLocation;
+		AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(skill.SkillProjectiles[0].ProjectileClass, loc, FRotator());
 		proj->Initialize(GetCore(), targets, targetLocation, skill.SkillProjectiles);
 	}
 	else {

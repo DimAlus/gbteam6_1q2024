@@ -34,6 +34,7 @@ private:
 	TMap<ESkillSlot, FSkill> SrcSkills;
 	TMap<ESkillSlot, FSkill> Skills;
 	TMap<ESkillSlot, bool> SkillsLock;
+	bool bLocked = false;
 
 	bool bCancelSkill;
 

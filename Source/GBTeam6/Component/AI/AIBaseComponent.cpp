@@ -18,8 +18,8 @@ bool UAIBaseComponent::GetIsSelectable() {
 	return false;
 }
 
-int UAIBaseComponent::GetSelectionPriority() {
-	return 0;
+ESelectionPriorityType UAIBaseComponent::GetSelectionPriority() {
+	return ESelectionPriorityType::None;
 }
 
 const TSet<UGameObjectCore*>& UAIBaseComponent::GetAttachedCores() {

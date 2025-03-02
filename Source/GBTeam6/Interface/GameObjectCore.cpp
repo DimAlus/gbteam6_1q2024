@@ -55,6 +55,10 @@ void UGameObjectCore::SetIsCreated() {
 	OnCreatingAfter.Broadcast();
 }
 
+void UGameObjectCore::SetDead() {
+	this->isDead = true;
+}
+
 void UGameObjectCore::InitDataByName(FName ObjectName) {
 	UE_LOG_COMPONENT(Log, "Actor Initialization!");
 	OwnerName = ObjectName.ToString();

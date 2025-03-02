@@ -52,6 +52,31 @@ void ASimpleObject::CreateCore_Implementation() {
 	}
 }
 
+FVector ASimpleObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
+	if (LocationType == ELocationType::Actor) {
+		found = true;
+		return GetActorLocation();
+	}
+	found = false;
+	return FVector();
+}
+
+FVector ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
+	FVector v;
+	for (const auto& type : LocationTypes) {
+		v = IGameObjectInterface::Execute_GetLocationByType(this, type, found);
+		if (found) {
+			return v;
+		}
+	}
+	found = false;
+	return FVector();
+}
+
+FBoxSphereBounds ASimpleObject::GetObjectBounds_Implementation() {
+	return FBoxSphereBounds(ObjectSelectCollision->Bounds.GetBox().GetCenter(), ObjectSelectCollision->GetComponentScale() * 50, 0);
+}
+
 void ASimpleObject::Destroyed() {
 	if (GameObjectCore) {
 		GameObjectCore->DestroyOwner();

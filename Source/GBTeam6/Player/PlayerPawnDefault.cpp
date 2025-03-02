@@ -12,6 +12,7 @@
 
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Component/AI/AIBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 
 #include "GBTeam6/Service/MessageService.h"
@@ -69,6 +70,13 @@ void APlayerPawnDefault::BeginPlay()
 	}
 	
 	InitCamera();
+
+	TArray<FTRSelectionPriority*> PriorityRows;
+	GetGameInstanceDefault()->DT_SelectionPriority->GetAllRows<FTRSelectionPriority>(TEXT("ReadDTTileTypeContext"), PriorityRows);
+	for (const auto* row : PriorityRows) {
+		SelectionPriority.Add(row->Selectionpriority, row->PriorityValue);
+	}
+
 }
 
 void APlayerPawnDefault::Tick(float DeltaTime) {
@@ -336,11 +344,22 @@ void APlayerPawnDefault::DoNothing() {
 }
 
 void APlayerPawnDefault::SelectStartDefault() {
+
 	ControlMode = EControlMode::Selection;
 	FHitResult Hit;
 	
 	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
-	SelectionStartLocation = Hit.Location;
+	if (Hit.bBlockingHit) {
+		SelectionStartLocation = Hit.Location;
+	}
+	else {
+		double mouseX, mouseY;
+		PlayerController->GetMousePosition(mouseX, mouseY);
+
+		FVector WorldLocation, WorldDirection;
+		PlayerController->DeprojectScreenPositionToWorld(mouseX, mouseY, WorldLocation, WorldDirection);
+		SelectionStartLocation = WorldLocation + WorldDirection * 1000;
+	}
 }
 
 void APlayerPawnDefault::SelectUpdateSelection() {
@@ -374,8 +393,10 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 	//	{ maxLocation.X, maxLocation.Y, 0 },
 	//	{ maxLocation.X, minLocation.Y, 0 },
 	//}));
-	FBox box = GetSelectionBox();
-	
+	//FBox box = GetSelectionBox();
+
+	TArray<FVector> SelectionData = GetSelectionNormals();
+
 	
 	//DrawDebugBox(GetWorld(), box.GetCenter(), box.GetExtent(), FColor::Cyan);
 
@@ -396,7 +417,11 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		||  loc.Y != std::clamp(loc.Y, minLocation.Y - rad, maxLocation.Y + rad)) {
 			continue;
 		}*/
-		if (!core->GetOwner()->GetRootComponent()->Bounds.GetBox().IntersectXY(box)) {
+		if (!GetAtSelection(
+			IGameObjectInterface::Execute_GetObjectBounds(core->GetOwner()).GetBox(), 
+			core->GetOwner()->GetActorRotation(), 
+			SelectionData
+		)) {
 			continue;
 		}
 		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
@@ -407,19 +432,22 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		}
 
 		int priorityTeam = teamSelectionPriority[social->GetSocialTeam()];
+		int newSelectionPriority = SelectionPriority.Contains(ai->GetSelectionPriority())
+			? SelectionPriority[ai->GetSelectionPriority()] : SelectionPriority[ESelectionPriorityType::None];
+
 		if (priorityTeam < currentSelectionTeamPriority) {
 			continue;
 		}
 		else if (priorityTeam > currentSelectionTeamPriority) {
 			currentSelectionTeamPriority = priorityTeam;
-			currentSelectionPriority = ai->GetSelectionPriority();
+			currentSelectionPriority = newSelectionPriority;
 			selection = { core };
 		}
-		else if (currentSelectionPriority < ai->GetSelectionPriority()) {
-			currentSelectionPriority = ai->GetSelectionPriority();
+		else if (currentSelectionPriority < newSelectionPriority) {
+			currentSelectionPriority = newSelectionPriority;
 			selection = { core };
 		}
-		else {
+		else if (currentSelectionPriority == newSelectionPriority) {
 			selection.Add(core);
 		}
 	}
@@ -500,12 +528,16 @@ void APlayerPawnDefault::CommandDefault() {
 		else {
 			CurrentSelectedGroup = GetGameInstanceDefault()->GetGroupService()->Group(SelectedCores, grp);
 		}
+
+		if (SelectedCores.Num() > 0) {
+			OnCommand.Broadcast(Hit.Location);
+		}
 	}
 	
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			if (!targetCore) {
-				// ai->OnCommandMove.Broadcast(Hit.Location);
+				ai->OnCommandMove.Broadcast(Hit.Location);
 			}
 			else if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
 				ERelations rel = socialService->GetRelationsBetweenTeams(social->GetSocialTeam(), targetSocialTeam);
@@ -649,6 +681,9 @@ void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
 	CurrentSelectedGroup = 0;
 	for (const auto& core : SelectedCores) {
+		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
+			health->OnDeath.RemoveDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
+		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(false);
 		}
@@ -656,12 +691,23 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 	SelectedCores = cores;
 	SetDefaultMode();
 	for (const auto& core : SelectedCores) {
+		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
+			health->OnDeath.AddDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
+		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(true);
 		}
 	}
 	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
 	OnSelectionChanging.Broadcast();
+}
+
+UGameObjectCore* APlayerPawnDefault::GetCurrentSelectedCore() {
+	return CurrentSelectedCore;
+}
+
+const TArray<UGameObjectCore*>& APlayerPawnDefault::GetSelectedCores() {
+	return SelectedCores;
 }
 
 void APlayerPawnDefault::SetBuildingConstruction(TSubclassOf<AActor> buildingClass) {
@@ -706,28 +752,76 @@ void APlayerPawnDefault::GetActorLocationAtScreen(AActor* act, FVector2D& locati
 	PlayerController->ProjectWorldLocationToScreen(act->GetActorLocation(), location);
 }
 
-FBox APlayerPawnDefault::GetSelectionBox() {
+TArray<FVector> APlayerPawnDefault::GetSelectionNormals() {
 	FVector2D StartLocation;
 	double mouseX, mouseY;
 	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
 	PlayerController->GetMousePosition(mouseX, mouseY);
 
 	TArray<FVector> points{ /*GetCameraLocation(), GetCameraLocation(), GetCameraLocation(), GetCameraLocation()*/ };
-	for (const auto& p : TArray<FVector2D>{ 
-			{ std::min(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
-			{ std::min(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
-			{ std::max(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
-			{ std::max(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
+	for (const auto& p : TArray<FVector2D>{
+			{ std::min(StartLocation.X, mouseX) - 1, std::min(StartLocation.Y, mouseY) + 1 },
+			{ std::min(StartLocation.X, mouseX) - 1, std::max(StartLocation.Y, mouseY) + 1 },
+			{ std::max(StartLocation.X, mouseX) + 1, std::max(StartLocation.Y, mouseY) + 1 },
+			{ std::max(StartLocation.X, mouseX) + 1, std::min(StartLocation.Y, mouseY) - 1 },
 		}) {
 		FVector WorldLocation, WorldDirection;
 		PlayerController->DeprojectScreenPositionToWorld(p.X, p.Y, WorldLocation, WorldDirection);
-
-		FCollisionQueryParams QueryParams;
-		FHitResult HitResult;
-		GetWorld()->LineTraceSingleByChannel(HitResult, WorldLocation, WorldLocation + WorldDirection * 15000, ECollisionChannel::ECC_Visibility);
-		points.Add(HitResult.Location);
+		points.Add(WorldLocation + (WorldDirection.Z < 0 ? WorldDirection / WorldDirection.Z * (-WorldLocation.Z) : WorldDirection * 3000));
 	}
-	return FBox(points);
+	
+	FVector cameraLocation = GetCameraLocation();
+	TArray<FVector> Normals{ cameraLocation, CameraBoom->GetRelativeRotation().Vector(), FVector(), FVector(0, 0, 1) };
+	for (int i = 0; i < points.Num(); i++) {
+		Normals.Add(FVector::CrossProduct(points[i] - cameraLocation, points[(i + 1) % points.Num()] - cameraLocation));
+	}
+	
+	return Normals;
+}
+
+TArray<FVector> APlayerPawnDefault::GetBoxPoints(FBox box, FRotator rotation) {
+	TArray<FVector> points;
+	FVector center = box.GetCenter();
+	FVector d = rotation.RotateVector(box.GetSize());
+	for (const auto& p : TArray<FVector2D>{ { d.X, d.Y }, { d.Y, -d.X }, { -d.X, -d.Y }, { -d.Y, d.X } }) {
+		points.Add(center + FVector{ p.X, p.Y, d.Z });
+		points.Add(center + FVector{ p.X, p.Y,-d.Z });
+	}
+	return points;
+}
+
+bool APlayerPawnDefault::GetAtSelection(FBox box, FRotator rotation, const TArray<FVector>& selectionData) {
+	TArray<FVector> points = GetBoxPoints(box, rotation);
+	int flags = 0;
+	for (const auto& p : points) {
+		FVector cameraPointVector = p - selectionData[0];
+		if (selectionData[1].Dot(cameraPointVector) < 0 ||
+			selectionData[3].Dot(p - selectionData[2]) < 0) {
+			continue;
+		}
+		for (int i = 4; i < selectionData.Num(); i++) {
+			if (selectionData[i].Dot(cameraPointVector) >= 0) {
+				flags |= 1 << (i - 4);
+			}
+		}
+		if (flags == 0b1111) {
+			return true;
+		}
+	}
+	return flags == 0b1111;
+}
+
+
+void APlayerPawnDefault::OnDeadSelectedCore() {
+	TArray<UGameObjectCore*> cores;
+	for (const auto& core : SelectedCores) {
+		if (!core->GetIsDead()) {
+			cores.Add(core);
+		}
+	}
+	int grp = CurrentSelectedGroup;
+	SetSelectedCores(cores);
+	CurrentSelectedGroup = grp;
 }
 
 
@@ -748,9 +842,7 @@ void APlayerPawnDefault::UpdateTimeDilation() {
 	if (CustomTimeDilation != newTimeDilation) {
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1 / newTimeDilation);
 		CustomTimeDilation = newTimeDilation;
-		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
-			timerManager->CustomTimeDilation = CustomTimeDilation;
-		}
+		UTyping::SetCurrentTimeDilation(CustomTimeDilation);
 		OnGameSpeedChanged.Broadcast();
 	}
 }

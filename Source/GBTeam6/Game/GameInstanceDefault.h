@@ -34,7 +34,7 @@ public:
 	void OnChangeMap(UWorld* world, FString FolderName, FString NewMapName);
 
 private:
-	void GameLoading();
+	void GameLoading(UWorld* wiorld);
 
 private:
 	FDelegateHandle PreLoadMapHandle;
@@ -97,6 +97,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
 	UDataTable* DT_TargetFilters;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UDataTable* DT_SelectionPriority;
 
 
 /***************************************

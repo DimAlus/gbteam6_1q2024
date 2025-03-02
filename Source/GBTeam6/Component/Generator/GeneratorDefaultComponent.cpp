@@ -12,8 +12,6 @@
 #include "GBTeam6/Service/MessageService.h"
 #include "GBTeam6/Service/SocialService.h"
 
-#include "GeneratorDefaultComponent.h"
-
 UGeneratorDefaultComponent::UGeneratorDefaultComponent() : UGeneratorBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
 }
@@ -456,7 +454,7 @@ void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 		OnResourceGenerated.Broadcast(info.Barter.Result);
 		GetGameState()->GetMessageService()->Send(
 			{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MSuccess },
-			Cast<UGameObjectCore>(GetOwner())
+			GetCore()
 		);
 	}
 }

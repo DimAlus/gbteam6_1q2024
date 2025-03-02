@@ -19,8 +19,9 @@ protected:
 	
 private:
 
-	TMap<UGameObjectCore*, FGroupData*> CoreGroups;
+	TMap<UGameObjectCore*, int> CoreGroups;
 	TMap<int, FGroupData> GroupsData;
+	TSet<int> ConstantsGroups;
 
 	int GetNextGroupId();
 
@@ -28,7 +29,13 @@ private:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	int Group(const TArray<UGameObjectCore*>& cores, const FGroupData& data);
+	int CreateConstantGroup(const TArray<UGameObjectCore*>& cores, const FGroupData& data);
+
+	UFUNCTION(BlueprintCallable)
+	int Group(const TArray<UGameObjectCore*>& cores, const FGroupData& data, bool forceCreate = false);
+
+	UFUNCTION(BlueprintCallable)
+	void AddCoreToGroup(int groupId, UGameObjectCore* core);
 
 	UFUNCTION(BlueprintCallable)
 	void Ungroup(const TArray<UGameObjectCore*>& cores);
