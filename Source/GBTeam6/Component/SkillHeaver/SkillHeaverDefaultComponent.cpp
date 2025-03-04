@@ -124,6 +124,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	}
 	FSkill& skill = Skills[slot];
 	if (!(skill.SkillProjectiles[0].SpawnAtNoTargets || targets.Num())) {
+		SkillsLock[slot] = false;
 		return false;
 	}
 	UE_LOG_COMPONENT(Log, "Cast Skill <%s>: <%s>", *UEnum::GetValueAsString(slot), *skill.Name);
@@ -146,6 +147,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	}
 	skill.CurrentCooldown = skill.Cooldown;
 	SkillsLock[slot] = false;
+	this->CurrentMana = std::max(0.f, this->CurrentMana - skill.Mana);
 	OnSkillCast.Broadcast(slot);
 	return true;
 }
@@ -168,7 +170,6 @@ bool USkillHeaverDefaultComponent::TryCastSkillWithPriorityTargets(ESkillSlot sl
 	if (!bCancelSkill) {
 		CastSkill(slot, targets, {});
 	}
-	this->CurrentMana = std::max(0.f, this->CurrentMana - Skills[slot].Mana);
 	return true;
 }
 
@@ -182,7 +183,6 @@ bool USkillHeaverDefaultComponent::TryCastSkillAtLocation(ESkillSlot slot, FVect
 	if (!bCancelSkill) {
 		CastSkill(slot, {}, TargetLocation);
 	}
-	this->CurrentMana = std::max(0.f, this->CurrentMana - Skills[slot].Mana);
 	return true;
 }
 

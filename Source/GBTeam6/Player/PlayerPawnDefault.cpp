@@ -471,24 +471,30 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 	}
 	ControlMode = EControlMode::Default;
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
-		if (skillHeaver->CanCastSkill(SelectedSkill)) {
-			if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
-				FHitResult Hit;
-				GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
-				bool _;
-				TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-					skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
-					CurrentSelectedCore,
-					Hit.Location,
-					{},
-					{},
-					{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
-					  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
-				);
+		auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI));
+		if (ai && skillHeaver->CanCastSkill(SelectedSkill)) {
+			TArray<UGameObjectCore*> targets;
+			bool _;
+			const FSkill& skill = skillHeaver->GetSkillData(SelectedSkill, _);
+			FHitResult Hit;
 
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
+			targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+				skill.SkillProjectiles[0].TargetFinder,
+				CurrentSelectedCore,
+				Hit.Location,
+				{},
+				{},
+				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
+					{ ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
+			);
+
+			if (skill.SkillProjectiles[0].SpawnAtNoTargets || targets.Num() > 0) {
 				ai->OnTryCastSkill.Broadcast(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
+				OnSkillApply.Broadcast();
+			}  else {
+				OnSkillCancel.Broadcast();
 			}
-			OnSkillApply.Broadcast();
 		}
 		else {
 			OnSkillCancel.Broadcast();
@@ -562,7 +568,7 @@ void APlayerPawnDefault::UpdateSkillApplying() {
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
 		if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
 			FHitResult Hit;
-			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
 			bool _;
 			TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 				skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
