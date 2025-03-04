@@ -18,8 +18,8 @@ bool UAIBaseComponent::GetIsSelectable() {
 	return false;
 }
 
-int UAIBaseComponent::GetSelectionPriority() {
-	return 0;
+ESelectionPriorityType UAIBaseComponent::GetSelectionPriority() {
+	return ESelectionPriorityType::None;
 }
 
 const TSet<UGameObjectCore*>& UAIBaseComponent::GetAttachedCores() {
@@ -61,4 +61,7 @@ void UAIBaseComponent::SetSelection(bool isSelected) {
 }
 
 void UAIBaseComponent::GetSelection(bool &isSelected, bool &isPreview) {
+}
+
+void UAIBaseComponent::AddSpeed(float multipleSpeed) {
 }

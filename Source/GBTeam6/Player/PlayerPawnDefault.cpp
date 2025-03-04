@@ -12,12 +12,14 @@
 
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Component/AI/AIBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 
 #include "GBTeam6/Service/MessageService.h"
 #include "GBTeam6/Service/TimerService.h"
 #include "GBTeam6/Service/SocialService.h"
 #include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/GroupService.h"
 
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -68,17 +70,30 @@ void APlayerPawnDefault::BeginPlay()
 	}
 	
 	InitCamera();
+
+	TArray<FTRSelectionPriority*> PriorityRows;
+	GetGameInstanceDefault()->DT_SelectionPriority->GetAllRows<FTRSelectionPriority>(TEXT("ReadDTTileTypeContext"), PriorityRows);
+	for (const auto* row : PriorityRows) {
+		SelectionPriority.Add(row->Selectionpriority, row->PriorityValue);
+	}
+
 }
 
 void APlayerPawnDefault::Tick(float DeltaTime) {
+	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
+		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Default, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Selection, 		&APlayerPawnDefault::DoNothing },
+		{ EControlMode::Building, 		&APlayerPawnDefault::UpdateBuilding },
+		{ EControlMode::SkillApplying, 	&APlayerPawnDefault::UpdateSkillApplying },
+	};
+	
 	Super::Tick(DeltaTime);
 	LastDeltaTime = DeltaTime;
 	UpdateCamera(DeltaTime);
 	UpdateTimeDilation();
 
-	if (ControlMode == EControlMode::Building) {
-		UpdateBuildingLocation();
-	}
+	(this->*(funcs[ControlMode]))();
 }
 
 UGameInstanceDefault *APlayerPawnDefault::GetGameInstanceDefault() {
@@ -122,10 +137,14 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 		EnhancedInputComponent->BindAction(PlayerInputAction.SelectAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SelectComplete);
 		// Command action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Started, this,
+			&APlayerPawnDefault::CommandStart);
 		EnhancedInputComponent->BindAction(PlayerInputAction.CommandAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::Command);
 
 		// Skill action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::SelectSkillTriggerAction);
 		EnhancedInputComponent->BindAction(PlayerInputAction.SkillAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SelectSkillAction);
 
@@ -136,7 +155,9 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			&APlayerPawnDefault::RotateBuildingSlowly);
 		
 		// Set game speed action binding
-		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Started, this,
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::SetGameSpeedTriggeredInput);
+		EnhancedInputComponent->BindAction(PlayerInputAction.SetGameSpeedAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::SetGameSpeedInput);
 		
 		// Set game save action binding
@@ -198,8 +219,14 @@ void APlayerPawnDefault::SelectComplete(const FInputActionValue& Value) {
 	(this->*(funcs[ControlMode]))();
 }
 
+void APlayerPawnDefault::CommandStart(const FInputActionValue &Value) {
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
+	commandStartLocation = Hit.Location;
+}
 
-void APlayerPawnDefault::Command(const FInputActionValue& Value) {
+void APlayerPawnDefault::Command(const FInputActionValue &Value)
+{
 	static std::map<EControlMode, void (APlayerPawnDefault::*) ()> funcs = {
 		{ EControlMode::None, 			&APlayerPawnDefault::DoNothing },
 		{ EControlMode::Default, 		&APlayerPawnDefault::CommandDefault },
@@ -211,15 +238,19 @@ void APlayerPawnDefault::Command(const FInputActionValue& Value) {
 	(this->*(funcs[ControlMode]))();
 }
 
-void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
+void APlayerPawnDefault::SelectSkillTriggerAction(const FInputActionValue& Value){
 	int inputValue = (int)Value.Get<float>();
-	ESkillSlot slot =
-			inputValue == 0 ? ESkillSlot::Auto
-		:	inputValue == 1 ? ESkillSlot::Skill1
-		:	inputValue == 2 ? ESkillSlot::Skill2
-		:	inputValue == 3 ? ESkillSlot::Skill3
-		:	ESkillSlot::None;
-	TrySelectSkill(slot);
+	LastSelectedSkillSlot =
+		inputValue == 0 ? ESkillSlot::Auto
+		: inputValue == 1 ? ESkillSlot::Skill1
+		: inputValue == 2 ? ESkillSlot::Skill2
+		: inputValue == 3 ? ESkillSlot::Skill3
+		: ESkillSlot::None;
+}
+
+void APlayerPawnDefault::SelectSkillAction(const FInputActionValue &Value) {
+	TrySelectSkill(LastSelectedSkillSlot);
+	LastSelectedSkillSlot = ESkillSlot::None;
 }
 
 
@@ -292,16 +323,19 @@ void APlayerPawnDefault::CameraZoom(const FInputActionValue& Value) {
 }
 
 
+void APlayerPawnDefault::SetGameSpeedTriggeredInput(const FInputActionValue& Value) {
+	LastSelectedGameSpeed = Value.Get<float>();
+}
+
 void APlayerPawnDefault::SetGameSpeedInput(const FInputActionValue& Value) {
-	int speed = Value.Get<float>();
-	if (speed <= 0) {
+	if (std::abs(LastSelectedGameSpeed) <= 0.1) {
 		SetGamePaused(!CurrentGamePaused);
 	}
 	else {
 		if (CurrentGamePaused) {
 			SetGamePaused(false);
 		}
-		SetGameSpeed(speed);
+		SetGameSpeed(LastSelectedGameSpeed);
 	}
 }
 
@@ -310,11 +344,22 @@ void APlayerPawnDefault::DoNothing() {
 }
 
 void APlayerPawnDefault::SelectStartDefault() {
+
 	ControlMode = EControlMode::Selection;
 	FHitResult Hit;
 	
 	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
-	SelectionStartLocation = Hit.Location;
+	if (Hit.bBlockingHit) {
+		SelectionStartLocation = Hit.Location;
+	}
+	else {
+		double mouseX, mouseY;
+		PlayerController->GetMousePosition(mouseX, mouseY);
+
+		FVector WorldLocation, WorldDirection;
+		PlayerController->DeprojectScreenPositionToWorld(mouseX, mouseY, WorldLocation, WorldDirection);
+		SelectionStartLocation = WorldLocation + WorldDirection * 1000;
+	}
 }
 
 void APlayerPawnDefault::SelectUpdateSelection() {
@@ -348,8 +393,10 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 	//	{ maxLocation.X, maxLocation.Y, 0 },
 	//	{ maxLocation.X, minLocation.Y, 0 },
 	//}));
-	FBox box = GetSelectionBox();
-	
+	//FBox box = GetSelectionBox();
+
+	TArray<FVector> SelectionData = GetSelectionNormals();
+
 	
 	//DrawDebugBox(GetWorld(), box.GetCenter(), box.GetExtent(), FColor::Cyan);
 
@@ -370,7 +417,11 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		||  loc.Y != std::clamp(loc.Y, minLocation.Y - rad, maxLocation.Y + rad)) {
 			continue;
 		}*/
-		if (!core->GetOwner()->GetRootComponent()->Bounds.GetBox().IntersectXY(box)) {
+		if (!GetAtSelection(
+			IGameObjectInterface::Execute_GetObjectBounds(core->GetOwner()).GetBox(), 
+			core->GetOwner()->GetActorRotation(), 
+			SelectionData
+		)) {
 			continue;
 		}
 		auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social));
@@ -381,40 +432,30 @@ void APlayerPawnDefault::SelectUpdateSelection() {
 		}
 
 		int priorityTeam = teamSelectionPriority[social->GetSocialTeam()];
+		int newSelectionPriority = SelectionPriority.Contains(ai->GetSelectionPriority())
+			? SelectionPriority[ai->GetSelectionPriority()] : SelectionPriority[ESelectionPriorityType::None];
+
 		if (priorityTeam < currentSelectionTeamPriority) {
 			continue;
 		}
 		else if (priorityTeam > currentSelectionTeamPriority) {
 			currentSelectionTeamPriority = priorityTeam;
-			currentSelectionPriority = ai->GetSelectionPriority();
+			currentSelectionPriority = newSelectionPriority;
 			selection = { core };
 		}
-		else if (currentSelectionPriority < ai->GetSelectionPriority()) {
-			currentSelectionPriority = ai->GetSelectionPriority();
+		else if (currentSelectionPriority < newSelectionPriority) {
+			currentSelectionPriority = newSelectionPriority;
 			selection = { core };
 		}
-		else {
+		else if (currentSelectionPriority == newSelectionPriority) {
 			selection.Add(core);
 		}
 	}
-
-	for (const auto& core : SelectedCoresTemp) {
-		if (!selection.Contains(core)) {
-			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-				ai->SetSelectionPreview(false);
-			}
-		}
-	}
-	SelectedCoresTemp = selection.Array();
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(true);
-		}
-	}
+	UpdatePreviewSelection(selection);
 }
 
 void APlayerPawnDefault::SelectCompleteSelection() {
-	SetSelectedCores(SelectedCoresTemp);
+	SetSelectedCores(SelectedCoresTemp.Array());
 	ControlMode = EControlMode::Default;
 }
 
@@ -441,8 +482,8 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 					Hit.Location,
 					{},
 					{},
-					{ { ETargetFilterType::Distance, 100.f, EFilterCompareType::Less },
-					  { ETargetFilterType::Distance, 100.f, EFilterCompareType::LessEqual }, }
+					{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
+					  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
 				);
 
 				ai->OnTryCastSkill.Broadcast(SelectedSkill, Hit.Location, targets.Num() ? targets[0] : nullptr);
@@ -454,6 +495,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 		}
 		SelectedSkill = ESkillSlot::None;
 	}
+	UpdatePreviewSelection({});
 }
 
 void APlayerPawnDefault::CommandDefault() {
@@ -472,7 +514,25 @@ void APlayerPawnDefault::CommandDefault() {
 			ai->OnSelectionTouch.Broadcast();
 		}
 	}
-	
+
+	if (!targetCore) {
+		FGroupData grp;
+		FVector grpStart = commandStartLocation.Length() > 1
+					? commandStartLocation : Hit.Location + FVector(0, 1, 0);
+		grp.GroupLocation = (Hit.Location + grpStart) / 2;
+		FRotator rot = (Hit.Location - grpStart).Rotation();
+		grp.GroupRotation = rot.Yaw - 90.f;
+		if (CurrentSelectedGroup) {
+			GetGameInstanceDefault()->GetGroupService()->SetGroupData(CurrentSelectedGroup, grp);
+		}
+		else {
+			CurrentSelectedGroup = GetGameInstanceDefault()->GetGroupService()->Group(SelectedCores, grp);
+		}
+
+		if (SelectedCores.Num() > 0) {
+			OnCommand.Broadcast(Hit.Location);
+		}
+	}
 	
 	for (const auto& core : SelectedCores) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
@@ -498,8 +558,48 @@ void APlayerPawnDefault::CommandDefault() {
 	}
 }
 
+void APlayerPawnDefault::UpdateSkillApplying() {
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
+			FHitResult Hit;
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_Visibility);
+			bool _;
+			TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+				skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
+				CurrentSelectedCore,
+				Hit.Location,
+				{},
+				{},
+				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
+				  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
+			);
+			UpdatePreviewSelection(targets.Num() ? TSet<UGameObjectCore*>({ targets[0] }) : TSet<UGameObjectCore*>());
+		}
+	}
+}
 
-void APlayerPawnDefault::SetDefaultMode() {
+void APlayerPawnDefault::UpdateBuilding() {
+	UpdateBuildingLocation();
+}
+
+void APlayerPawnDefault::UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores) {
+	for (const auto& core : SelectedCoresTemp) {
+		if (!cores.Contains(core)) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->SetSelectionPreview(false);
+			}
+		}
+	}
+	SelectedCoresTemp = cores;
+	for (const auto& core : SelectedCoresTemp) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->SetSelectionPreview(true);
+		}
+	}
+}
+
+void APlayerPawnDefault::SetDefaultMode()
+{
 	switch (ControlMode)
 	{
 	case EControlMode::Selection:
@@ -524,12 +624,7 @@ void APlayerPawnDefault::CancelSelectProcess() {
 		return;
 	}
 	ControlMode = EControlMode::Default;
-	for (const auto& core : SelectedCoresTemp) {
-		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(false);
-		}
-	}
-	SelectedCoresTemp.Empty();
+	UpdatePreviewSelection({});
 }
 
 void APlayerPawnDefault::SelectionSkillCancel() {
@@ -584,7 +679,11 @@ void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 }
 
 void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores) {
+	CurrentSelectedGroup = 0;
 	for (const auto& core : SelectedCores) {
+		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
+			health->OnDeath.RemoveDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
+		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(false);
 		}
@@ -592,12 +691,23 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 	SelectedCores = cores;
 	SetDefaultMode();
 	for (const auto& core : SelectedCores) {
+		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
+			health->OnDeath.AddDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
+		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 			ai->SetSelection(true);
 		}
 	}
 	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
 	OnSelectionChanging.Broadcast();
+}
+
+UGameObjectCore* APlayerPawnDefault::GetCurrentSelectedCore() {
+	return CurrentSelectedCore;
+}
+
+const TArray<UGameObjectCore*>& APlayerPawnDefault::GetSelectedCores() {
+	return SelectedCores;
 }
 
 void APlayerPawnDefault::SetBuildingConstruction(TSubclassOf<AActor> buildingClass) {
@@ -642,28 +752,76 @@ void APlayerPawnDefault::GetActorLocationAtScreen(AActor* act, FVector2D& locati
 	PlayerController->ProjectWorldLocationToScreen(act->GetActorLocation(), location);
 }
 
-FBox APlayerPawnDefault::GetSelectionBox() {
+TArray<FVector> APlayerPawnDefault::GetSelectionNormals() {
 	FVector2D StartLocation;
 	double mouseX, mouseY;
 	PlayerController->ProjectWorldLocationToScreen(SelectionStartLocation, StartLocation);
 	PlayerController->GetMousePosition(mouseX, mouseY);
 
 	TArray<FVector> points{ /*GetCameraLocation(), GetCameraLocation(), GetCameraLocation(), GetCameraLocation()*/ };
-	for (const auto& p : TArray<FVector2D>{ 
-			{ std::min(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
-			{ std::min(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
-			{ std::max(StartLocation.X, mouseX), std::max(StartLocation.Y, mouseY) },
-			{ std::max(StartLocation.X, mouseX), std::min(StartLocation.Y, mouseY) },
+	for (const auto& p : TArray<FVector2D>{
+			{ std::min(StartLocation.X, mouseX) - 1, std::min(StartLocation.Y, mouseY) + 1 },
+			{ std::min(StartLocation.X, mouseX) - 1, std::max(StartLocation.Y, mouseY) + 1 },
+			{ std::max(StartLocation.X, mouseX) + 1, std::max(StartLocation.Y, mouseY) + 1 },
+			{ std::max(StartLocation.X, mouseX) + 1, std::min(StartLocation.Y, mouseY) - 1 },
 		}) {
 		FVector WorldLocation, WorldDirection;
 		PlayerController->DeprojectScreenPositionToWorld(p.X, p.Y, WorldLocation, WorldDirection);
-
-		FCollisionQueryParams QueryParams;
-		FHitResult HitResult;
-		GetWorld()->LineTraceSingleByChannel(HitResult, WorldLocation, WorldLocation + WorldDirection * 15000, ECollisionChannel::ECC_Visibility);
-		points.Add(HitResult.Location);
+		points.Add(WorldLocation + (WorldDirection.Z < 0 ? WorldDirection / WorldDirection.Z * (-WorldLocation.Z) : WorldDirection * 3000));
 	}
-	return FBox(points);
+	
+	FVector cameraLocation = GetCameraLocation();
+	TArray<FVector> Normals{ cameraLocation, CameraBoom->GetRelativeRotation().Vector(), FVector(), FVector(0, 0, 1) };
+	for (int i = 0; i < points.Num(); i++) {
+		Normals.Add(FVector::CrossProduct(points[i] - cameraLocation, points[(i + 1) % points.Num()] - cameraLocation));
+	}
+	
+	return Normals;
+}
+
+TArray<FVector> APlayerPawnDefault::GetBoxPoints(FBox box, FRotator rotation) {
+	TArray<FVector> points;
+	FVector center = box.GetCenter();
+	FVector d = rotation.RotateVector(box.GetSize() / 2);
+	for (const auto& p : TArray<FVector2D>{ { d.X, d.Y }, { d.Y, -d.X }, { -d.X, -d.Y }, { -d.Y, d.X } }) {
+		points.Add(center + FVector{ p.X, p.Y, d.Z });
+		points.Add(center + FVector{ p.X, p.Y,-d.Z });
+	}
+	return points;
+}
+
+bool APlayerPawnDefault::GetAtSelection(FBox box, FRotator rotation, const TArray<FVector>& selectionData) {
+	TArray<FVector> points = GetBoxPoints(box, rotation);
+	int flags = 0;
+	for (const auto& p : points) {
+		FVector cameraPointVector = p - selectionData[0];
+		if (selectionData[1].Dot(cameraPointVector) < 0 ||
+			selectionData[3].Dot(p - selectionData[2]) < 0) {
+			continue;
+		}
+		for (int i = 4; i < selectionData.Num(); i++) {
+			if (selectionData[i].Dot(cameraPointVector) >= 0) {
+				flags |= 1 << (i - 4);
+			}
+		}
+		if (flags == 0b1111) {
+			return true;
+		}
+	}
+	return flags == 0b1111;
+}
+
+
+void APlayerPawnDefault::OnDeadSelectedCore() {
+	TArray<UGameObjectCore*> cores;
+	for (const auto& core : SelectedCores) {
+		if (!core->GetIsDead()) {
+			cores.Add(core);
+		}
+	}
+	int grp = CurrentSelectedGroup;
+	SetSelectedCores(cores);
+	CurrentSelectedGroup = grp;
 }
 
 
@@ -673,7 +831,7 @@ void APlayerPawnDefault::UpdateGameSpeed() {
 		TimeDilation = 0.0001f;
 	}
 	else {
-		TimeDilation = std::pow(2, CurrentGameSpeed - 1);
+		TimeDilation = std::pow(2, CurrentGameSpeed - (CurrentGameSpeed < 0 ? 0 : 1));
 	}
 	if (TimeDilation >= 0.0001f) {	
 		newTimeDilation = 1.f / TimeDilation;
@@ -684,9 +842,7 @@ void APlayerPawnDefault::UpdateTimeDilation() {
 	if (CustomTimeDilation != newTimeDilation) {
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1 / newTimeDilation);
 		CustomTimeDilation = newTimeDilation;
-		if (auto timerManager = Cast<UGameInstanceDefault>(GetGameInstance())->GetGameTimerManager()) {
-			timerManager->CustomTimeDilation = CustomTimeDilation;
-		}
+		UTyping::SetCurrentTimeDilation(CustomTimeDilation);
 		OnGameSpeedChanged.Broadcast();
 	}
 }

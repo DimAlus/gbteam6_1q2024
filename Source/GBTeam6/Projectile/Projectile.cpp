@@ -42,6 +42,7 @@ UGameInstanceDefault* AProjectile::GetGameInstanceDefault() {
 
 void AProjectile::Initialize(UGameObjectCore* initiator,
 							const TArray<UGameObjectCore*>& targets,
+							FVector targetLocation,
 							const TArray<FSkillProjectileData>& projectilesData) {
 	if (projectilesData.Num() == 0 || (targets.Num() == 0 && !projectilesData[0].SpawnAtNoTargets)) {
 		Destroy();
@@ -49,6 +50,7 @@ void AProjectile::Initialize(UGameObjectCore* initiator,
 	}
 	auto* queueData = GetProjectileQueueData();
 	this->Target = targets.Num() ? targets[0] : nullptr;
+	this->TargetLocation = targets.Num() ? targets[0]->GetOwner()->GetActorLocation() : targetLocation;
 	this->Initiator = initiator;
 	this->ProjectilesData = projectilesData;
 	this->LifeTime = projectilesData[0].TimeLife;
@@ -84,7 +86,7 @@ AProjectile* AProjectile::CreateNextProjectile() {
 				GetActorLocation(),
 				FRotator()
 			);
-			proj->Initialize(Initiator, targets, data);
+			proj->Initialize(Initiator, targets, {}, data);
 			return proj;
 		}
 	}

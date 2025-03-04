@@ -3,8 +3,8 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 
-#include "../BaseComponent.h"
-#include "../../Lib/Lib.h"
+#include "GBTeam6/Component/BaseComponent.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "GeneratorBaseComponent.generated.h"
 
@@ -51,6 +51,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FObjectLevelSignature OnObjectLevelChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FConstructionStageSignature OnConstructionStageChanged;
 
 	UPROPERTY(BlueprintAssignable)
 	FActorStringSignature OnSpawnActor;

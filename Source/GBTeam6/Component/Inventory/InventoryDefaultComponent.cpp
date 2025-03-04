@@ -1,7 +1,7 @@
 #include "./InventoryDefaultComponent.h"
-#include "../../Game/GameStateDefault.h"
-#include "../../Interface/GameObjectCore.h"
-#include "../Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "InventoryDefaultComponent.h"
 
 void UInventoryDefaultComponent::Initialize(const FInventoryComponentInitializer& initializer) {

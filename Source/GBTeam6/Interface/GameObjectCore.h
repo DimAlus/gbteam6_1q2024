@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "GameObjectCore.generated.h"
 
 
@@ -19,6 +19,7 @@ protected:
 	AActor* owner;
 
 	bool isCreated = false;
+	bool isDead = false;
 
 	FString OwnerName;
 
@@ -57,6 +58,10 @@ public:
 	FORCEINLINE FString GetOwnerName() const { return OwnerName; };
 	
 	void SetIsCreated();
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool GetIsDead() const { return isDead; };
+	void SetDead();
 
 	UFUNCTION()
 	void InitDataByName(FName ObjectName);

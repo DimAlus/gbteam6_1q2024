@@ -49,3 +49,30 @@ FString* UStringCycledIterator::Prev() {
 
     return &this->Iterable[this->iter]; 
 }
+
+FDateTime UTyping::GetNow() {
+    return FDateTime::Now();
+}
+
+float UTyping::UpdateCurrentTimeDilation(float newTimeDilation) {
+    static float timeDilation = 1.f;
+    if (newTimeDilation > 0) {
+        timeDilation = newTimeDilation;
+    }
+    return timeDilation;
+}
+
+void UTyping::SetCurrentTimeDilation(float newTimeDilation) {
+    UpdateCurrentTimeDilation(newTimeDilation);
+}
+
+float UTyping::GetCurrentTimeDilation() {
+    return UpdateCurrentTimeDilation();
+}
+
+FHardwareCursorReference FHardwareCursorData::ToHardwareCursorReference() {
+    FHardwareCursorReference res;
+    res.CursorPath = CursorPath;
+    res.HotSpot = HotSpot;
+    return res;
+}

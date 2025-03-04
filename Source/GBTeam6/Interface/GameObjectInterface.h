@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Components/ActorComponent.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "./GameObjectCore.h"
 #include "GameObjectInterface.generated.h"
 
@@ -29,5 +29,14 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Component)
 	void CreateCore();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FVector GetLocationByType(ELocationType LocationType, bool& found);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FVector GetLocationByTypes(const TArray<ELocationType>& LocationTypes, bool& found);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
+	FBoxSphereBounds GetObjectBounds();
 	
 };

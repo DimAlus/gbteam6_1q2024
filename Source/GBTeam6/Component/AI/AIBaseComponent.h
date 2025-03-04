@@ -22,6 +22,9 @@ public:
 public:
 
 	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnGroupDataChanging;
+
+	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnSelectionChanging;
 
 	UPROPERTY(BlueprintAssignable)
@@ -53,7 +56,7 @@ public:
 	virtual bool GetIsSelectable();
 
 	UFUNCTION(BlueprintCallable)
-	virtual int GetSelectionPriority();
+	virtual ESelectionPriorityType GetSelectionPriority();
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores();
@@ -87,5 +90,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual void GetSelection(bool& isSelected, bool& isPreview);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void AddSpeed(float multipleSpeed);
 
 };

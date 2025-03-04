@@ -1,14 +1,15 @@
-#include "../Service/TaskManagerService.h"
+#include "./TaskManagerService.h"
+
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+
+#include "GBTeam6/Service/SocialService.h"
+#include "GBTeam6/Service/ConfigService.h"
 
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
-#include "GBTeam6/Interface/GameObjectCore.h"
-#include "GBTeam6/Game/GameStateDefault.h"
-#include "GBTeam6/Game/GameInstanceDefault.h"
-#include "./SocialService.h"
-#include "./ConfigService.h"
-#include "TaskManagerService.h"
 
 
 void UTaskManagerService::InitializeService() {

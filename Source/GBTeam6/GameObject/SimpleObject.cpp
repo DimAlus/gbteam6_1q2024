@@ -1,10 +1,13 @@
 #include "./SimpleObject.h"
-#include "../Component/Mapping/MappingDefaultComponent.h"
-#include "../Game/GameStateDefault.h"
-#include "../Service/SaveService.h"
+
+#include "GBTeam6/Component/Mapping/MappingDefaultComponent.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/TaskManagerService.h"
+
 #include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
-#include "GBTeam6/Service/TaskManagerService.h"
 
 ASimpleObject::ASimpleObject() {
 	PrimaryActorTick.bCanEverTick = false;
@@ -47,6 +50,31 @@ void ASimpleObject::CreateCore_Implementation() {
 			mapping->OnPlaced.AddDynamic(this, &ASimpleObject::OnPlacedBehaviour);
 		}
 	}
+}
+
+FVector ASimpleObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
+	if (LocationType == ELocationType::Actor) {
+		found = true;
+		return GetActorLocation();
+	}
+	found = false;
+	return FVector();
+}
+
+FVector ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
+	FVector v;
+	for (const auto& type : LocationTypes) {
+		v = IGameObjectInterface::Execute_GetLocationByType(this, type, found);
+		if (found) {
+			return v;
+		}
+	}
+	found = false;
+	return FVector();
+}	
+
+FBoxSphereBounds ASimpleObject::GetObjectBounds_Implementation() {
+	return FBoxSphereBounds(ObjectSelectCollision->Bounds.GetBox().GetCenter(), ObjectSelectCollision->GetComponentScale() * 32, 0);
 }
 
 void ASimpleObject::Destroyed() {

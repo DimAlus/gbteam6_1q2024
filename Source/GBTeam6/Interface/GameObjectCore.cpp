@@ -1,17 +1,19 @@
 #include "./GameObjectCore.h"
-#include "../Component/Mapping/MappingBaseComponent.h"
-#include "../Component/Health/HealthBaseComponent.h"
-#include "../Component/Inventory/InventoryBaseComponent.h"
-#include "../Component/Generator/GeneratorBaseComponent.h"
-#include "../Component/Tasker/TaskerBaseComponent.h"
-#include "../Component/Effect/EffectBaseComponent.h"
-#include "../Component/Social/SocialBaseComponent.h"
-#include "../Component/UI/UIBaseComponent.h"
-#include "../Component/Sound/SoundBaseComponent.h"
-#include "../Component/SkillHeaver/SkillHeaverBaseComponent.h"
-#include "../Component/AI/AIBaseComponent.h"
-#include "../Game/GameStateDefault.h"
-#include "../Game/GameInstanceDefault.h"
+
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
+#include "GBTeam6/Component/Effect/EffectBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/UI/UIBaseComponent.h"
+#include "GBTeam6/Component/Sound/SoundBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
+
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 UGameObjectCore::UGameObjectCore() {
 }
@@ -51,6 +53,10 @@ void UGameObjectCore::SetIsCreated() {
 	OnCreatingBefore.Broadcast();
 	OnCreating.Broadcast();
 	OnCreatingAfter.Broadcast();
+}
+
+void UGameObjectCore::SetDead() {
+	this->isDead = true;
 }
 
 void UGameObjectCore::InitDataByName(FName ObjectName) {

@@ -1,13 +1,17 @@
 #include "./TaskerDefaultComponent.h"
-#include "../Inventory/InventoryBaseComponent.h"
-#include "../Generator/GeneratorBaseComponent.h"
-#include "../Social/SocialBaseComponent.h"
-#include "../Generator/GeneratorBaseComponent.h"
-#include "../../Interface/GameObjectCore.h"
-#include "../../Game/GameStateDefault.h"
-#include "../../Game/GameInstanceDefault.h"
-#include "../../Service/TaskManagerService.h"
-#include "../../Service/TimerService.h"
+
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+
+#include "GBTeam6/Service/TaskManagerService.h"
+#include "GBTeam6/Service/TimerService.h"
+
 #include "TaskerDefaultComponent.h"
 
 

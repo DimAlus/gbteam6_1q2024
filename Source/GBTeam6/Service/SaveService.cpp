@@ -1,36 +1,35 @@
 #include "./SaveService.h"
 #include "Kismet/GameplayStatics.h"
-#include "../Game/GameStateDefault.h"
-#include "./MappingService.h"
-#include "./ConfigService.h"
+#include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/ConfigService.h"
+#include "GBTeam6/Service/GameEventsService.h"
 
-#include "../Lib/Save/SaveDefault.h"
-#include "../Lib/Save/SaveTileMap.h"
-#include "../Lib/Save/SaveGameObjects.h"
-#include "../Lib/Save/SaveConfig.h"
-#include "../Lib/Save/SaveProgress.h"
+#include "GBTeam6/Lib/Save/SaveDefault.h"
+#include "GBTeam6/Lib/Save/SaveTileMap.h"
+#include "GBTeam6/Lib/Save/SaveGameObjects.h"
+#include "GBTeam6/Lib/Save/SaveConfig.h"
+#include "GBTeam6/Lib/Save/SaveProgress.h"
 
-#include "../GameObject/SimpleObject.h"
-#include "../GameObject/MovableObject.h"
+#include "GBTeam6/GameObject/SimpleObject.h"
+#include "GBTeam6/GameObject/MovableObject.h"
 
-#include "../Game/GameInstanceDefault.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+#include "GBTeam6/Game/GameStateDefault.h"
 
-#include "../Interface/GameObjectInterface.h"
-#include "../Component/Health/HealthBaseComponent.h"
-#include "../Component/Mapping/MappingBaseComponent.h"
-#include "../Component/Inventory/InventoryBaseComponent.h"
-#include "../Component/Generator/GeneratorBaseComponent.h"
-#include "../Component/Tasker/TaskerBaseComponent.h"
-#include "../Component/Effect/EffectBaseComponent.h"
-#include "../Component/Social/SocialBaseComponent.h"
-#include "../Component/SkillHeaver/SkillHeaverBaseComponent.h"
-#include "../Component/AI/AIBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Component/Tasker/TaskerBaseComponent.h"
+#include "GBTeam6/Component/Effect/EffectBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
+
 #include "PlatformFeatures.h"
 #include "GameFramework/SaveGame.h"
-
-#include "../Interface/GameObjectCore.h"
-
-#include "./GameEventsService.h"
 
 
 
@@ -256,11 +255,11 @@ void USaveService::SaveGame(FString SlotName, bool isDevMap) {
 	}
 }
 
-void USaveService::LoadGame(FString SlotName, bool isDevMap) {
+void USaveService::LoadGame(FString SlotName, bool isDevMap, UWorld* currentWorld) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start LoadGame from slot '%s'"), *GetNameSafe(this), *SlotName);
 	if (!isDevMap) {
 		FString playerName = TEXT("player");
-		UWorld* world = GameInstance->GetWorld();
+		UWorld* world = currentWorld ? currentWorld : GameInstance->GetWorld();
 		FString mapName = GetLevelName(world->GetCurrentLevel());
 
 		/// Load TileMap

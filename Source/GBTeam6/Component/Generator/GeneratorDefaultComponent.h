@@ -45,6 +45,7 @@ private:
 
 	float WorkPower;
 
+	int ConstructionStages;
 
 
 	TArray<UGameObjectCore*> CoresAttached;

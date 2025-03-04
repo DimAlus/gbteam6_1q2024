@@ -1,9 +1,9 @@
 #include "./MovableObject.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "GameFramework/FloatingPawnMovement.h"
-#include "../Component/Mapping/MappingBaseComponent.h"
-#include "../Game/GameStateDefault.h"
-#include "../Service/SaveService.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Service/SaveService.h"
 #include "Components/CapsuleComponent.h"
 
 AMovableObject::AMovableObject() {
@@ -47,6 +47,31 @@ void AMovableObject::CreateCore_Implementation() {
 		this->GameObjectCore->InitDataByName(ObjectName);
 		this->GameObjectCore->SetIsCreated();
 	}
+}
+
+FVector AMovableObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
+	if (LocationType == ELocationType::Actor) {
+		found = true;
+		return GetActorLocation();
+	}
+	found = false;
+	return FVector();
+}
+
+FVector AMovableObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
+	FVector v;
+	for (const auto& type : LocationTypes) {
+		v = IGameObjectInterface::Execute_GetLocationByType(this, type, found);
+		if (found) {
+			return v;
+		}
+	}
+	found = false;
+	return FVector();
+}
+
+FBoxSphereBounds AMovableObject::GetObjectBounds_Implementation() {
+	return FBoxSphereBounds(GetCapsuleComponent()->Bounds.GetBox().GetCenter(), GetCapsuleComponent()->GetComponentScale() * 50, 0);
 }
 
 void AMovableObject::Destroyed() {

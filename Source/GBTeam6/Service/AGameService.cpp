@@ -1,6 +1,6 @@
 #include "./AGameService.h"
-#include "../Game/GameInstanceDefault.h"
-#include "../Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+#include "GBTeam6/Game/GameStateDefault.h"
 
 void UAGameService::InitializeService() {
 	UE_LOG_SERVICE(Log, "Initialize Servie");

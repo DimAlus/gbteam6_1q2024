@@ -5,9 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "../Component/Health/HealthBaseComponent.h"
-#include "../Interface/GameObjectInterface.h"
-#include "../Interface/GameObjectCore.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 #include "MovableObject.generated.h"
 
 
@@ -22,6 +22,9 @@ public:
 	AMovableObject();
 
 	virtual void CreateCore_Implementation() override;
+	virtual FVector GetLocationByType_Implementation(ELocationType LocationType, bool& found) override;
+	virtual FVector GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) override;
+	virtual FBoxSphereBounds GetObjectBounds_Implementation() override;
 
 	virtual void Destroyed() override;
 protected:

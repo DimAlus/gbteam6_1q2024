@@ -20,7 +20,7 @@ public:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FSkillSlotTargetsSignature OnSkillIntention;
+	FSkillSlotTargetsVectorSignature OnSkillIntention;
 	UPROPERTY(BlueprintAssignable)
 	FSkillSlotSignature OnSkillCast;
 
@@ -32,13 +32,16 @@ public:
 	virtual void CancelStartedSkillCast(ESkillSlot slot);
 
 	UFUNCTION(BlueprintCallable)
-	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation);
+	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation, FVector castLocation);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool TryCastSkill(ESkillSlot slot);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets);
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool TryCastSkillAtLocation(ESkillSlot slot, FVector TargetLocation);
 
 	UFUNCTION(BlueprintCallable)
 	virtual bool CanCastSkill(ESkillSlot slot);

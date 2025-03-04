@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "MessageObserver.generated.h"
 

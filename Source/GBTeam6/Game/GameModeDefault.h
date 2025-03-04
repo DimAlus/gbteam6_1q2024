@@ -4,7 +4,7 @@
 #include "GameFramework/GameMode.h"
 #include "GameFramework/GameModeBase.h"
 
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "GameModeDefault.generated.h"
 

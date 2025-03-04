@@ -1,11 +1,11 @@
 #include "./SocialService.h"
 #include "map"
 
-#include "../Component/Social/SocialBaseComponent.h"
-#include "../Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
 
-#include "../Interface/GameObjectCore.h"
-#include "../Game/GameInstanceDefault.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 
 void USocialService::InitializeService() {

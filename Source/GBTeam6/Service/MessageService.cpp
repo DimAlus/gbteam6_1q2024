@@ -1,7 +1,7 @@
 #include "./MessageService.h"
-#include "../Interface/GameObjectCore.h"
-#include "../Interface/GameObjectInterface.h"
-#include "../Interface/MessageObserver.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Interface/MessageObserver.h"
 
 void UMessageService::InitializeService() {
 	UAGameService::InitializeService();

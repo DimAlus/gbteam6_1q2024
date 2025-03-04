@@ -17,9 +17,10 @@ public:
 	virtual void SaveComponent(FAISaveData& saveData) override;
 	virtual void LoadComponent(const FAISaveData& saveData) override;
 
+	virtual void OnCoreCreatedAfter() override;
 protected:
 	bool bIsSelectable;
-	int selectionPriority;
+	ESelectionPriorityType selectionPriority;
 
 	float speedDefault;
 	float speedMultiplier = 1.f;
@@ -33,10 +34,13 @@ protected:
 	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
 
 	char selection;
+protected:
+	UFUNCTION()
+	void OnDead();
 public:
 	FORCEINLINE virtual float GetSpeed() override { return speedMultiplier * speedDefault; };
 	FORCEINLINE virtual bool GetIsSelectable() override { return bIsSelectable; };
-	FORCEINLINE virtual int GetSelectionPriority() override { return selectionPriority; };
+	FORCEINLINE virtual ESelectionPriorityType GetSelectionPriority() override { return selectionPriority; };
 
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores() override;
 	virtual bool CanAttachMe(UGameObjectCore* core) override;
@@ -50,5 +54,7 @@ public:
 	virtual void SetSelectionPreview(bool isSelected);
 	virtual void SetSelection(bool isSelected);
 	virtual void GetSelection(bool& isSelected, bool& isPreview);
+
+	virtual void AddSpeed(float multipleSpeed) override;
 };
 

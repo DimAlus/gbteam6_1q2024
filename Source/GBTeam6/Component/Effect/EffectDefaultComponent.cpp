@@ -5,6 +5,7 @@
 #include "GBTeam6/Game/GameInstanceDefault.h"
 
 #include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
 
 void UEffectDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	TimerHandle.Invalidate();
@@ -81,10 +82,15 @@ void UEffectDefaultComponent::OnDeath() {
 
 
 void UEffectDefaultComponent::ActionApplyEffect(const FEffect& effect) {
-	static std::map<EEffect, void (*)(const FEffect& effect, UGameObjectCore* core)> actionMap = {
+	static std::map<EEffect, void (*)(const FEffect&, UGameObjectCore*)> actionMap = {
 		{ EEffect::HealthChange, [](const FEffect& effect, UGameObjectCore* core) {  
 			if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 				health->ChangeHealth(effect.Value);
+			}
+		} },
+		{ EEffect::Slowing, [](const FEffect& effect, UGameObjectCore* core) {  
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->AddSpeed(effect.Value);
 			}
 		} },
 	};
@@ -95,12 +101,17 @@ void UEffectDefaultComponent::ActionApplyEffect(const FEffect& effect) {
 }
 
 void UEffectDefaultComponent::ActionCancelEffect(const FEffect& effect) {
-	static std::map<EEffect, void (*)(const FEffect& effect)> actionMap = {
+	static std::map<EEffect, void (*)(const FEffect&, UGameObjectCore*)> actionMap = {
+		{ EEffect::Slowing, [](const FEffect& effect, UGameObjectCore* core) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->AddSpeed(1.f / effect.Value);
+			}
+		} },
 
 	};
 	auto it = actionMap.find(effect.Effect);
 	if (it != actionMap.end()) {
-		(*(it->second))(effect);
+		(*(it->second))(effect, GetCore());
 	}
 }
 

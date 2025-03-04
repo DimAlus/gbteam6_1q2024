@@ -127,7 +127,7 @@ with open(f"{lib_path}/SavingStructures.h", "w", encoding="UTF-8") as f:
 with open(f"{service_path}/SaveService.cpp", "r", encoding="UTF-8") as f:
 	data = f.read()
 
-	data = re.sub(r"(?ms)(.*\n#include [^\n]*/Component/.*?\n)", f"""\\1#include "../Component/{component_name}/{component_name}BaseComponent.h"\n""", data, count=1)
+	data = re.sub(r"(?ms)(.*\n#include [^\n]*/Component/.*?\n)", f"""\\1#include "GBTeam6/Component/{component_name}/{component_name}BaseComponent.h"\n""", data, count=1)
 	data = re.sub(
 		r"""(?ms)(.*if \(auto \w*? = Cast<\w*>\(core->GetComponent\(EGameComponentType::\w*\)\)\).*?SaveComponent.*?\})""",
 		f"""\\1
@@ -213,7 +213,7 @@ with open(f"{lib_path}/Initializing.h", "w", encoding="UTF-8") as f:
 with open(f"{core_path}/GameObjectCore.cpp", "r", encoding="UTF-8") as f:
 	data = f.read()
 
-	data = re.sub(r"(?ms)(.*\n#include [^\n]*/Component/.*?\n)", f"""\\1#include "../Component/{component_name}/{component_name}BaseComponent.h"\n""", data, count=1)
+	data = re.sub(r"(?ms)(.*\n#include [^\n]*/Component/.*?\n)", f"""\\1#include "GBTeam6/Component/{component_name}/{component_name}BaseComponent.h"\n""", data, count=1)
 
 	data = re.sub(
 		r"(?ms)(.*//\s*Create[^\n]*component.*?NewObject<U\w*BaseComponent>.*?BindComponent.*?\n)(.*New\w*Component->Initialize.*?\n)",

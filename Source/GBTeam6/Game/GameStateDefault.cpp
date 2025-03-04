@@ -2,22 +2,25 @@
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
 #include "PaperTileMap.h"
-#include "../Lib/Lib.h"
-#include "../Lib/Save/SaveConfig.h"
-#include "../Service/MappingService.h"
-#include "../Service/SaveService.h"
-#include "../Service/TaskManagerService.h"
-#include "../Service/SocialService.h"
-#include "../Service/MessageService.h"
-#include "../Service/SoundService.h"
-#include "../Service/GameEventsService.h"
-#include "../Service/ConfigService.h"
 
-#include "./GameInstanceDefault.h"
+#include "GBTeam6/Lib/Lib.h"
+#include "GBTeam6/Lib/Save/SaveConfig.h"
 
-#include "../Component/Inventory/InventoryBaseComponent.h"
-#include "../Interface/GameObjectInterface.h"
-#include "../Interface/GameObjectCore.h"
+#include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/TaskManagerService.h"
+#include "GBTeam6/Service/SocialService.h"
+#include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/SoundService.h"
+#include "GBTeam6/Service/GameEventsService.h"
+#include "GBTeam6/Service/ConfigService.h"
+
+
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+
+#include "GBTeam6/Game/GameInstanceDefault.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 #include "GameStateDefault.h"
 
 

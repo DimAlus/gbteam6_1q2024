@@ -1,21 +1,23 @@
 #include "./GameInstanceDefault.h"
 
 #include "Engine.h"
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 #include "Internationalization/Regex.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Engine/GameViewportClient.h"
 
-#include "../Service/AGameService.h"
-#include "../Service/MappingService.h"
-#include "../Service/SaveService.h"
-#include "../Service/TaskManagerService.h"
-#include "../Service/SocialService.h"
-#include "../Service/MessageService.h"
-#include "../Service/SoundService.h"
-#include "../Service/GameEventsService.h"
-#include "../Service/ConfigService.h"
-#include "../Service/TimerService.h"
+#include "GBTeam6/Service/AGameService.h"
+#include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/TaskManagerService.h"
+#include "GBTeam6/Service/SocialService.h"
+#include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/SoundService.h"
+#include "GBTeam6/Service/GameEventsService.h"
+#include "GBTeam6/Service/ConfigService.h"
+#include "GBTeam6/Service/TimerService.h"
+#include "GBTeam6/Service/GroupService.h"
 
 #include "PaperTileMapActor.h"
 #include "PaperTileMapComponent.h"
@@ -44,7 +46,7 @@ void UGameInstanceDefault::Init() {
 
 	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* world) { 
-			this->GameLoading(); 
+			this->GameLoading(world); 
 		}
 	);
 
@@ -63,7 +65,7 @@ void UGameInstanceDefault::Init() {
 	this->OnChangeMap(GetWorld(), reg.GetCaptureGroup(1), mapName);
 
 	GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
-		GameLoading();
+		GameLoading(this->GetWorld());
 	});
 	
 }
@@ -80,21 +82,22 @@ void UGameInstanceDefault::OnChangeMap(UWorld* world, FString FolderName, FStrin
 
 	ClearServices();
 	InitializeServices();
+	ResetAllHardwareCursors();
 }
 
-void UGameInstanceDefault::GameLoading() {
+void UGameInstanceDefault::GameLoading(UWorld* world) {
 	UE_LOG(LgGame, Log, TEXT("Start loading game."));
 	if (!IsMenuMap) {
 		if (IsDevelopmentMap) {
 			APaperTileMapActor* tma = nullptr;
-			for (TActorIterator<APaperTileMapActor> It(GetWorld(), APaperTileMapActor::StaticClass()); It; ++It) {
+			for (TActorIterator<APaperTileMapActor> It(world, APaperTileMapActor::StaticClass()); It; ++It) {
 				tma = *It;
 				break;
 			}
 			if (IsValid(tma)) {
 				GetMappingService()->GenerateMap(tma->GetRenderComponent()->TileMap, "Tiles");
 
-				GetWorld()->GetTimerManager().SetTimerForNextTick([this]() {
+				world->GetTimerManager().SetTimerForNextTick([this]() {
 					GetSaveService()->SaveGame(this->GameSaveSlot, true);
 				});
 			}
@@ -103,7 +106,7 @@ void UGameInstanceDefault::GameLoading() {
 			}
 		}
 		else {
-			this->GetSaveService()->LoadGame(GameSaveSlot, false);
+			this->GetSaveService()->LoadGame(GameSaveSlot, false, world);
 			GameEventsService->bIsPaused = false;
 		}
 	}
@@ -140,14 +143,7 @@ void UGameInstanceDefault::CreateServices() {
 	this->MappingService = NewObject<UMappingService>();
 	this->TaskManagerService = NewObject<UTaskManagerService>();
 	this->GameEventsService = NewObject<UGameEventsService>();
-	/*this->SaveService = NewObject<USaveService>(this, "SaveService", EObjectFlags::RF_MarkAsRootSet);
-	this->ConfigService = NewObject<UConfigService>(this, "ConfigService", EObjectFlags::RF_MarkAsRootSet);
-	this->MessageService = NewObject<UMessageService>(this, "MessageService", EObjectFlags::RF_MarkAsRootSet);
-	this->SoundService = NewObject<USoundService>(this, "SoundService", EObjectFlags::RF_MarkAsRootSet);
-	this->SocialService = NewObject<USocialService>(this, "SocialService", EObjectFlags::RF_MarkAsRootSet);
-	this->MappingService = NewObject<UMappingService>(this, "MappingService", EObjectFlags::RF_MarkAsRootSet);
-	this->TaskManagerService = NewObject<UTaskManagerService>(this, "TaskManagerService", EObjectFlags::RF_MarkAsRootSet);
-	this->GameEventsService = NewObject<UGameEventsService>(this, "GameEventsService", EObjectFlags::RF_MarkAsRootSet);*/
+	this->GroupService = NewObject<UGroupService>();
 
 	Cast<UAGameService>(this->SaveService)->GameInstance
 		= Cast<UAGameService>(this->TimerService)->GameInstance
@@ -157,6 +153,7 @@ void UGameInstanceDefault::CreateServices() {
 		= Cast<UAGameService>(this->SocialService)->GameInstance
 		= Cast<UAGameService>(this->MappingService)->GameInstance
 		= Cast<UAGameService>(this->TaskManagerService)->GameInstance
+		= Cast<UAGameService>(this->GroupService)->GameInstance
 		= Cast<UAGameService>(this->GameEventsService)->GameInstance = this;
 }
 
@@ -177,6 +174,7 @@ void UGameInstanceDefault::InitializeServices() {
 	Cast<UAGameService>(this->MappingService)->InitializeService();
 	Cast<UAGameService>(this->TaskManagerService)->InitializeService();
 	Cast<UAGameService>(this->GameEventsService)->InitializeService();
+	Cast<UAGameService>(this->GroupService)->InitializeService();
 }
 
 void UGameInstanceDefault::ClearServices() {
@@ -193,4 +191,31 @@ void UGameInstanceDefault::ClearServices() {
 	if (auto s = Cast<UAGameService>(this->TaskManagerService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->GameEventsService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->TimerService)) s->ClearService();
+	if (auto s = Cast<UAGameService>(this->GroupService)) s->ClearService();
+}
+
+
+void UGameInstanceDefault::SetHardwareCursor(EMouseCursor::Type cursorType, FHardwareCursorData& cursor) {
+	UUserInterfaceSettings* Settings = GetMutableDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+	Settings->HardwareCursors.Add(cursorType, cursor.ToHardwareCursorReference());
+	if (IsValid(GEngine->GameViewport)) {
+		GEngine->GameViewport->RebuildCursors();
+	}
+}
+
+void UGameInstanceDefault::ResetHardwareCursor(EMouseCursor::Type cursorType) {
+	if (DefaulHardwareCursors.Contains(cursorType)) {
+		SetHardwareCursor(cursorType, DefaulHardwareCursors[cursorType]);
+	}
+}
+
+void UGameInstanceDefault::ResetAllHardwareCursors() {
+	UUserInterfaceSettings* Settings = GetMutableDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+	
+	for (auto& cur : DefaulHardwareCursors) {
+		Settings->HardwareCursors.Add(cur.Key, cur.Value.ToHardwareCursorReference());
+		if (IsValid(GEngine->GameViewport)) {
+			GEngine->GameViewport->RebuildCursors();
+		}
+	}
 }

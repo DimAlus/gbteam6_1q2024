@@ -81,9 +81,6 @@ protected:
 	TArray<FGameTimerHandle> Handles;
 
 public:
-	float CustomTimeDilation = 1.f;
-
-public:
 	UFUNCTION(BlueprintCallable)
 	FGameTimerHandle& SetTimer(FTouchBlueprintableSignature Callback,
 								float Time,

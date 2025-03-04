@@ -4,7 +4,7 @@
 #include "GameFramework/Pawn.h"
 #include "Misc/Crc.h"
 
-#include "../Lib/Lib.h"
+#include "GBTeam6/Lib/Lib.h"
 
 #include "PlayerPawnDefault.generated.h"
 
@@ -34,6 +34,7 @@ protected:
 
 	virtual void Tick (float DeltaTime) override;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	UGameInstanceDefault* GetGameInstanceDefault();
 
 public:
@@ -49,6 +50,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnSkillApply;
+
+	UPROPERTY(BlueprintAssignable)
+	FVectorSignature OnCommand;
 
 protected:
 	/** Player controller */
@@ -81,6 +85,10 @@ protected:
 	float newTimeDilation = 1.f;
 
 	bool isScrollPressed = false;
+	FVector commandStartLocation;
+	int CurrentSelectedGroup = 0;
+
+	TMap<ESelectionPriorityType, int> SelectionPriority;
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
@@ -93,13 +101,16 @@ protected:
 	TArray<UGameObjectCore*> SelectedCores;
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<UGameObjectCore*> SelectedCoresTemp;
+	TSet<UGameObjectCore*> SelectedCoresTemp;
 
 	UPROPERTY(BlueprintReadOnly)
 	FVector SelectionStartLocation;
 
 	UPROPERTY(BlueprintReadOnly)
 	ESkillSlot SelectedSkill;
+
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Control")
+	float SkillTargerAttachRadius{ 100.f };
 
 protected:
 	
@@ -109,8 +120,10 @@ protected:
 	void SelectComplete(const FInputActionValue& Value);
 
 	/** Command object function*/
+	void CommandStart(const FInputActionValue& Value);
 	void Command(const FInputActionValue& Value);
 
+	void SelectSkillTriggerAction(const FInputActionValue& Value);
 	void SelectSkillAction(const FInputActionValue& Value);
 
 	void QuickSave(const FInputActionValue& Value);
@@ -139,6 +152,8 @@ protected:
 	void CameraZoom(const FInputActionValue& Value);
 	
 	/** Change game speed input functions */
+	void SetGameSpeedTriggeredInput(const FInputActionValue& Value);
+	/** Change game speed input functions */
 	void SetGameSpeedInput(const FInputActionValue& Value);
 
 /**************** Input Actions Processing ****************/
@@ -152,7 +167,12 @@ protected:
 	void SelectCompleteSkillApplying();
 	void CommandDefault();
 
+	void UpdateSkillApplying();
+	void UpdateBuilding();
+	
 protected:
+	void UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores);
+
 	void SetDefaultMode();
 	void CancelSelectProcess();
 	void SelectionSkillCancel();
@@ -169,15 +189,37 @@ protected:
 	void SetSelectedCores(const TArray<UGameObjectCore*>& cores);
 
 	UFUNCTION(BlueprintCallable)
+	UGameObjectCore* GetCurrentSelectedCore();
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UGameObjectCore*>& GetSelectedCores();
+
+	UFUNCTION(BlueprintCallable)
 	void SetBuildingConstruction(TSubclassOf<AActor> buildingClass);
 	
 
 	UFUNCTION(BlueprintCallable)
 	void GetActorLocationAtScreen(AActor* act, FVector2D& location, float& radius);
 	
+	/**
+	* Returns Array of vectors with selection data:
+	* 0 - CameraLocation
+	* 1 - CameraDirection
+	* 2 - BottomLocation
+	* 3 - Bottom Normal
+	* 4-7 - Normals of selection Pyramide (directed into)
+	*/
 	UFUNCTION(BlueprintCallable)
-	FBox GetSelectionBox();
+	TArray<FVector> GetSelectionNormals();
+
+	UFUNCTION(BlueprintCallable)
+	TArray<FVector> GetBoxPoints(FBox box, FRotator rotation);
+
+	UFUNCTION(BlueprintCallable)
+	bool GetAtSelection(FBox box, FRotator rotation, const TArray<FVector>& selectionData);
 	
+	UFUNCTION()
+	void OnDeadSelectedCore();
 
 	/** Change game speed main function */
 	void UpdateGameSpeed();
@@ -185,6 +227,9 @@ protected:
 	void UpdateTimeDilation();
 
 protected:
+	ESkillSlot LastSelectedSkillSlot;
+	float LastSelectedGameSpeed;
+
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default|Building")
 	float BuildingRotationMultiplier;
 

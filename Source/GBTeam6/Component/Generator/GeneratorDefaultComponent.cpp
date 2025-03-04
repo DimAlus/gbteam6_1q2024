@@ -1,14 +1,16 @@
 #include "./GeneratorDefaultComponent.h"
-#include "../../Game/GameStateDefault.h"
-#include "../../Interface/GameObjectCore.h"
-#include "../../Interface/GameObjectInterface.h"
-#include "../Inventory/InventoryBaseComponent.h"
-#include "../Health/HealthBaseComponent.h"
-#include "../Mapping/MappingBaseComponent.h"
-#include "../Social/SocialBaseComponent.h"
-#include "../../Service/MessageService.h"
-#include "../../Service/SocialService.h"
-#include "GeneratorDefaultComponent.h"
+
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
+
+#include "GBTeam6/Component/Inventory/InventoryBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
+
+#include "GBTeam6/Service/MessageService.h"
+#include "GBTeam6/Service/SocialService.h"
 
 UGeneratorDefaultComponent::UGeneratorDefaultComponent() : UGeneratorBaseComponent() {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -57,6 +59,13 @@ void UGeneratorDefaultComponent::TickComponent(float DeltaTime, ELevelTick TickT
 				}
 			}
 
+			if (thread.GeneratorName == "Construction") {
+				float perc = thread.Power / info.Barter.WorkSize;
+				float parts = perc * ConstructionStages;
+				if ((int)(parts + 1) - parts <= DeltaPower * DeltaTime) {
+					OnConstructionStageChanged.Broadcast(GetLevel(), perc, (int)(parts) + 1);
+				}
+			}
 			thread.Power += DeltaPower * DeltaTime;
 			if (thread.Power >= info.Barter.WorkSize) {
 				DismissWorkers(info.ThreadName);
@@ -101,6 +110,7 @@ void UGeneratorDefaultComponent::Initialize(const FGeneratorComponentInitializer
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 
 	this->WorkPower = initializer.WorkPower;
+	this->ConstructionStages = initializer.ConstructionStages;
 
 	this->Generators = initializer.Generators;
 
@@ -444,7 +454,7 @@ void UGeneratorDefaultComponent::ApplyWork(const FString& generatorName) {
 		OnResourceGenerated.Broadcast(info.Barter.Result);
 		GetGameState()->GetMessageService()->Send(
 			{ EMessageTag::GOE, EMessageTag::GOAGenerator, EMessageTag::MSuccess },
-			Cast<UGameObjectCore>(GetOwner())
+			GetCore()
 		);
 	}
 }

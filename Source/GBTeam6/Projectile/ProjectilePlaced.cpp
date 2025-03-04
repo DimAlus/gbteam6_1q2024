@@ -29,8 +29,9 @@ void AProjectilePlaced::Destroyed() {
 
 void AProjectilePlaced::Initialize(UGameObjectCore* initiator,
 								   const TArray<UGameObjectCore*>& targets,
+								   FVector targetLocation,
 								   const TArray<FSkillProjectileData>& projectilesData) {
-	Super::Initialize(initiator, targets, projectilesData);
+	Super::Initialize(initiator, targets, targetLocation, projectilesData);
 	if (projectilesData.Num() == 0 || (targets.Num() == 0 && !projectilesData[0].SpawnAtNoTargets)) {
 		return;
 	}

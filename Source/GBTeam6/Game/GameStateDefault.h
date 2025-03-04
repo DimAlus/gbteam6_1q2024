@@ -3,9 +3,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 
-#include "../Lib/Lib.h"
-#include "../Interface/CanSaveInterface.h"
-#include "./GameInstanceDefault.h"
+#include "GBTeam6/Lib/Lib.h"
+#include "GBTeam6/Interface/CanSaveInterface.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
 #include "GameStateDefault.generated.h"
 

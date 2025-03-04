@@ -1,6 +1,6 @@
 #include "./HealthDefaultComponent.h"
-#include "../../Interface/GameObjectCore.h"
-#include "../Generator/GeneratorBaseComponent.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 
 UHealthDefaultComponent::UHealthDefaultComponent() {
 	PrimaryComponentTick.bCanEverTick = false;
@@ -8,7 +8,7 @@ UHealthDefaultComponent::UHealthDefaultComponent() {
 }
 
 void UHealthDefaultComponent::OnCoreCreatedBefore() {
-	GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
+	// GetOwner()->OnTakeAnyDamage.AddDynamic(this, &UHealthDefaultComponent::TakeDamage);
 }
 
 
@@ -98,6 +98,7 @@ void UHealthDefaultComponent::ChangeHealth(float deltaHealth) {
 		OnChangeHealth.Broadcast();
 
 		if (CurrentHealth <= 0.00001f) {
+			GetCore()->SetDead();
 			CurrentHealth = 0.f;
 			bDead = true;
 			UE_LOG_COMPONENT(Log, "Death");

@@ -1,10 +1,10 @@
 #include "./MappingService.h"
-#include "../Game/GameInstanceDefault.h"
-#include "./ConfigService.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
+#include "GBTeam6/Service/ConfigService.h"
 
-#include "../Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectCore.h"
 
-#include "../Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
 
 #include "MappingService.h"
 

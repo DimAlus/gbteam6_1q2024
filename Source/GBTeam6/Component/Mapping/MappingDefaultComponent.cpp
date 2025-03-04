@@ -1,12 +1,12 @@
 #include "./MappingDefaultComponent.h"
-#include "../../Game/GameStateDefault.h"
-#include "../../Game/GameInstanceDefault.h"
+#include "GBTeam6/Game/GameStateDefault.h"
+#include "GBTeam6/Game/GameInstanceDefault.h"
 
-#include "../../Service/MappingService.h"
-#include "../../Service/SaveService.h"
-#include "../../Service/ConfigService.h"
+#include "GBTeam6/Service/MappingService.h"
+#include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/ConfigService.h"
 
-#include "../../Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Health/HealthBaseComponent.h"
 
 #include "Components/ShapeComponent.h"
 #include "GBTeam6/Interface/GameObjectCore.h"

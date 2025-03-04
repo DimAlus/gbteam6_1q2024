@@ -4,7 +4,7 @@
 #include "UObject/NoExportTypes.h"
 
 #include "./AGameService.h"
-#include "../Interface/CanSaveInterface.h"
+#include "GBTeam6/Interface/CanSaveInterface.h"
 
 #include "SaveService.generated.h"
 
@@ -62,7 +62,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SaveGame(FString SlotName, bool isDevMap = false);
 	UFUNCTION(BlueprintCallable)
-	void LoadGame(FString SlotName, bool isDevMap = false);
+	void LoadGame(FString SlotName, bool isDevMap = false, UWorld* currentWorld = nullptr);
 
 	UFUNCTION(BlueprintCallable)
 	TArray<FString>GetSaveNames(FString MapName);

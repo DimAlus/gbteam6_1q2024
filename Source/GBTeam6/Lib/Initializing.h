@@ -75,6 +75,9 @@ struct FGeneratorComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float WorkPower{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int ConstructionStages{1};
 };
 
 
@@ -369,7 +372,7 @@ public:
 	bool IsSelectable{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int SelectionPriority{};
+	ESelectionPriorityType SelectionPriority{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int AttachedCount{0};

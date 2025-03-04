@@ -34,6 +34,7 @@ private:
 	TMap<ESkillSlot, FSkill> SrcSkills;
 	TMap<ESkillSlot, FSkill> Skills;
 	TMap<ESkillSlot, bool> SkillsLock;
+	bool bLocked = false;
 
 	bool bCancelSkill;
 
@@ -55,9 +56,10 @@ public:
 
 	virtual void CancelSkillCast() override;
 	virtual void CancelStartedSkillCast(ESkillSlot slot) override;
-	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector castLocation) override;
+	virtual bool CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation, FVector castLocation) override;
 	virtual bool TryCastSkill(ESkillSlot slot) override;
 	virtual bool TryCastSkillWithPriorityTargets(ESkillSlot slot, const TMap<UGameObjectCore*, int>& priorityTargets, const TSet<UGameObjectCore*>& ignoreTargets) override;
+	virtual bool TryCastSkillAtLocation(ESkillSlot slot, FVector TargetLocation) override;
 	virtual bool CanCastSkill(ESkillSlot slot) override;
 
 	virtual const FSkill& GetSkillData(ESkillSlot slot, bool& skillFound) override;

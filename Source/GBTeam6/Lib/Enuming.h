@@ -116,6 +116,7 @@ enum class ESocialTag : uint8 {
 	None				UMETA(DisplayName = "None"),
 
 	Selectable			UMETA(DisplayName = "Selectable"),
+	Destroyable			UMETA(DisplayName = "Destroyable"),
 
 	Forest				UMETA(DisplayName = "Forest's"),
 	Human				UMETA(DisplayName = "Human's"),
@@ -360,4 +361,35 @@ enum class EControlMode : uint8 {
 	Building		UMETA(DisplayName = "Building"),
 	SkillApplying	UMETA(DisplayName = "SkillApplying"),
 	Selection		UMETA(DisplayName = "Selection"),
+};
+
+
+UENUM(BlueprintType)
+enum class EGroupFormation : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Rectangle		UMETA(DisplayName = "Rectangle"),
+};
+
+
+UENUM(BlueprintType)
+enum class ELocationType : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Actor			UMETA(DisplayName = "Actor"),
+	SkillCast		UMETA(DisplayName = "SkillCast"),
+	Delivery		UMETA(DisplayName = "Delivery"),
+	Spawn			UMETA(DisplayName = "Spawn"),
+	Work			UMETA(DisplayName = "Work"),
+	Attach			UMETA(DisplayName = "Attach"),
+};
+
+
+UENUM(BlueprintType)
+enum class ESelectionPriorityType : uint8 {
+	None			UMETA(DisplayName = "None"),
+	Enemy			UMETA(DisplayName = "Enemy"),
+	EnemyBuilding	UMETA(DisplayName = "EnemyBuilding"),
+	WorkBuilding	UMETA(DisplayName = "WorkBuilding"),
+	AttackBuilding	UMETA(DisplayName = "AttackBuilding"),
+	Worker			UMETA(DisplayName = "Worker"),
+	Warrior			UMETA(DisplayName = "Warrior"),
 };

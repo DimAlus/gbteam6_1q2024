@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Engine/UserInterfaceSettings.h"
 #include "InputAction.h"
 #include "./Enuming.h"
 #include "Typing.generated.h"
@@ -19,13 +20,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FBoolSignature, bool, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFloatSignature, float, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FIntSignature, int, Value);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FVectorSignature, FVector, Value);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, SkillSlot);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, Core);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillSlotTargetsVectorSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets, FVector, Location);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillVectorCoreSignature, ESkillSlot, SkillSlot, FVector, Location, UGameObjectCore*, Core);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FConstructionStageSignature, int, CurrentLevel, float, Progress, int, Stage);
 
 #define UE_LOG_COMPONENT(LogType, Message, ...) \
 	UE_LOG(LgComponent, LogType, TEXT("<%s>: (%s) %s"), *GetNameSafe(this), *GetNameSafe(GetOwner()), *FString::Printf(TEXT(Message), ##__VA_ARGS__))
@@ -42,8 +45,20 @@ FString GetLevelName(ULevel* level);
 UCLASS()
 class GBTEAM6_API UTyping : public UBlueprintFunctionLibrary {
 	GENERATED_BODY()
-	
+
+private:
+	static float UpdateCurrentTimeDilation(float newTimeDilation = -1);
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="DateTime")
+	static FDateTime GetNow();
+
+	//UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game")
+	static void SetCurrentTimeDilation(float newTimeDilation = -1);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game")
+	static float GetCurrentTimeDilation();
 };
+
 
 
 class UStringCycledIterator {
@@ -913,4 +928,52 @@ struct FSkill {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 											"false", EditConditionHides))
 	float IdealDistance{ -1.f };
+};
+
+
+USTRUCT(BlueprintType)
+struct FGroupData {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int GroupId{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EGroupFormation GroupFormation{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector GroupLocation{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float GroupRotation{};
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UGameObjectCore*> Cores{};
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FTRSelectionPriority : public FTableRowBase {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	ESelectionPriorityType Selectionpriority{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int PriorityValue{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FHardwareCursorData {
+	GENERATED_BODY()
+
+	FHardwareCursorReference ToHardwareCursorReference();
+
+	UPROPERTY(EditAnywhere, Category = "Hardware Cursor")
+	FName CursorPath;
+
+	UPROPERTY(EditAnywhere, Category = "Hardware Cursor", meta = (ClampMin = 0, ClampMax = 1))
+	FVector2D HotSpot = FVector2D::ZeroVector;
 };
