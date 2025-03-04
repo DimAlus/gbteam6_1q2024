@@ -5,6 +5,7 @@
 #include "Internationalization/Regex.h"
 
 #include "Kismet/GameplayStatics.h"
+#include "Engine/GameViewportClient.h"
 
 #include "GBTeam6/Service/AGameService.h"
 #include "GBTeam6/Service/MappingService.h"
@@ -81,6 +82,7 @@ void UGameInstanceDefault::OnChangeMap(UWorld* world, FString FolderName, FStrin
 
 	ClearServices();
 	InitializeServices();
+	ResetAllHardwareCursors();
 }
 
 void UGameInstanceDefault::GameLoading(UWorld* world) {
@@ -190,4 +192,30 @@ void UGameInstanceDefault::ClearServices() {
 	if (auto s = Cast<UAGameService>(this->GameEventsService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->TimerService)) s->ClearService();
 	if (auto s = Cast<UAGameService>(this->GroupService)) s->ClearService();
+}
+
+
+void UGameInstanceDefault::SetHardwareCursor(EMouseCursor::Type cursorType, FHardwareCursorData& cursor) {
+	UUserInterfaceSettings* Settings = GetMutableDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+	Settings->HardwareCursors.Add(cursorType, cursor.ToHardwareCursorReference());
+	if (IsValid(GEngine->GameViewport)) {
+		GEngine->GameViewport->RebuildCursors();
+	}
+}
+
+void UGameInstanceDefault::ResetHardwareCursor(EMouseCursor::Type cursorType) {
+	if (DefaulHardwareCursors.Contains(cursorType)) {
+		SetHardwareCursor(cursorType, DefaulHardwareCursors[cursorType]);
+	}
+}
+
+void UGameInstanceDefault::ResetAllHardwareCursors() {
+	UUserInterfaceSettings* Settings = GetMutableDefault<UUserInterfaceSettings>(UUserInterfaceSettings::StaticClass());
+	
+	for (auto& cur : DefaulHardwareCursors) {
+		Settings->HardwareCursors.Add(cur.Key, cur.Value.ToHardwareCursorReference());
+		if (IsValid(GEngine->GameViewport)) {
+			GEngine->GameViewport->RebuildCursors();
+		}
+	}
 }

@@ -782,7 +782,7 @@ TArray<FVector> APlayerPawnDefault::GetSelectionNormals() {
 TArray<FVector> APlayerPawnDefault::GetBoxPoints(FBox box, FRotator rotation) {
 	TArray<FVector> points;
 	FVector center = box.GetCenter();
-	FVector d = rotation.RotateVector(box.GetSize());
+	FVector d = rotation.RotateVector(box.GetSize() / 2);
 	for (const auto& p : TArray<FVector2D>{ { d.X, d.Y }, { d.Y, -d.X }, { -d.X, -d.Y }, { -d.Y, d.X } }) {
 		points.Add(center + FVector{ p.X, p.Y, d.Z });
 		points.Add(center + FVector{ p.X, p.Y,-d.Z });

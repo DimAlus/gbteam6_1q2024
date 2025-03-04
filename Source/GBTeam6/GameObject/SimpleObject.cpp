@@ -71,10 +71,10 @@ FVector ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationT
 	}
 	found = false;
 	return FVector();
-}
+}	
 
 FBoxSphereBounds ASimpleObject::GetObjectBounds_Implementation() {
-	return FBoxSphereBounds(ObjectSelectCollision->Bounds.GetBox().GetCenter(), ObjectSelectCollision->GetComponentScale() * 50, 0);
+	return FBoxSphereBounds(ObjectSelectCollision->Bounds.GetBox().GetCenter(), ObjectSelectCollision->GetComponentScale() * 32, 0);
 }
 
 void ASimpleObject::Destroyed() {

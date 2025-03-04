@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "GenericPlatform/ICursor.h"
+#include "Engine/UserInterfaceSettings.h"
 
 #include "GBTeam6/Lib/Lib.h"
 
@@ -41,64 +43,64 @@ private:
 	FDelegateHandle PostLoadMapHandle;
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|SaveLoadGame")
 	void LoadGame(FString slotName);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|SaveLoadGame")
 	void SaveGame(FString slotName);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|SaveLoadGame")
 	void MainMenu();
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|SaveLoadGame")
 	FString GameSaveSlot;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
 	bool IsMenuMap;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
 	bool IsDevelopmentMap;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
 	bool GameLoaded;
 
-	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Default|SaveLoadGame")
 	FTouchSignature OnGameLoadedEvent;
 
 /***************************************
 ***    Tables            
 ****************************************/
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_TileType;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_TileTypeTree;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_Config;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_ObjectsData;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_ResourceStack;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_SystemSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_MusicSound;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_GameEvents;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_TargetFilters;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "DataTable")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Default|DataTable")
 	UDataTable* DT_SelectionPriority;
 
 
@@ -137,35 +139,51 @@ protected:
 	void ClearServices();
 
 public:
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UMappingService* GetMappingService() const { return MappingService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class USaveService* GetSaveService() const { return SaveService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UTaskManagerService* GetTaskManagerService() const { return TaskManagerService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class USocialService* GetSocialService() const { return SocialService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UMessageService* GetMessageService() const { return MessageService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class USoundService* GetSoundService() const { return SoundService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UGameEventsService* GetGameEventsService() const { return GameEventsService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UConfigService* GetConfigService() const { return ConfigService; }
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UTimerService* GetGameTimerManager() const { return TimerService; }
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Default|Service")
 	FORCEINLINE class UGroupService* GetGroupService() const { return GroupService; }
 
 
+	/***************************************
+	***    Cursor
+	****************************************/
+protected:
+	UPROPERTY(config, EditAnywhere, Category = "Default|Cursor")
+	TMap<TEnumAsByte<EMouseCursor::Type>, FHardwareCursorData> DefaulHardwareCursors;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Default|Cursor")
+	void SetHardwareCursor(EMouseCursor::Type cursorType, UPARAM(ref) FHardwareCursorData& cursor);
+
+	UFUNCTION(BlueprintCallable, Category = "Default|Cursor")
+	void ResetHardwareCursor(EMouseCursor::Type cursorType);
+
+	UFUNCTION(BlueprintCallable, Category = "Default|Cursor")
+	void ResetAllHardwareCursors();
 };

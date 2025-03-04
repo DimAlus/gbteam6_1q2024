@@ -69,3 +69,10 @@ void UTyping::SetCurrentTimeDilation(float newTimeDilation) {
 float UTyping::GetCurrentTimeDilation() {
     return UpdateCurrentTimeDilation();
 }
+
+FHardwareCursorReference FHardwareCursorData::ToHardwareCursorReference() {
+    FHardwareCursorReference res;
+    res.CursorPath = CursorPath;
+    res.HotSpot = HotSpot;
+    return res;
+}

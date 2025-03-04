@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Engine/UserInterfaceSettings.h"
 #include "InputAction.h"
 #include "./Enuming.h"
 #include "Typing.generated.h"
@@ -57,6 +58,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="Game")
 	static float GetCurrentTimeDilation();
 };
+
 
 
 class UStringCycledIterator {
@@ -960,4 +962,18 @@ struct FTRSelectionPriority : public FTableRowBase {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int PriorityValue{};
+};
+
+
+USTRUCT(BlueprintType)
+struct FHardwareCursorData {
+	GENERATED_BODY()
+
+	FHardwareCursorReference ToHardwareCursorReference();
+
+	UPROPERTY(EditAnywhere, Category = "Hardware Cursor")
+	FName CursorPath;
+
+	UPROPERTY(EditAnywhere, Category = "Hardware Cursor", meta = (ClampMin = 0, ClampMax = 1))
+	FVector2D HotSpot = FVector2D::ZeroVector;
 };
