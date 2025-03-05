@@ -149,6 +149,8 @@ void APlayerPawnDefault::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 			&APlayerPawnDefault::SelectSkillAction);
 
 		// Building action binding
+		EnhancedInputComponent->BindAction(PlayerInputAction.RotateBuildingAction, ETriggerEvent::Triggered, this,
+			&APlayerPawnDefault::RotateBuildingTrigger);
 		EnhancedInputComponent->BindAction(PlayerInputAction.RotateBuildingAction, ETriggerEvent::Completed, this,
 			&APlayerPawnDefault::RotateBuilding);
 		EnhancedInputComponent->BindAction(PlayerInputAction.RotateBuildingSlowlyAction, ETriggerEvent::Triggered, this,
@@ -262,9 +264,12 @@ void APlayerPawnDefault::QuickLoad(const FInputActionValue& Value) {
 	OnQuickLoad.Broadcast();
 }
 
+void APlayerPawnDefault::RotateBuildingTrigger(const FInputActionValue &Value) {
+	inputBuildingRotationValue = (int)Value.Get<float>();
+}
+
 void APlayerPawnDefault::RotateBuilding(const FInputActionValue &Value) {
-	int inputValue = (int)Value.Get<float>();
-	GetGameInstanceDefault()->GetMappingService()->AddLocatedCoreRotation(inputValue);
+	GetGameInstanceDefault()->GetMappingService()->AddLocatedCoreRotation(inputBuildingRotationValue);
 }
 
 void APlayerPawnDefault::RotateBuildingSlowly(const FInputActionValue &Value) {
@@ -460,8 +465,9 @@ void APlayerPawnDefault::SelectCompleteSelection() {
 }
 
 void APlayerPawnDefault::SelectCompleteBuilding() {
-	ControlMode = EControlMode::Default;
-	GetGameInstanceDefault()->GetMappingService()->InstallLocatedCore();
+	if (GetGameInstanceDefault()->GetMappingService()->InstallLocatedCore()) {
+		ControlMode = EControlMode::Default;
+	}
 }
 
 void APlayerPawnDefault::SelectCompleteSkillApplying() {
