@@ -87,6 +87,7 @@ protected:
 	bool isScrollPressed = false;
 	FVector commandStartLocation;
 	int CurrentSelectedGroup = 0;
+	int inputBuildingRotationValue = 0;
 
 	TMap<ESelectionPriorityType, int> SelectionPriority;
 
@@ -129,6 +130,7 @@ protected:
 	void QuickSave(const FInputActionValue& Value);
 	void QuickLoad(const FInputActionValue& Value);
 
+	void RotateBuildingTrigger(const FInputActionValue& Value);
 	void RotateBuilding(const FInputActionValue& Value);
 	void RotateBuildingSlowly(const FInputActionValue& Value);
 

@@ -127,7 +127,8 @@ float UMappingDefaultComponent::GetFullRotation() {
 
 void UMappingDefaultComponent::SetFullRotation(float rotation) {
 	rotation -= std::floor(rotation / 360) * 360;
-	CurrentRotation = std::floor(rotation / 90);
+	CurrentRotation = std::roundf(rotation / 90);
+	CurrentRotation %= 4;
 	//(int)((rotation+ 180 + 45) / 90) % 4;
 	CurrentActorRelaticveRotation = rotation - CurrentRotation * 90;
 	UpdateActorRotation();
