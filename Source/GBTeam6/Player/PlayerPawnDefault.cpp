@@ -511,6 +511,16 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 }
 
 void APlayerPawnDefault::CommandDefault() {
+	bool CanCommand = false;
+	if (IsValid(CurrentSelectedCore)) {
+		if (auto social = Cast<USocialBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::Social))) {
+			CanCommand = social->GetSocialTeam() == ESocialTeam::Friendly;
+		}
+	}
+	if (!CanCommand) {
+		return;
+	}
+
 	FHitResult Hit;
 	GetHitUnderMouseCursor(Hit, ECC_GameTraceChannel4);
 	UGameObjectCore* targetCore = nullptr;
