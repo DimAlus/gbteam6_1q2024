@@ -131,7 +131,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	if (IsValid(skill.SkillProjectiles[0].ProjectileClass)) {
 		bool _ = true;
 		FVector loc = castLocation.Length() < 1 
-			? IGameObjectInterface::Execute_GetLocationByTypes(GetOwner(), { ELocationType::SkillCast, ELocationType::Actor }, _)
+			? IGameObjectInterface::Execute_GetLocationByTypes(GetOwner(), { ELocationType::SkillCast, ELocationType::Actor }, _).GetLocation()
 			: castLocation;
 		AProjectile* proj = GetGameInstance()->GetWorld()->SpawnActor<AProjectile>(skill.SkillProjectiles[0].ProjectileClass, loc, FRotator());
 		proj->Initialize(GetCore(), targets, targetLocation, skill.SkillProjectiles);

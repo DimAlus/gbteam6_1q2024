@@ -52,17 +52,17 @@ void ASimpleObject::CreateCore_Implementation() {
 	}
 }
 
-FVector ASimpleObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
+FTransform ASimpleObject::GetLocationByType_Implementation(ELocationType LocationType, bool& found) {
 	if (LocationType == ELocationType::Actor) {
 		found = true;
-		return GetActorLocation();
+		return GetActorTransform();
 	}
 	found = false;
-	return FVector();
+	return FTransform();
 }
 
-FVector ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
-	FVector v;
+FTransform ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationType>& LocationTypes, bool& found) {
+	FTransform v;
 	for (const auto& type : LocationTypes) {
 		v = IGameObjectInterface::Execute_GetLocationByType(this, type, found);
 		if (found) {
@@ -70,7 +70,7 @@ FVector ASimpleObject::GetLocationByTypes_Implementation(const TArray<ELocationT
 		}
 	}
 	found = false;
-	return FVector();
+	return FTransform();
 }	
 
 FBoxSphereBounds ASimpleObject::GetObjectBounds_Implementation() {

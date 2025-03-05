@@ -26,6 +26,9 @@ public:
 
 public:
 	UPROPERTY(BlueprintAssignable)
+	FGameTaskTypeSignature OnTaskRegistry;
+
+	UPROPERTY(BlueprintAssignable)
 	FGameTaskTypeSignature OnTaskProcessBefore;
 
 	UPROPERTY(BlueprintAssignable)

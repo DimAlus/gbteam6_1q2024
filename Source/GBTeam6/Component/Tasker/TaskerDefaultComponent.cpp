@@ -179,6 +179,10 @@ bool UTaskerDefaultComponent::FindTask() {
 				TArray<FGameTask> tasks = taskManager->FindTask(finder);
 				if (tasks.Num() > 0) {
 					RegisterTasks(tasks);
+					OnTaskRegistry.Broadcast(
+						tasks[0].Resource == EResource::Self ? EGameTaskType::Work
+						: tasks[0].Count > 0 ? EGameTaskType::Delivery : EGameTaskType::Receiving
+					);
 					return true;
 				}
 			}

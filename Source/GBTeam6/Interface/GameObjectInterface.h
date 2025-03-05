@@ -31,10 +31,10 @@ public:
 	void CreateCore();
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
-	FVector GetLocationByType(ELocationType LocationType, bool& found);
+	FTransform GetLocationByType(ELocationType LocationType, bool& found);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
-	FVector GetLocationByTypes(const TArray<ELocationType>& LocationTypes, bool& found);
+	FTransform GetLocationByTypes(const TArray<ELocationType>& LocationTypes, bool& found);
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = GameObject)
 	FBoxSphereBounds GetObjectBounds();
