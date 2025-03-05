@@ -36,9 +36,9 @@ void USocialBaseComponent::UnRegisterObjectInService()
 	}
 }
 
-void USocialBaseComponent::SetSocialTeam(ESocialTeam NewSocialTeam)
-{
+void USocialBaseComponent::SetSocialTeam(ESocialTeam NewSocialTeam) {
 	SocialTeam = NewSocialTeam;
 	UnRegisterObjectInService();
 	RegisterObjectInService();
+	OnSocialTeamChanging.Broadcast();
 }

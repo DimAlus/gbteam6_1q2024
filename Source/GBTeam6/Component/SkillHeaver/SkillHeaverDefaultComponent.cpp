@@ -101,7 +101,7 @@ void USkillHeaverDefaultComponent::LevelChanged(int newLevel) {
 	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
 		minLevel = generator->NeedBuilding() ? 2 : 0;
 	}
-	if (newLevel >= 1) {
+	if (newLevel >= minLevel) {
 		this->Worked = true;
 	}
 }

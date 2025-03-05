@@ -30,6 +30,11 @@ public:
 	virtual void SaveComponent(FSocialSaveData& saveData);
 	virtual void LoadComponent(const FSocialSaveData& saveData);
 
+public:
+
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnSocialTeamChanging;
+
 protected:
 	UFUNCTION(BlueprintCallable)
 	virtual void RegisterObjectInService();
