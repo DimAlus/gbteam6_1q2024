@@ -131,6 +131,9 @@ public:
 	TSubclassOf<AActor> ObjectClass{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ObjectName{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FActorSaveData ActorSaveData{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

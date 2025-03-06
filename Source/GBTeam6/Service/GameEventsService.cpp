@@ -35,7 +35,9 @@ void UGameEventsService::ClearService() {
 	UAGameService::ClearService();
 	bIsPaused = true;
 	Events.Reset();
-	GameInstance->GetWorld()->GetTimerManager().ClearTimer(updateTaskTimer);
+	if (auto world = GameInstance->GetWorld()) {
+		world->GetTimerManager().ClearTimer(updateTaskTimer);
+	}
 }
 
 void UGameEventsService::Save(FGameProgressSaveData& data) {

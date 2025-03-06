@@ -114,7 +114,7 @@ void USaveService::LoadTileMap(USaveTileMap* saver) {
 /// Saving Loading Objects
 void USaveService::SaveObjects(USaveGameObjects* saver) {
 	UE_LOG(LgService, Log, TEXT("<%s>: Start save GameObjects"), *GetNameSafe(this));
-
+	
 	TArray<AActor*> objects;
 	UGameplayStatics::GetAllActorsOfClass(GameInstance->GetWorld(), ASimpleObject::StaticClass(), objects);
 	AddObjectsToSave(objects, saver->Objects);
@@ -143,11 +143,11 @@ void USaveService::LoadObjects(USaveGameObjects* saver) {
 				InitGameObject(core, saveData);
 			}
 			else {
-				UE_LOG(LgService, Error, TEXT("<%s>: Actor not created!"), *GetNameSafe(this));
+				UE_LOG(LgService, Error, TEXT("<%s>: Actor of '%s' not created!"), *GetNameSafe(this), *saveData.ObjectName);
 			}
 		}
 		else {
-			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created! ObjectClass is None!"), *GetNameSafe(this));
+			UE_LOG(LgService, Error, TEXT("<%s>: Actor not created! ObjectClass is None for '%s'!"), *GetNameSafe(this), *saveData.ObjectName);
 		}
 	}
 }
@@ -259,7 +259,8 @@ void USaveService::LoadGame(FString SlotName, bool isDevMap, UWorld* currentWorl
 	UE_LOG(LgService, Log, TEXT("<%s>: Start LoadGame from slot '%s'"), *GetNameSafe(this), *SlotName);
 	if (!isDevMap) {
 		FString playerName = TEXT("player");
-		UWorld* world = currentWorld ? currentWorld : GameInstance->GetWorld();
+		UWorld* world = IsValid(currentWorld) ? currentWorld : GameInstance->GetWorld();
+		UE_LOG(LgService, Log, TEXT("<%s>: Worlds: '%d' '%d'"), *GetNameSafe(this), currentWorld, GameInstance->GetWorld());
 		FString mapName = GetLevelName(world->GetCurrentLevel());
 
 		/// Load TileMap
@@ -346,6 +347,7 @@ void USaveService::AddObjectsToSave(const TArray<AActor*>& actors, TArray<FGameO
 			FGameObjectSaveData SaveData;
 
 			SaveData.ObjectClass = act->GetClass();
+			SaveData.ObjectName = core->GetOwnerName();
 
 			core->SaveActor(SaveData.ActorSaveData);
 

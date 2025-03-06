@@ -36,17 +36,21 @@ void UGameInstanceDefault::Init() {
 	/** Add callbacks at changing map */
 	PreLoadMapHandle = FCoreUObjectDelegates::PreLoadMapWithContext.AddLambda(
 		[this](const FWorldContext& context, const FString& mapName) {
-			FRegexMatcher reg(FRegexPattern(".*/([^/]*)/([^/]*)$"), mapName);
-			if (!reg.FindNext()) {
-				UE_LOG(LgGame, Error, TEXT("Unable to find map name: '%s'"), *mapName);
+			if (IsValid(context.World())) {
+				FRegexMatcher reg(FRegexPattern(".*/([^/]*)/([^/]*)$"), mapName);
+				if (!reg.FindNext()) {
+					UE_LOG(LgGame, Error, TEXT("Unable to find map name: '%s'"), *mapName);
+				}
+				this->OnChangeMap(context.World(), reg.GetCaptureGroup(1), reg.GetCaptureGroup(2));
 			}
-			this->OnChangeMap(context.World(), reg.GetCaptureGroup(1), reg.GetCaptureGroup(2));
 		}
 	);
 
 	PostLoadMapHandle = FCoreUObjectDelegates::PostLoadMapWithWorld.AddLambda(
 		[this](UWorld* world) { 
-			this->GameLoading(world); 
+			if (IsValid(world)) {
+				this->GameLoading(world);
+			}
 		}
 	);
 
