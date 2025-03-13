@@ -41,7 +41,7 @@ APlayerPawnDefault::APlayerPawnDefault()
 	// Create an isometric camera
 	IsometricViewCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Isometric Camera"));
 	IsometricViewCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	IsometricViewCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	IsometricViewCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm	
 
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
@@ -92,6 +92,7 @@ void APlayerPawnDefault::Tick(float DeltaTime) {
 	LastDeltaTime = DeltaTime;
 	UpdateCamera(DeltaTime);
 	UpdateTimeDilation();
+	UpdateMouseSelection();
 
 	(this->*(funcs[ControlMode]))();
 }
@@ -467,6 +468,7 @@ void APlayerPawnDefault::SelectCompleteSelection() {
 void APlayerPawnDefault::SelectCompleteBuilding() {
 	if (GetGameInstanceDefault()->GetMappingService()->InstallLocatedCore()) {
 		ControlMode = EControlMode::Default;
+		ShowAllZonesByType(false, "__ALL__");
 	}
 }
 
@@ -490,6 +492,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 				CurrentSelectedCore,
 				Hit.Location,
 				{},
+				skill.SkillProjectiles[0].PriorityTags,
 				{},
 				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
 					{ ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
@@ -586,11 +589,13 @@ void APlayerPawnDefault::UpdateSkillApplying() {
 			FHitResult Hit;
 			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
 			bool _;
+			const FSkill& skill = skillHeaver->GetSkillData(SelectedSkill, _);
 			TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-				skillHeaver->GetSkillData(SelectedSkill, _).SkillProjectiles[0].TargetFinder,
+				skill.SkillProjectiles[0].TargetFinder,
 				CurrentSelectedCore,
 				Hit.Location,
 				{},
+				skill.SkillProjectiles[0].PriorityTags,
 				{},
 				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
 				  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
@@ -604,18 +609,64 @@ void APlayerPawnDefault::UpdateBuilding() {
 	UpdateBuildingLocation();
 }
 
+void APlayerPawnDefault::UpdateMouseSelection() {
+	FHitResult Hit;
+	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
+	IGameObjectInterface* obj = Cast<IGameObjectInterface>(Hit.GetActor());
+	if (obj) {
+		UGameObjectCore* core = obj->Execute_GetCore(Hit.GetActor());
+		if (IsValid(core) && core != prevMouseSelection) {
+			if (IsValid(prevMouseSelection)) {
+				if (auto ai = Cast<UAIBaseComponent>(prevMouseSelection->GetComponent(EGameComponentType::AI))) {
+					ai->GetSelection().MouseTurn = false;
+					ai->OnSelectionChanging.Broadcast();
+				}
+			}
+
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->GetSelection().MouseTurn = true;
+				ai->OnSelectionChanging.Broadcast();
+			}
+			prevMouseSelection = core;
+		}
+	} else {
+		if (IsValid(prevMouseSelection)) {
+			if (auto ai = Cast<UAIBaseComponent>(prevMouseSelection->GetComponent(EGameComponentType::AI))) {
+				ai->GetSelection().MouseTurn = false;
+				ai->OnSelectionChanging.Broadcast();
+			}
+			prevMouseSelection = nullptr;
+		}
+	}
+}
+
+void APlayerPawnDefault::ShowAllZonesByType(bool showZone, const FString& objectType) {
+	for (const auto& core : GetGameInstanceDefault()->GetSocialService()->GetObjectsByTag(ESocialTag::Zonable)) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			if (objectType == "__ALL__" || ai->GetZoneType() == objectType) {
+				ai->GetSelection().ShowZone = showZone;
+				ai->OnSelectionChanging.Broadcast();
+			}
+		}
+		
+	}
+	
+}
+
 void APlayerPawnDefault::UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores) {
 	for (const auto& core : SelectedCoresTemp) {
 		if (!cores.Contains(core)) {
 			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-				ai->SetSelectionPreview(false);
+				ai->GetSelection().Preview = false;
+				ai->OnSelectionChanging.Broadcast();
 			}
 		}
 	}
 	SelectedCoresTemp = cores;
 	for (const auto& core : SelectedCoresTemp) {
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelectionPreview(true);
+			ai->GetSelection().Preview = true;
+			ai->OnSelectionChanging.Broadcast();
 		}
 	}
 }
@@ -667,6 +718,7 @@ void APlayerPawnDefault::BuildingCancel() {
 	if (IsValid(core)) {
 		core->GetOwner()->Destroy();
 	}
+	ShowAllZonesByType(false, "__ALL__");	
 	ControlMode = EControlMode::Default;
 }
 
@@ -707,7 +759,8 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 			health->OnDeath.RemoveDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
 		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelection(false);
+			ai->GetSelection().Selection = false;
+			ai->OnSelectionChanging.Broadcast();
 		}
 	}
 	SelectedCores = cores;
@@ -717,7 +770,8 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 			health->OnDeath.AddDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
 		}
 		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
-			ai->SetSelection(true);
+			ai->GetSelection().Selection = true;
+			ai->OnSelectionChanging.Broadcast();
 		}
 	}
 	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
@@ -742,6 +796,13 @@ void APlayerPawnDefault::SetBuildingConstruction(TSubclassOf<AActor> buildingCla
 		UGameObjectCore* core = go->GetCore_Implementation();
 		GetGameInstanceDefault()->GetMappingService()->SetLocatedCore(core);
 		ControlMode = EControlMode::Building;
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ShowAllZonesByType(true, ai->GetZoneType());
+			ai->GetSelection().ShowZone = true;
+			ai->OnSelectionChanging.Broadcast();
+		} else {
+			ShowAllZonesByType(true, "__ALL__");
+		}
 	}
 	
 }

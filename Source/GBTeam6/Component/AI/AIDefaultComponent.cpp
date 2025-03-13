@@ -6,12 +6,11 @@
 #include "GBTeam6/Service/GroupService.h"
 
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
+#include "GBTeam6/Component/Effect/EffectBaseComponent.h"
 #include "GBTeam6/Component/Health/HealthBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 
 
-#define __SELECTION__ 			1
-#define __SELECTION_PREVIEW__ 	2
 
 void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer) {
 	Super::Initialize(Initializer);
@@ -19,8 +18,9 @@ void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer)
 	selectionPriority = Initializer.SelectionPriority;
 	AttachedCount = Initializer.AttachedCount;
 	AttachedTags = Initializer.AttachedTags;
-	OverridedSkillsForAttachers = Initializer.OverridedSkillsForAttachers;
+	AttacherActions = Initializer.AttacherActions;
 	speedDefault = Initializer.DefaultSpeed;
+	ZoneType = Initializer.ZoneType;
 }
 
 void UAIDefaultComponent::SaveComponent(FAISaveData& saveData) {
@@ -73,8 +73,8 @@ bool UAIDefaultComponent::AttachTo(UGameObjectCore *core) {
 		if (ai->AttachMe(GetCore())) {
 			CurrentAttachCore = core;
 
-			if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(GetCore()->GetComponent(EGameComponentType::SkillHeaver))) {
-				skillHeaver->SetOverridedSkills(ai->GetOverridedSkillsForAttachers());
+			if (auto effect = Cast<UEffectBaseComponent>(GetCore()->GetComponent(EGameComponentType::Effect))) {
+				effect->ApplyGameObjectActions(ai->GetAttacherActions());
 			}
 			return true;
 		}
@@ -86,10 +86,10 @@ void UAIDefaultComponent::Detach() {
 	if (IsValid(CurrentAttachCore)) {
 		if (auto ai = Cast<UAIBaseComponent>(CurrentAttachCore->GetComponent(EGameComponentType::AI))) {
 			ai->DetachMe(GetCore());
+			if (auto effect = Cast<UEffectBaseComponent>(GetCore()->GetComponent(EGameComponentType::Effect))) {
+				effect->CancelGameObjectActions(ai->GetAttacherActions());
+			}
 		}
-	}
-	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(GetCore()->GetComponent(EGameComponentType::SkillHeaver))) {
-		skillHeaver->SetOverridedSkills({});
 	}
 	CurrentAttachCore = nullptr;
 }
@@ -98,23 +98,12 @@ UGameObjectCore *UAIDefaultComponent::GetCurrentAttachCore() {
 	return CurrentAttachCore;
 }
 
-void UAIDefaultComponent::SetSelectionPreview(bool isSelected) {
-	selection = isSelected 
-		? selection | __SELECTION_PREVIEW__ 
-		: selection & !__SELECTION_PREVIEW__;
-	OnSelectionChanging.Broadcast();
+FObjectSelection& UAIDefaultComponent::GetSelection() {
+	return CurrentSelection;
 }
 
-void UAIDefaultComponent::SetSelection(bool isSelected) {
-	selection = isSelected 
-		? selection | __SELECTION__ 
-		: selection & !__SELECTION__;
-	OnSelectionChanging.Broadcast();
-}
-
-void UAIDefaultComponent::GetSelection(bool &isSelected, bool &isPreview) {
-	isSelected = selection & __SELECTION__;
-	isPreview = selection & __SELECTION_PREVIEW__;
+FString UAIDefaultComponent::GetZoneType() {
+	return ZoneType;
 }
 
 void UAIDefaultComponent::AddSpeed(float multipleSpeed) {
@@ -123,5 +112,6 @@ void UAIDefaultComponent::AddSpeed(float multipleSpeed) {
 }
 
 
-#undef __SELECTION__
-#undef __SELECTION_PREVIEW__
+const TArray<FGameObjectAction>& UAIDefaultComponent::GetAttacherActions() {
+	return AttacherActions;
+}

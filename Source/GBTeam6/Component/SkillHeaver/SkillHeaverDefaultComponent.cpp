@@ -233,6 +233,7 @@ TArray<UGameObjectCore *> USkillHeaverDefaultComponent::FindSkillTargets(ESkillS
 			GetCore(),
 			IsValid(centerTargetCore) && centerTargetCore->IsValidLowLevel() ? centerTargetCore : GetCore(),
 			priorityTargets,
+			skill.SkillProjectiles[0].PriorityTags,
 			ignoreTargets,
 			{}
 		);

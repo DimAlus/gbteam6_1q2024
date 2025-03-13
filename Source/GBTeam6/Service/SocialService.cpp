@@ -169,18 +169,6 @@ void USocialService::LoadFinders() {
 		finder.OrderType = data->OrderType;
 		finder.IsOrderDesc = data->IsOrderDesc;
 		finder.FiltersSocialTags = data->FiltersSocialTags;
-		auto& arrSocTag = finder.FiltersSocialTags;
-		for (int i = 0; i < arrSocTag.Num() - 1; i++) {
-			while (i < arrSocTag.Num() - 1 && arrSocTag[i] == arrSocTag[i + 1]) {
-				arrSocTag.RemoveAt(i + 1);
-			}
-		}
-		if (arrSocTag.Num() > 0 && arrSocTag[0] == ESocialTag::None) {
-			arrSocTag.RemoveAt(0);
-		}
-		if (arrSocTag.Num() > 0 && arrSocTag[arrSocTag.Num() - 1] != ESocialTag::None) {
-			arrSocTag.Add(ESocialTag::None);
-		}
 
 		Finders.Add(finder.FinderName, finder);
 	}
@@ -231,6 +219,23 @@ bool USocialService::AtFilter(const FTargetFinder& finder,
 								UGameObjectCore* core, 
 								FVector centerLocation, 
 								const TArray<FTargetFilter>& overrideValues) {
+	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
+		const TSet<ESocialTag>& tags = TSet<ESocialTag>(social->GetSocialTags());
+		bool success = false;
+		for (const auto& tagFilter : finder.FiltersSocialTags) {
+			if (tags.Intersect(tagFilter.IncludeTags).Num() == tagFilter.IncludeTags.Num()
+				&& tags.Intersect(tagFilter.ExcludeTags).IsEmpty()) {
+				success = true;
+				break;
+			}
+		}
+		if (!success) {
+			return false;
+		}
+	} else {
+		return false;
+	}
+
 	TSet<TPair<ETargetFilterType, EFilterCompareType>> overrided;
 	for (const auto& filter : overrideValues) {
 		float value = GetFilterValue(filter.Type, core, centerLocation);
@@ -249,24 +254,8 @@ bool USocialService::AtFilter(const FTargetFinder& finder,
 		}
 	}
 
-	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		bool accessed = true;
-		for (const auto& tag : finder.FiltersSocialTags) {
-			if (tag == ESocialTag::None) {
-				if (accessed) {
-					return true;
-				}
-				accessed = true;
-			}
-			else {
-				if (accessed && !social->GetSocialTags().Contains(tag)) {
-					accessed = false;
-				}
-			}
-		}
-	}
 	
-	return finder.FiltersSocialTags.Num() == 0;
+	return true;
 }
 
 
@@ -274,16 +263,18 @@ TArray<UGameObjectCore*> USocialService::FindTargetsByCenterCore(FString targetF
 																UGameObjectCore* core,
 																UGameObjectCore* centerCore,
 																const TMap<UGameObjectCore*, int>& priorityTargets,
+																const TArray<FSocialTagFilter>& prioritySocialTags,
 																const TSet<UGameObjectCore*>& ignoreTargets,
 																const TArray<FTargetFilter>& overrideFilters,
 																bool hasCountConstraints) {
-	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets, ignoreTargets, overrideFilters, hasCountConstraints);
+	return FindTargets(targetFinder, core, centerCore->GetOwner()->GetActorLocation(), priorityTargets, prioritySocialTags, ignoreTargets, overrideFilters, hasCountConstraints);
 }
 
 TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 													UGameObjectCore* core,
 													FVector centerLocation,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
+													const TArray<FSocialTagFilter>& prioritySocialTags,
 													const TSet<UGameObjectCore*>& ignoreTargets,
 													const TArray<FTargetFilter>& overrideFilters,
 													bool hasCountConstraints) {
@@ -316,7 +307,18 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 	for (const auto& obj : objects) {
 		if (!ignoreTargets.Contains(obj) && AtFilter(finder, obj, centerLocation, overrideFilters)) {
 			float val = GetFilterValue(finder.OrderType, obj, centerLocation);
-			int priority = priorityTargets.Contains(obj) ? priorityTargets[obj] : 0;
+			int socialPriority = 0;
+			if (auto social = Cast<USocialBaseComponent>(obj->GetComponent(EGameComponentType::Social))) {
+				TSet<ESocialTag> tags = TSet<ESocialTag>(social->GetSocialTags());
+				for (const auto& tagFilter : prioritySocialTags) {
+					if (tags.Intersect(tagFilter.IncludeTags).Num() == tagFilter.IncludeTags.Num()
+						&& tags.Intersect(tagFilter.ExcludeTags).IsEmpty()) {
+						socialPriority = tagFilter.OrderValue;
+						break;
+					}
+				}
+			}
+			int priority = (priorityTargets.Contains(obj) ? priorityTargets[obj] : 0) * 10000 + socialPriority;
 
 			bool inserted = false;
 			for (auto iter = targets.GetHead(); iter; iter = iter->GetNextNode()) {
@@ -343,4 +345,18 @@ TArray<UGameObjectCore*> USocialService::FindTargets(FString targetFinder,
 	}
 
 	return result;
+}
+
+float USocialService::GetFinderRadius(FString finderName) {
+	const FTargetFinder& finder = GetFinder(finderName);
+
+	for (const auto& filter : finder.Filters) {
+		if (filter.Type == ETargetFilterType::Distance
+			&& (filter.CompareType == EFilterCompareType::Less
+				|| filter.CompareType == EFilterCompareType::LessEqual)) {
+			return filter.Value;
+		}
+	}
+	return 0;
+
 }

@@ -21,4 +21,10 @@ public:
 public:
 	virtual void ApplyEffect(const FEffect& effect);
 	virtual void CancelConstEffect(const FString& effectName);
+
+	virtual void ApplyGameObjectAction(FGameObjectAction action);
+	virtual void ApplyGameObjectActions(const TArray<FGameObjectAction>& actions);
+
+	virtual void CancelGameObjectAction(FGameObjectAction action);
+	virtual void CancelGameObjectActions(const TArray<FGameObjectAction>& actions);
 };

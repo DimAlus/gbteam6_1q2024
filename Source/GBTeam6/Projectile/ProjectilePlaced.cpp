@@ -70,6 +70,7 @@ void AProjectilePlaced::ApplyEffects() {
 			Initiator,
 			GetActorLocation(),
 			{},
+			GetProjectileData().PriorityTags,
 			OwnerIgnore ? TSet<UGameObjectCore*>({ OwnerTarget }) : TSet<UGameObjectCore*>({}),
 			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },
 			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, }

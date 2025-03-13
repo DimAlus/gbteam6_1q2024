@@ -380,8 +380,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSet<ESocialTag> AttachedTags{};
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"AttachedCount > 0",
+											EditConditionHides))
+	TArray<FGameObjectAction> AttacherActions{};
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers{};
+	FString ZoneType;
 };
 
 USTRUCT(BlueprintType)

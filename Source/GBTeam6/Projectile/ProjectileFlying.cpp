@@ -130,6 +130,7 @@ void AProjectileFlying::HitWithTarget() {
 		Initiator,
 		TargetLocation,
 		priorities,
+		GetProjectileData().PriorityTags,
 		{ Target },
 		{}
 	);
@@ -165,6 +166,7 @@ void AProjectileFlying::ApplyEffects() {
 			Initiator,
 			TargetLocation,
 			{},
+			GetProjectileData().PriorityTags,
 			{},
 			{ { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::Less },
 			  { ETargetFilterType::Distance, GetProjectileData().Radius, EFilterCompareType::LessEqual }, },

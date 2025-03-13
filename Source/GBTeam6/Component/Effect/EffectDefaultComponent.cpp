@@ -6,6 +6,8 @@
 
 #include "GBTeam6/Component/Health/HealthBaseComponent.h"
 #include "GBTeam6/Component/AI/AIBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "GBTeam6/Component/Social/SocialBaseComponent.h"
 
 void UEffectDefaultComponent::DestroyComponent(bool bPromoteChildren) {
 	TimerHandle.Invalidate();
@@ -159,4 +161,59 @@ void UEffectDefaultComponent::CancelConstEffect(const FString& effectName) {
 			}
 		}
 	}
+}
+
+void UEffectDefaultComponent::ApplyGameObjectAction(FGameObjectAction action) {
+	static std::map<EGameObjectActionType, void (UEffectDefaultComponent::*) (const FGameObjectAction&)> funcs = {
+		{ EGameObjectActionType::None, 					&UEffectDefaultComponent::DoNothing },
+		{ EGameObjectActionType::OverrideSkill, 		&UEffectDefaultComponent::ApplyActionSkillOverride },
+		{ EGameObjectActionType::ChangeSocialTeam, 		&UEffectDefaultComponent::ApplyActionCnageSocialTeam },
+		{ EGameObjectActionType::ChangeSocialTags, 		&UEffectDefaultComponent::ApplyActionCnageSocialTags },
+	};
+
+	(this->*(funcs[action.ActionType]))(action);
+}
+
+void UEffectDefaultComponent::CancelGameObjectAction(FGameObjectAction action) {
+	static std::map<EGameObjectActionType, void (UEffectDefaultComponent::*) (const FGameObjectAction&)> funcs = {
+		{ EGameObjectActionType::None, 					&UEffectDefaultComponent::DoNothing },
+		{ EGameObjectActionType::OverrideSkill, 		&UEffectDefaultComponent::CancelActionSkillOverride },
+		{ EGameObjectActionType::ChangeSocialTeam, 		&UEffectDefaultComponent::CancelActionCnageSocialTeam },
+		{ EGameObjectActionType::ChangeSocialTags, 		&UEffectDefaultComponent::CancelActionCnageSocialTags },
+	};
+
+	(this->*(funcs[action.ActionType]))(action);
+}
+
+void UEffectDefaultComponent::DoNothing(const FGameObjectAction& action) {
+}
+
+void UEffectDefaultComponent::ApplyActionSkillOverride(const FGameObjectAction& action) {
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(GetCore()->GetComponent(EGameComponentType::SkillHeaver))) {
+		skillHeaver->SetOverridedSkills(action.OverridedSkills);
+	}
+}
+
+void UEffectDefaultComponent::CancelActionSkillOverride(const FGameObjectAction& action) {
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(GetCore()->GetComponent(EGameComponentType::SkillHeaver))) {
+		skillHeaver->SetOverridedSkills({});
+	}
+}
+
+void UEffectDefaultComponent::ApplyActionCnageSocialTeam(const FGameObjectAction& action) {
+	if (auto social = Cast<USocialBaseComponent>(GetCore()->GetComponent(EGameComponentType::Social))) {
+		social->SetSocialTeam(action.NewSocialTeam, action.IsConstantSocialTeam);
+	}
+}
+
+void UEffectDefaultComponent::CancelActionCnageSocialTeam(const FGameObjectAction& action) {
+	if (auto social = Cast<USocialBaseComponent>(GetCore()->GetComponent(EGameComponentType::Social))) {
+		social->ResetSocialTeam();
+	}
+}
+
+void UEffectDefaultComponent::ApplyActionCnageSocialTags(const FGameObjectAction& action) {
+}
+
+void UEffectDefaultComponent::CancelActionCnageSocialTags(const FGameObjectAction& action) {
 }

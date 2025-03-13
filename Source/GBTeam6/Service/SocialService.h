@@ -78,6 +78,7 @@ public:
 													UGameObjectCore* core,
 													UGameObjectCore* centerCore,
 													const TMap<UGameObjectCore*, int>& priorityTargets,
+													const TArray<FSocialTagFilter>& prioritySocialTags,
 													const TSet<UGameObjectCore*>& ignoreTargets,
 													const TArray<FTargetFilter>& overrideFilters,
 													bool hasCountConstraints = true);
@@ -87,8 +88,12 @@ public:
 										UGameObjectCore* core,
 										FVector centerLocation,
 										const TMap<UGameObjectCore*, int>& priorityTargets,
+										const TArray<FSocialTagFilter>& prioritySocialTags,
 										const TSet<UGameObjectCore*>& ignoreTargets,
 										const TArray<FTargetFilter>& overrideFilters,
 										bool hasCountConstraints = true);
+
+	UFUNCTION(BlueprintCallable)
+	float GetFinderRadius(FString finderName);
 
 };

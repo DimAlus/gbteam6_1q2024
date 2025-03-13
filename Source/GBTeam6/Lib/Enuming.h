@@ -117,6 +117,8 @@ enum class ESocialTag : uint8 {
 
 	Selectable			UMETA(DisplayName = "Selectable"),
 	Destroyable			UMETA(DisplayName = "Destroyable"),
+	Attached			UMETA(DisplayName = "Attached to building"),
+	Zonable				UMETA(DisplayName = "Zone enabled"),
 
 	Forest				UMETA(DisplayName = "Forest's"),
 	Human				UMETA(DisplayName = "Human's"),
@@ -394,4 +396,14 @@ enum class ESelectionPriorityType : uint8 {
 	AttackBuilding	UMETA(DisplayName = "AttackBuilding"),
 	Worker			UMETA(DisplayName = "Worker"),
 	Warrior			UMETA(DisplayName = "Warrior"),
+};
+
+
+
+UENUM(BlueprintType)
+enum class EGameObjectActionType : uint8 {
+	None				UMETA(DisplayName = "None"),
+	OverrideSkill		UMETA(DisplayName = "Override Skill"),
+	ChangeSocialTeam	UMETA(DisplayName = "Change Social Team"),
+	ChangeSocialTags	UMETA(DisplayName = "Change Social Tags"),
 };

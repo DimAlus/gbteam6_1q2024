@@ -14,6 +14,7 @@ class GBTEAM6_API USocialBaseComponent : public UBaseComponent {
 	GENERATED_BODY()
 
 protected:
+	ESocialTeam DefaultSocialTeam = ESocialTeam::None;
 	ESocialTeam SocialTeam = ESocialTeam::None;
 
 	TArray<ESocialTag> SocialTags{};
@@ -42,22 +43,17 @@ protected:
 	virtual void UnRegisterObjectInService();
 
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual bool IsHostile(ESocialTeam CallerSocialTeam) {return false;}
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetSocialTeam(ESocialTeam NewSocialTeam);
+	virtual void SetSocialTeam(ESocialTeam NewSocialTeam, bool IsDefault = false);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void ResetSocialTeam();
 	
 	UFUNCTION(BlueprintCallable)
 	virtual ESocialTeam GetSocialTeam() {return ESocialTeam::None;}
 
 	UFUNCTION(BlueprintCallable)
 	virtual const TArray<ESocialTag>& GetSocialTags() {return EmptySocialTags;}
-	
-	UFUNCTION(BlueprintCallable)
-	virtual ESocialTag GetHomeObjectTag() {return ESocialTag::None;}
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetHomeObjectTag(ESocialTag NewHomeObjectTag) {}
 	
 };

@@ -80,18 +80,15 @@ public:
 	virtual UGameObjectCore* GetCurrentAttachCore();
 
 	UFUNCTION(BlueprintCallable)
-	virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers();
+	virtual FObjectSelection& GetSelection();
 
 	UFUNCTION(BlueprintCallable)
-	virtual void SetSelectionPreview(bool isSelected);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void SetSelection(bool isSelected);
-
-	UFUNCTION(BlueprintCallable)
-	virtual void GetSelection(bool& isSelected, bool& isPreview);
+	virtual FString GetZoneType();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddSpeed(float multipleSpeed);
 
+
+	UFUNCTION(BlueprintCallable)
+	virtual const TArray<FGameObjectAction>& GetAttacherActions();
 };

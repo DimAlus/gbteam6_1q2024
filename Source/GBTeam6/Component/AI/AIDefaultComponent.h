@@ -31,9 +31,10 @@ protected:
 
 	UGameObjectCore* CurrentAttachCore;
 
-	TMap<ESkillSlot, FSkill> OverridedSkillsForAttachers;
+	TArray<FGameObjectAction> AttacherActions;
 
-	char selection;
+	FObjectSelection CurrentSelection;
+	FString ZoneType;
 protected:
 	UFUNCTION()
 	void OnDead();
@@ -49,12 +50,12 @@ public:
 	virtual bool AttachTo(UGameObjectCore* core) override;
 	virtual void Detach() override;
 	virtual UGameObjectCore* GetCurrentAttachCore() override;
-	FORCEINLINE virtual const TMap<ESkillSlot, FSkill>& GetOverridedSkillsForAttachers() override { return OverridedSkillsForAttachers; };
 
-	virtual void SetSelectionPreview(bool isSelected);
-	virtual void SetSelection(bool isSelected);
-	virtual void GetSelection(bool& isSelected, bool& isPreview);
+	virtual FObjectSelection& GetSelection() override;
+	virtual FString GetZoneType() override;
 
 	virtual void AddSpeed(float multipleSpeed) override;
+
+	virtual const TArray<FGameObjectAction>& GetAttacherActions() override;
 };
 

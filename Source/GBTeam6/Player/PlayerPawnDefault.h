@@ -89,6 +89,8 @@ protected:
 	int CurrentSelectedGroup = 0;
 	int inputBuildingRotationValue = 0;
 
+	UGameObjectCore* prevMouseSelection;
+
 	TMap<ESelectionPriorityType, int> SelectionPriority;
 
 	/** Values to write from select and command */
@@ -171,6 +173,8 @@ protected:
 
 	void UpdateSkillApplying();
 	void UpdateBuilding();
+	void UpdateMouseSelection();
+	void ShowAllZonesByType(bool showZone, const FString& objectType);
 	
 protected:
 	void UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores);

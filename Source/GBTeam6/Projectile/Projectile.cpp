@@ -75,6 +75,7 @@ AProjectile* AProjectile::CreateNextProjectile() {
 			Initiator,
 			GetActorLocation(),
 			{},
+			ProjectilesData[1].PriorityTags,
 			{},
 			{}
 		);

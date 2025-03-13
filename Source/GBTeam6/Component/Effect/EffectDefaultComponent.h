@@ -48,4 +48,20 @@ private:
 public:
 	virtual void ApplyEffect(const FEffect& effect) override;
 	virtual void CancelConstEffect(const FString& effectName) override;
+
+
+	virtual void ApplyGameObjectAction(FGameObjectAction action) override;
+	virtual void CancelGameObjectAction(FGameObjectAction action) override;
+
+private:
+	void DoNothing(const FGameObjectAction& action);
+
+	void ApplyActionSkillOverride(const FGameObjectAction& action);
+	void CancelActionSkillOverride(const FGameObjectAction& action);
+
+	void ApplyActionCnageSocialTeam(const FGameObjectAction& action);
+	void CancelActionCnageSocialTeam(const FGameObjectAction& action);
+
+	void ApplyActionCnageSocialTags(const FGameObjectAction& action);
+	void CancelActionCnageSocialTags(const FGameObjectAction& action);
 };

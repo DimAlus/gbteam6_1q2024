@@ -787,6 +787,20 @@ struct FTargetFilter {
 };
 
 USTRUCT(BlueprintType)
+struct FSocialTagFilter {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> IncludeTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSet<ESocialTag> ExcludeTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int OrderValue{};
+};
+
+USTRUCT(BlueprintType)
 struct FTargetFinder {
 	GENERATED_BODY()
 
@@ -803,7 +817,7 @@ struct FTargetFinder {
 	TArray<FTargetFilter> Filters{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<ESocialTag> FiltersSocialTags;
+	TArray<FSocialTagFilter> FiltersSocialTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETargetFilterType OrderType{};
@@ -826,7 +840,7 @@ struct FTRTargetFinder : public FTableRowBase {
 	TArray<FTargetFilter> Filters{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<ESocialTag> FiltersSocialTags;
+	TArray<FSocialTagFilter> FiltersSocialTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	ETargetFilterType OrderType{};
@@ -873,6 +887,9 @@ struct FSkillProjectileData {
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TargetFinder{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FSocialTagFilter> PriorityTags;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FEffect> Effects{};
@@ -972,8 +989,59 @@ struct FHardwareCursorData {
 	FHardwareCursorReference ToHardwareCursorReference();
 
 	UPROPERTY(EditAnywhere, Category = "Hardware Cursor")
-	FName CursorPath;
+	FName CursorPath{ "None" };
 
 	UPROPERTY(EditAnywhere, Category = "Hardware Cursor", meta = (ClampMin = 0, ClampMax = 1))
 	FVector2D HotSpot = FVector2D::ZeroVector;
+};
+
+
+USTRUCT(BlueprintType)
+struct FGameObjectAction {
+	GENERATED_BODY()
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EGameObjectActionType ActionType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"ActionType == EGameObjectActionType::OverrideSkill",
+											EditConditionHides))
+	TMap<ESkillSlot, FSkill> OverridedSkills{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"ActionType == EGameObjectActionType::ChangeSocialTeam",
+											EditConditionHides))
+	ESocialTeam NewSocialTeam{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"ActionType == EGameObjectActionType::ChangeSocialTeam",
+											EditConditionHides))
+	bool IsConstantSocialTeam{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"ActionType == EGameObjectActionType::ChangeSocialTags",
+											EditConditionHides))
+	TArray<ESocialTag> AddSocialTags{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+											"ActionType == EGameObjectActionType::ChangeSocialTags",
+											EditConditionHides))
+	TArray<ESocialTag> RemoveSocialTags{};
+};
+
+
+
+USTRUCT(BlueprintType)
+struct FObjectSelection {
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 Preview : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 Selection : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 MouseTurn : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 ShowZone : 1;
 };

@@ -36,7 +36,14 @@ void USocialBaseComponent::UnRegisterObjectInService()
 	}
 }
 
-void USocialBaseComponent::SetSocialTeam(ESocialTeam NewSocialTeam) {
+void USocialBaseComponent::ResetSocialTeam() {
+	SetSocialTeam(DefaultSocialTeam);
+}
+
+void USocialBaseComponent::SetSocialTeam(ESocialTeam NewSocialTeam, bool isDefault) {
+	if (isDefault) {
+		DefaultSocialTeam = NewSocialTeam;
+	}
 	SocialTeam = NewSocialTeam;
 	UnRegisterObjectInService();
 	RegisterObjectInService();

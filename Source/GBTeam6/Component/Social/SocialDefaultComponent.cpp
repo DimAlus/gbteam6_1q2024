@@ -37,7 +37,7 @@ void USocialDefaultComponent::OnCoreCreatedAfter() {
 
 void USocialDefaultComponent::Initialize(const FSocialComponentInitializer& Initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
-	SocialTeam = Initializer.SocialTeam;
+	DefaultSocialTeam = SocialTeam = Initializer.SocialTeam;
 	SocialTags = Initializer.SocialTags;
 	HomeObjectTag = Initializer.HomeObjectTag;
 }
@@ -55,28 +55,10 @@ void USocialDefaultComponent::OnPlacedRegister(bool IsPlaced) {
 	this->RegisterObjectInService();
 }
 
-bool USocialDefaultComponent::IsHostile(ESocialTeam CallerSocialTeam) {
-	static TSet<ESocialTeam> falseTeams = {
-		ESocialTeam::None,
-		ESocialTeam::Neutral
-	};
-	if (falseTeams.Contains(SocialTeam))
-		return false;
-	return SocialTeam != CallerSocialTeam;
-}
-
 ESocialTeam USocialDefaultComponent::GetSocialTeam() {
 	return SocialTeam;
 }
 
 const TArray<ESocialTag>& USocialDefaultComponent::GetSocialTags() {
 	return SocialTags;
-}
-
-ESocialTag USocialDefaultComponent::GetHomeObjectTag() {
-	return HomeObjectTag;
-}
-
-void USocialDefaultComponent::SetHomeObjectTag(ESocialTag NewHomeObjectTag) {
-	HomeObjectTag = NewHomeObjectTag;
 }

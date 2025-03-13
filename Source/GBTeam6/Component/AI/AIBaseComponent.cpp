@@ -49,19 +49,19 @@ UGameObjectCore *UAIBaseComponent::GetCurrentAttachCore() {
 	return nullptr;
 }
 
-const TMap<ESkillSlot, FSkill>& UAIBaseComponent::GetOverridedSkillsForAttachers() {
-	static TMap<ESkillSlot, FSkill> skills;
-	return skills;
+FObjectSelection& UAIBaseComponent::GetSelection() {
+	static FObjectSelection NoneSelection;
+	return NoneSelection;
 }
 
-void UAIBaseComponent::SetSelectionPreview(bool isSelected) {
-}
-
-void UAIBaseComponent::SetSelection(bool isSelected) {
-}
-
-void UAIBaseComponent::GetSelection(bool &isSelected, bool &isPreview) {
+FString UAIBaseComponent::GetZoneType() {
+	return FString();
 }
 
 void UAIBaseComponent::AddSpeed(float multipleSpeed) {
+}
+
+const TArray<FGameObjectAction>& UAIBaseComponent::GetAttacherActions() {
+	static TArray<FGameObjectAction> NoneActions;
+	return NoneActions;
 }
