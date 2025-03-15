@@ -25,8 +25,8 @@ protected:
 	float speedDefault;
 	float speedMultiplier = 1.f;
 
-	int AttachedCount;
-	TSet<ESocialTag> AttachedTags;
+	TMap<int, int> AttachedCount;
+	TMap<int, FSocialTagFilter> AttachedTags;
 	TSet<UGameObjectCore*> AttachedCores;
 
 	UGameObjectCore* CurrentAttachCore;

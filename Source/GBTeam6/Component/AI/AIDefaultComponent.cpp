@@ -8,6 +8,7 @@
 #include "GBTeam6/Component/Social/SocialBaseComponent.h"
 #include "GBTeam6/Component/Effect/EffectBaseComponent.h"
 #include "GBTeam6/Component/Health/HealthBaseComponent.h"
+#include "GBTeam6/Component/Generator/GeneratorBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
 
 
@@ -16,8 +17,8 @@ void UAIDefaultComponent::Initialize(const FAIComponentInitializer& Initializer)
 	Super::Initialize(Initializer);
 	bIsSelectable = Initializer.IsSelectable;
 	selectionPriority = Initializer.SelectionPriority;
-	AttachedCount = Initializer.AttachedCount;
-	AttachedTags = Initializer.AttachedTags;
+	AttachedCount = Initializer.AttachedCountByLevels;
+	AttachedTags = Initializer.AttachedTagsByLevels;
 	AttacherActions = Initializer.AttacherActions;
 	speedDefault = Initializer.DefaultSpeed;
 	ZoneType = Initializer.ZoneType;
@@ -47,11 +48,18 @@ const TSet<UGameObjectCore *> &UAIDefaultComponent::GetAttachedCores()
 }
 
 bool UAIDefaultComponent::CanAttachMe(UGameObjectCore* core) {
-	if (AttachedCores.Num() >= AttachedCount || AttachedCores.Contains(core)) {
+	int level = -1;
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		level = generator->GetLevel();
+	}
+	if (!AttachedCount.Contains(level) || !AttachedTags.Contains(level) || AttachedCores.Num() >= AttachedCount[level] || AttachedCores.Contains(core)) {
 		return false;
 	}
 	if (auto social = Cast<USocialBaseComponent>(core->GetComponent(EGameComponentType::Social))) {
-		return TSet(social->GetSocialTags()).Intersect(AttachedTags).Num() == AttachedTags.Num();
+		const auto& tagFilter = AttachedTags[level];
+		TSet<ESocialTag> tags = TSet<ESocialTag>(social->GetSocialTags());
+		return tags.Intersect(tagFilter.IncludeTags).Num() == tagFilter.IncludeTags.Num()
+			&& tags.Intersect(tagFilter.ExcludeTags).IsEmpty();
 	}
 	return false;
 }

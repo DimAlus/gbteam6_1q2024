@@ -375,10 +375,10 @@ public:
 	ESelectionPriorityType SelectionPriority{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int AttachedCount{0};
+	TMap<int, int> AttachedCountByLevels{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSet<ESocialTag> AttachedTags{};
+	TMap<int, FSocialTagFilter> AttachedTagsByLevels{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 											"AttachedCount > 0",
