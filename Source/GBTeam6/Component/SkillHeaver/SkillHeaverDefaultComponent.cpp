@@ -106,6 +106,45 @@ void USkillHeaverDefaultComponent::LevelChanged(int newLevel) {
 	}
 }
 
+void USkillHeaverDefaultComponent::ApplyEffectsWithoutProjectile(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation) {
+	FSkill& skill = Skills[slot];
+	const FSkillProjectileData& data = skill.SkillProjectiles[0];
+	if (!data.ProjectileClass) {
+		TArray<UGameObjectCore*> cores;
+		if (data.Radius > 1) {
+			if (targets.Num()) {
+				targetLocation = targets[0]->GetOwner()->GetActorLocation();
+			}
+
+			cores = GetGameInstance()->GetSocialService()->FindTargets(
+				data.TargetFinder,
+				GetCore(),
+				targetLocation,
+				{},
+				data.PriorityTags,
+				{},
+				{ { ETargetFilterType::Distance, data.Radius, EFilterCompareType::Less },
+				  { ETargetFilterType::Distance, data.Radius, EFilterCompareType::LessEqual }, },
+				false
+			);
+		}
+		else {
+			if (targets.Num()) {
+				cores.Add(targets[0]);
+			}
+		}
+
+		for (const auto& core : cores) {
+			if (auto effect = Cast<UEffectBaseComponent>(core->GetComponent(EGameComponentType::Effect))) {
+				for (const auto& eff : data.Effects) {
+					effect->ApplyEffect(eff);
+				}
+			}
+		}
+
+	}
+}
+
 void USkillHeaverDefaultComponent::CancelSkillCast() {
 	this->bCancelSkill = true;
 }
@@ -119,7 +158,7 @@ void USkillHeaverDefaultComponent::CancelStartedSkillCast(ESkillSlot slot) {
 
 
 bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation, FVector castLocation = {}) {
-	if (!SkillsLock[slot]) {
+	if (!SkillsLock.Contains(slot) || !SkillsLock[slot]) {
 		return false;
 	}
 	FSkill& skill = Skills[slot];
@@ -137,13 +176,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 		proj->Initialize(GetCore(), targets, targetLocation, skill.SkillProjectiles);
 	}
 	else {
-		for (const auto& target : targets) {
-			if (auto effect = Cast<UEffectBaseComponent>(target->GetComponent(EGameComponentType::Effect))) {
-				for (const auto& eff : skill.SkillProjectiles[0].Effects) {
-					effect->ApplyEffect(eff);
-				}
-			}
-		}
+		ApplyEffectsWithoutProjectile(slot, targets, targetLocation);
 	}
 	skill.CurrentCooldown = skill.Cooldown;
 	SkillsLock[slot] = false;

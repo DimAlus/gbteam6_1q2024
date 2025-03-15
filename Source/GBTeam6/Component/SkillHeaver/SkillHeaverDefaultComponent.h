@@ -52,6 +52,8 @@ private:
 
 	UFUNCTION()
 	void LevelChanged(int newLevel);
+
+	void ApplyEffectsWithoutProjectile(ESkillSlot slot, const TArray<UGameObjectCore*>& targets, FVector targetLocation);
 public:
 
 	virtual void CancelSkillCast() override;
