@@ -142,6 +142,7 @@ enum class ESocialTag : uint8 {
 	ForestlingWorker	UMETA(DisplayName = "ForestlingWorker"),
 	ShoreMaiden			UMETA(DisplayName = "Shoremaiden"),
 	Altar				UMETA(DisplayName = "Altar"),
+	ForestlingTower		UMETA(DisplayName = "Forestling Tower"),
 	ForesterHouse		UMETA(DisplayName = "Forester House"),
 	ShoreMaidenHouse	UMETA(DisplayName = "Shoremaiden House"),
 	Cage				UMETA(DisplayName = "Cage"),

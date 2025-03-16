@@ -1044,4 +1044,6 @@ struct FObjectSelection {
 	uint8 MouseTurn : 1;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 ShowZone : 1;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 SkillApplyingPreview : 1;
 };

@@ -71,6 +71,10 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* IsometricViewCamera;
 
+	/** Isometric view camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UStaticMeshComponent* SkillApplyingRadiusMesh;
+
 protected:
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -92,6 +96,8 @@ protected:
 	UGameObjectCore* prevMouseSelection;
 
 	TMap<ESelectionPriorityType, int> SelectionPriority;
+
+	TSet<UGameObjectCore*> SkillApplyingPreviewCores;
 
 	/** Values to write from select and command */
 	UPROPERTY(BlueprintReadOnly)
@@ -178,11 +184,12 @@ protected:
 	
 protected:
 	void UpdatePreviewSelection(const TSet<UGameObjectCore*>& cores);
+	void UpdateSkillApplySelection(const TSet<UGameObjectCore*>& cores);
 
 	void SetDefaultMode();
 	void CancelSelectProcess();
-	void SelectionSkillCancel();
-	void BuildingCancel();
+	void CancelSelectionSkill();
+	void CancelBuilding();
 	void UpdateBuildingLocation();
 	
 	UFUNCTION(BlueprintCallable)

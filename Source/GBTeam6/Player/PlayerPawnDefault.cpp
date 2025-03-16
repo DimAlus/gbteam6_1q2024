@@ -46,6 +46,8 @@ APlayerPawnDefault::APlayerPawnDefault()
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("PawnMovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
+	SkillApplyingRadiusMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Skill Applying Radius Preview"));
+
 	CustomTimeDilation = 1.f;
 }
 
@@ -77,6 +79,7 @@ void APlayerPawnDefault::BeginPlay()
 		SelectionPriority.Add(row->Selectionpriority, row->PriorityValue);
 	}
 
+	SkillApplyingRadiusMesh->SetVisibility(false, true);
 }
 
 void APlayerPawnDefault::Tick(float DeltaTime) {
@@ -478,6 +481,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 		return;
 	}
 	ControlMode = EControlMode::Default;
+	SkillApplyingRadiusMesh->SetVisibility(false, true);
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
 		auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI));
 		if (ai && skillHeaver->CanCastSkill(SelectedSkill)) {
@@ -486,7 +490,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 			const FSkill& skill = skillHeaver->GetSkillData(SelectedSkill, _);
 			FHitResult Hit;
 
-			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel6);
 			targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
 				skill.SkillProjectiles[0].TargetFinder,
 				CurrentSelectedCore,
@@ -510,7 +514,7 @@ void APlayerPawnDefault::SelectCompleteSkillApplying() {
 		}
 		SelectedSkill = ESkillSlot::None;
 	}
-	UpdatePreviewSelection({});
+	UpdateSkillApplySelection({});
 }
 
 void APlayerPawnDefault::CommandDefault() {
@@ -584,23 +588,48 @@ void APlayerPawnDefault::CommandDefault() {
 }
 
 void APlayerPawnDefault::UpdateSkillApplying() {
+
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
 		if (auto ai = Cast<UAIBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::AI))) {
 			FHitResult Hit;
-			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
+			GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel6);
+
 			bool _;
 			const FSkill& skill = skillHeaver->GetSkillData(SelectedSkill, _);
+			const FSkillProjectileData& data = skill.SkillProjectiles[0];
 			TArray<UGameObjectCore*> targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
-				skill.SkillProjectiles[0].TargetFinder,
+				data.TargetFinder,
 				CurrentSelectedCore,
 				Hit.Location,
 				{},
-				skill.SkillProjectiles[0].PriorityTags,
+				data.PriorityTags,
 				{},
 				{ { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::Less },
 				  { ETargetFilterType::Distance, SkillTargerAttachRadius, EFilterCompareType::LessEqual }, }
 			);
-			UpdatePreviewSelection(targets.Num() ? TSet<UGameObjectCore*>({ targets[0] }) : TSet<UGameObjectCore*>());
+
+			FVector castLocation = targets.Num() ? targets[0]->GetOwner()->GetActorLocation() : Hit.Location;
+
+			targets = GetGameInstanceDefault()->GetSocialService()->FindTargets(
+				data.TargetFinder,
+				CurrentSelectedCore,
+				Hit.Location,
+				{},
+				data.PriorityTags,
+				{},
+				{ { ETargetFilterType::Distance, data.Radius, EFilterCompareType::Less },
+				  { ETargetFilterType::Distance, data.Radius, EFilterCompareType::LessEqual }, }
+			);
+
+			UpdateSkillApplySelection(TSet<UGameObjectCore*>(targets));
+
+			GetWorld()->LineTraceSingleByChannel(
+				Hit,
+				castLocation + FVector(0, 0, 500),
+				castLocation + FVector(0, 0, -1000),
+				ECC_GameTraceChannel6
+			);
+			SkillApplyingRadiusMesh->SetWorldLocation(Hit.Location + FVector(0, 0, 50));
 		}
 	}
 }
@@ -611,8 +640,10 @@ void APlayerPawnDefault::UpdateBuilding() {
 
 void APlayerPawnDefault::UpdateMouseSelection() {
 	FHitResult Hit;
-	GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
-	IGameObjectInterface* obj = Cast<IGameObjectInterface>(Hit.GetActor());
+	if (ControlMode == EControlMode::Default) {
+		GetHitUnderMouseCursor(Hit, ECollisionChannel::ECC_GameTraceChannel4);
+	}
+		IGameObjectInterface* obj = Cast<IGameObjectInterface>(Hit.GetActor());
 	if (obj) {
 		UGameObjectCore* core = obj->Execute_GetCore(Hit.GetActor());
 		if (IsValid(core) && core != prevMouseSelection) {
@@ -671,6 +702,23 @@ void APlayerPawnDefault::UpdatePreviewSelection(const TSet<UGameObjectCore*>& co
 	}
 }
 
+void APlayerPawnDefault::UpdateSkillApplySelection(const TSet<UGameObjectCore*>& cores) {
+	for (const auto& core : SkillApplyingPreviewCores.Difference(cores)) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->GetSelection().SkillApplyingPreview = false;
+			ai->OnSelectionChanging.Broadcast();
+		}
+	}
+	for (const auto& core : cores.Difference(SkillApplyingPreviewCores)) {
+		if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+			ai->GetSelection().SkillApplyingPreview = true;
+			ai->OnSelectionChanging.Broadcast();
+		}
+	}
+	SkillApplyingPreviewCores = cores;
+
+}
+
 void APlayerPawnDefault::SetDefaultMode()
 {
 	switch (ControlMode)
@@ -679,10 +727,10 @@ void APlayerPawnDefault::SetDefaultMode()
 		CancelSelectProcess();
 		break;
 	case EControlMode::SkillApplying:
-		SelectionSkillCancel();
+		CancelSelectionSkill();
 		break;
 	case EControlMode::Building:
-		BuildingCancel();
+		CancelBuilding();
 		break;
 	case EControlMode::None:
 		ControlMode = EControlMode::Default;
@@ -700,16 +748,18 @@ void APlayerPawnDefault::CancelSelectProcess() {
 	UpdatePreviewSelection({});
 }
 
-void APlayerPawnDefault::SelectionSkillCancel() {
+void APlayerPawnDefault::CancelSelectionSkill() {
 	if (ControlMode != EControlMode::SkillApplying) {
 		return;
 	}
 	ControlMode = EControlMode::Default;
 	SelectedSkill = ESkillSlot::None;
+	SkillApplyingRadiusMesh->SetVisibility(false, true);
 	OnSkillCancel.Broadcast();
+
 }
 
-void APlayerPawnDefault::BuildingCancel() {
+void APlayerPawnDefault::CancelBuilding() {
 	if (ControlMode != EControlMode::Building) {
 		return;
 	}
@@ -735,9 +785,15 @@ void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
 		return;
 	}
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(CurrentSelectedCore->GetComponent(EGameComponentType::SkillHeaver))) {
-		if (skillHeaver->CanCastSkill(slot)) {
+		bool exists;
+		const FSkill& skill = skillHeaver->GetSkillData(slot, exists);
+		if (exists && skillHeaver->CanCastSkill(slot)) {
 			ControlMode = EControlMode::SkillApplying;
 			SelectedSkill = slot;
+			
+			float radius = skill.SkillProjectiles[0].Radius;
+			SkillApplyingRadiusMesh->SetWorldScale3D(FVector(radius * 0.02, radius * 0.02, SkillApplyingRadiusMesh->GetComponentScale().Z));
+			SkillApplyingRadiusMesh->SetVisibility(true, true);
 			OnSkillSelect.Broadcast();
 		}
 	}
@@ -747,7 +803,7 @@ void APlayerPawnDefault::TrySelectSkill(ESkillSlot slot) {
 void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 	if (SelectedCores.Contains(core)) {
 		SetDefaultMode();
-		SelectionSkillCancel();
+		CancelSelectionSkill();
 		CurrentSelectedCore = core;
 	}
 }
@@ -765,6 +821,7 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 	}
 	SelectedCores = cores;
 	SetDefaultMode();
+	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
 	for (const auto& core : SelectedCores) {
 		if (auto health = Cast<UHealthBaseComponent>(core->GetComponent(EGameComponentType::Health))) {
 			health->OnDeath.AddDynamic(this, &APlayerPawnDefault::OnDeadSelectedCore);
@@ -774,7 +831,6 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 			ai->OnSelectionChanging.Broadcast();
 		}
 	}
-	CurrentSelectedCore = SelectedCores.Num() > 0 ? SelectedCores[0] : nullptr;
 	OnSelectionChanging.Broadcast();
 }
 
