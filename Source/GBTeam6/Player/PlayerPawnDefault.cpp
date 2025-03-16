@@ -629,7 +629,7 @@ void APlayerPawnDefault::UpdateSkillApplying() {
 				castLocation + FVector(0, 0, -1000),
 				ECC_GameTraceChannel6
 			);
-			SkillApplyingRadiusMesh->SetWorldLocation(Hit.Location + FVector(0, 0, 50));
+			SkillApplyingRadiusMesh->SetWorldLocation(Hit.Location + FVector(0, 0, 20));
 		}
 	}
 }
@@ -755,6 +755,7 @@ void APlayerPawnDefault::CancelSelectionSkill() {
 	ControlMode = EControlMode::Default;
 	SelectedSkill = ESkillSlot::None;
 	SkillApplyingRadiusMesh->SetVisibility(false, true);
+	UpdateSkillApplySelection({});
 	OnSkillCancel.Broadcast();
 
 }
