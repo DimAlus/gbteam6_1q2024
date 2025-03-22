@@ -336,7 +336,7 @@ public:
 	FString GeneratorName{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float Power;
+	float Power{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TMap<FString, float> SavePower{};
@@ -868,7 +868,7 @@ struct FEffect {
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
 		"EffectType == EEffectType::Periodic",
 		EditConditionHides))
-	float Time;
+	float Time{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsConst{ false };
@@ -1039,13 +1039,13 @@ struct FObjectSelection {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 Preview : 1;
+	uint8 Preview : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 Selection : 1;
+	uint8 Selection : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 MouseTurn : 1;
+	uint8 MouseTurn : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 ShowZone : 1;
+	uint8 ShowZone : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 SkillApplyingPreview : 1;
+	uint8 SkillApplyingPreview : 1 {};
 };
