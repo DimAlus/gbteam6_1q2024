@@ -181,7 +181,13 @@ struct FUIComponentInitializer {
 	bool UIable{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool ShowMana{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture* Icon{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture* IconConstructionBackground{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TArray<EComandType> EnabledCommands{};
@@ -191,6 +197,9 @@ struct FUIComponentInitializer {
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	ETopPanelType TopPanelType{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TArray<FSocialTagFilter> AttachedCoresFilter;
 };
 
 

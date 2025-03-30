@@ -81,6 +81,9 @@ void UHealthDefaultComponent::GeneratorProgress(const FString& generatorName, co
 void UHealthDefaultComponent::GeneratorSuccess(const FString& generatorName, const FGeneratorElementInfo& info) {
 	if (generatorName == "Construction") {
 		if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+			if (CurrentHealth > MaxHealth * 0.95) {
+				ChangeHealth(MaxHealth * 0.1);
+			}
 			generator->OnGeneratorProgress.RemoveDynamic(this, &UHealthDefaultComponent::GeneratorProgress);
 			generator->OnGeneratorSuccess.RemoveDynamic(this, &UHealthDefaultComponent::GeneratorSuccess);
 		}
@@ -95,7 +98,7 @@ void UHealthDefaultComponent::ChangeHealth(float deltaHealth) {
 		if (deltaHealth < 0) {
 			OnDamage.Broadcast(-deltaHealth);
 		}
-		OnChangeHealth.Broadcast();
+		OnChangeHealth.Broadcast(CurrentHealth, GetMaxHealth());
 
 		if (CurrentHealth <= 0.00001f) {
 			GetCore()->SetDead();

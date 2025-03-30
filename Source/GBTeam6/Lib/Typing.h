@@ -26,6 +26,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoreSignature, UGameObjectCore*, Co
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillSlotSignature, ESkillSlot, SkillSlot);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FGameTaskTypeSignature, EGameTaskType, TaskType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCoresSignature, const TArray<UGameObjectCore*>&, Cores);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FFloatFloatSignature, float, Value, float, Value2);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FSkillSlotTargetsSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FActorStringSignature, AActor*, Actor, FString, StringValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FSkillSlotTargetsVectorSignature, ESkillSlot, SkillSlot, const TArray<UGameObjectCore*>&, Targets, FVector, Location);

@@ -24,15 +24,21 @@ public:
 
 protected:
 	bool UIable;
+	bool ShowMana;
 	FString ObjectName;
 	UTexture* Icon;
+	UTexture* IconConstructionBackground;
 	TArray<EComandType> EnabledCommands;
 	TArray<FUIGameObjectPanelData> EnabledPanels;
+	TArray<FSocialTagFilter> AttachedCoresFilter;
 	ETopPanelType TopPanelType;
 public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE bool IsUIAble() const { return UIable; };
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE bool IsShowMana() const { return ShowMana; };
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FString GetObjectName() const { return ObjectName; };
@@ -41,7 +47,13 @@ public:
 	FORCEINLINE UTexture* GetIcon() const { return Icon; };
 
 	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UTexture* GetIconConstructionBackground() const { return IconConstructionBackground; };
+
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE TArray<EComandType> GetEnabledCommands() const { return EnabledCommands; };
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	const TArray<FSocialTagFilter>& GetAttachedCoresFilter() { return AttachedCoresFilter; };
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE TArray<FUIGameObjectPanelData> GetEnabledPanels() const { return EnabledPanels; };

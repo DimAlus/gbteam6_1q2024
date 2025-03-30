@@ -54,6 +54,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	TSet<UGameObjectCore*> GetObjectsByTags(TSet<ESocialTag> SocialTags, TSet<ESocialTag> IgnoreTags);
+
+	UFUNCTION(BlueprintCallable)
+	TSet<UGameObjectCore*> FindObjectsByTagsFilters(const TArray<FSocialTagFilter>& Filters);
 	
 // FindTagrets
 private:

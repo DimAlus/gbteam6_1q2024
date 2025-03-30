@@ -145,6 +145,15 @@ TSet<UGameObjectCore*> USocialService::GetObjectsByTags(TSet<ESocialTag> SocialT
 	return result;
 }
 
+TSet<UGameObjectCore*> USocialService::FindObjectsByTagsFilters(const TArray<FSocialTagFilter>& Filters) {
+	TSet<UGameObjectCore*> cores;
+	for (const auto& filter : Filters) {
+		cores.Append(GetObjectsByTags(filter.IncludeTags, filter.ExcludeTags));
+	}
+
+	return cores;
+}
+
 
 void USocialService::LoadFinders() {
 	FTargetFinder deflt;

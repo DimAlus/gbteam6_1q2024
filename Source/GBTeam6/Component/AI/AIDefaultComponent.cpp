@@ -47,6 +47,17 @@ const TSet<UGameObjectCore *> &UAIDefaultComponent::GetAttachedCores()
 	return AttachedCores;
 }
 
+int UAIDefaultComponent::GetMaxAttachedCoresCount() {
+	int level = -1;
+	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
+		level = generator->GetLevel();
+	}
+	if (AttachedCount.Contains(level)) {
+		return AttachedCount[level];
+	}
+	return 0;
+}
+
 bool UAIDefaultComponent::CanAttachMe(UGameObjectCore* core) {
 	int level = -1;
 	if (auto generator = Cast<UGeneratorBaseComponent>(GetCore()->GetComponent(EGameComponentType::Generator))) {
@@ -67,6 +78,7 @@ bool UAIDefaultComponent::CanAttachMe(UGameObjectCore* core) {
 bool UAIDefaultComponent::AttachMe(UGameObjectCore *core) {
 	if (CanAttachMe(core)) {
 		AttachedCores.Add(core);
+		OnAttachChanging.Broadcast();
 		return true;
 	}
 	return false;
@@ -74,6 +86,7 @@ bool UAIDefaultComponent::AttachMe(UGameObjectCore *core) {
 
 void UAIDefaultComponent::DetachMe(UGameObjectCore *core) {
 	AttachedCores.Remove(core);
+	OnAttachChanging.Broadcast();
 }
 
 bool UAIDefaultComponent::AttachTo(UGameObjectCore *core) {
@@ -84,6 +97,7 @@ bool UAIDefaultComponent::AttachTo(UGameObjectCore *core) {
 			if (auto effect = Cast<UEffectBaseComponent>(GetCore()->GetComponent(EGameComponentType::Effect))) {
 				effect->ApplyGameObjectActions(ai->GetAttacherActions());
 			}
+			OnAttachChanging.Broadcast();
 			return true;
 		}
 	}
@@ -99,6 +113,7 @@ void UAIDefaultComponent::Detach() {
 			}
 		}
 	}
+	OnAttachChanging.Broadcast();
 	CurrentAttachCore = nullptr;
 }
 

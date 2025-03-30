@@ -49,6 +49,10 @@ UGameObjectCore *UAIBaseComponent::GetCurrentAttachCore() {
 	return nullptr;
 }
 
+int UAIBaseComponent::GetMaxAttachedCoresCount() {
+	return 0;
+}
+
 FObjectSelection& UAIBaseComponent::GetSelection() {
 	static FObjectSelection NoneSelection;
 	return NoneSelection;

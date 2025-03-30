@@ -27,7 +27,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnDeath;
 	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnChangeHealth;
+	FFloatFloatSignature OnChangeHealth;
 	UPROPERTY(BlueprintAssignable)
 	FIntSignature OnTryDead;
 	UPROPERTY(BlueprintAssignable)
@@ -40,11 +40,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void ChangeHealth(float changing);
 	
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetMaxHealth() {return 0.f;};
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetCurrentHealth() {return 0.f;};
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetPercentageHealth() {return 0.f;};
 	UFUNCTION(BlueprintCallable)
 	virtual bool IsDead() {return false;};

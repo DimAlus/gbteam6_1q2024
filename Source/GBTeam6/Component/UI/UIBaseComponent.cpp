@@ -7,11 +7,14 @@ UUIBaseComponent::UUIBaseComponent() {
 void UUIBaseComponent::Initialize(const FUIComponentInitializer& initializer) {
 	UE_LOG_COMPONENT(Log, "Component Initializing!");
 	this->UIable = initializer.UIable;
+	this->ShowMana = initializer.ShowMana;
 	this->ObjectName = initializer.ObjectName;
 	this->Icon = initializer.Icon;
+	this->IconConstructionBackground = initializer.IconConstructionBackground;
 	this->EnabledCommands = initializer.EnabledCommands;
 	this->EnabledPanels = initializer.EnabledPanels;
 	this->TopPanelType = initializer.TopPanelType;
+	this->AttachedCoresFilter = initializer.AttachedCoresFilter;
 }
 
 void UUIBaseComponent::SaveComponent(FUISaveData& saveData) {

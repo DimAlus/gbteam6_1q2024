@@ -86,7 +86,10 @@ void USkillHeaverDefaultComponent::LoadComponent(const FSkillHeaverSaveData& sav
 }
 
 void USkillHeaverDefaultComponent::Update() {
-	this->CurrentMana = std::min(this->MaxMana, this->CurrentMana + this->ManaRegeneration * UpdateInterval);
+	if (this->CurrentMana < this->MaxMana && this->ManaRegeneration != 0) {
+		this->CurrentMana = std::min(this->MaxMana, this->CurrentMana + this->ManaRegeneration * UpdateInterval);
+		OnManaChanging.Broadcast(this->CurrentMana, this->MaxMana);
+	}
 	for (auto& iter : this->Skills) {
 		iter.Value.CurrentCooldown = std::max(0.f, iter.Value.CurrentCooldown - UpdateInterval);
 		if (iter.Value.Autouse && Worked) {
@@ -153,6 +156,7 @@ void USkillHeaverDefaultComponent::CancelStartedSkillCast(ESkillSlot slot) {
 	if (SkillsLock.Contains(slot) && SkillsLock[slot]) {
 		SkillsLock[slot] = false;
 		this->CurrentMana = std::min(this->MaxMana, this->CurrentMana + Skills[slot].Mana);
+		OnManaChanging.Broadcast(this->CurrentMana, this->MaxMana);
 	}
 }
 
@@ -181,6 +185,7 @@ bool USkillHeaverDefaultComponent::CastSkill(ESkillSlot slot, const TArray<UGame
 	skill.CurrentCooldown = skill.Cooldown;
 	SkillsLock[slot] = false;
 	this->CurrentMana = std::max(0.f, this->CurrentMana - skill.Mana);
+	OnManaChanging.Broadcast(this->CurrentMana, this->MaxMana);
 	OnSkillCast.Broadcast(slot);
 	return true;
 }

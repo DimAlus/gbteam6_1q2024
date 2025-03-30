@@ -24,6 +24,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FSkillSlotSignature OnSkillCast;
 
+	UPROPERTY(BlueprintAssignable)
+	FFloatFloatSignature OnManaChanging;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void CancelSkillCast();
@@ -67,13 +70,13 @@ public:
 													const TSet<UGameObjectCore*>& ignoreTargets);
 
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetMaxMana();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetCurrentMana();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetCurrentManaPercents();
 	
 };

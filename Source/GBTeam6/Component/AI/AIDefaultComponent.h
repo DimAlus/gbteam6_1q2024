@@ -44,6 +44,7 @@ public:
 	FORCEINLINE virtual ESelectionPriorityType GetSelectionPriority() override { return selectionPriority; };
 
 	virtual const TSet<UGameObjectCore*>& GetAttachedCores() override;
+	virtual int GetMaxAttachedCoresCount() override;
 	virtual bool CanAttachMe(UGameObjectCore* core) override;
 	virtual bool AttachMe(UGameObjectCore* core) override;
 	virtual void DetachMe(UGameObjectCore* core) override;

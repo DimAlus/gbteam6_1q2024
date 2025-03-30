@@ -806,6 +806,7 @@ void APlayerPawnDefault::SetCurrentSelectedCore(UGameObjectCore *core) {
 		SetDefaultMode();
 		CancelSelectionSkill();
 		CurrentSelectedCore = core;
+		OnSelectionCurrentChanging.Broadcast(CurrentSelectedCore);
 	}
 }
 
@@ -832,7 +833,8 @@ void APlayerPawnDefault::SetSelectedCores(const TArray<UGameObjectCore*>& cores)
 			ai->OnSelectionChanging.Broadcast();
 		}
 	}
-	OnSelectionChanging.Broadcast();
+	OnSelectionChanging.Broadcast(SelectedCores);
+	OnSelectionCurrentChanging.Broadcast(CurrentSelectedCore);
 }
 
 UGameObjectCore* APlayerPawnDefault::GetCurrentSelectedCore() {

@@ -40,7 +40,10 @@ protected:
 public:
 
 	UPROPERTY(BlueprintAssignable)
-	FTouchSignature OnSelectionChanging;
+	FCoresSignature OnSelectionChanging;
+
+	UPROPERTY(BlueprintAssignable)
+	FCoreSignature OnSelectionCurrentChanging;
 
 	UPROPERTY(BlueprintAssignable)
 	FTouchSignature OnSkillSelect;

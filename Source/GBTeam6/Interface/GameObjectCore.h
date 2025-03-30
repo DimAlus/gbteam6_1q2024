@@ -55,6 +55,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = Initialization)
 	FORCEINLINE bool GetIsCreated() const { return isCreated; };
+
+	UFUNCTION(BlueprintCallable)
 	FORCEINLINE FString GetOwnerName() const { return OwnerName; };
 	
 	void SetIsCreated();

@@ -48,6 +48,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FSkillVectorCoreSignature OnTryCastSkill;
 
+	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnAttachChanging;
+
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual float GetSpeed();
@@ -76,8 +79,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Detach();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual UGameObjectCore* GetCurrentAttachCore();
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	virtual int GetMaxAttachedCoresCount();
 
 	UFUNCTION(BlueprintCallable)
 	virtual FObjectSelection& GetSelection();
