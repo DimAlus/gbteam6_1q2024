@@ -536,6 +536,7 @@ TMap<EResource, int> UGeneratorDefaultComponent::CalculateNeeds(int steps){
 
 void UGeneratorDefaultComponent::ResetCurrentNeeds() {
 	this->CurrentNeeds = this->CalculateNeeds(1);
+	OnNeedsChanging.Broadcast();
 }
 
 

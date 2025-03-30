@@ -35,6 +35,9 @@ public:
 	FTouchSignature OnAllGeneratorsChanging;
 
 	UPROPERTY(BlueprintAssignable)
+	FTouchSignature OnNeedsChanging;
+
+	UPROPERTY(BlueprintAssignable)
 	FGeneratorInfoSignature OnGeneratorChanging;
 
 	UPROPERTY(BlueprintAssignable)

@@ -67,15 +67,19 @@ bool UInventoryDefaultComponent::TryChangeInventory(const TArray<FPrice>& resour
 		if (GetIgnoreResources().Contains(res.Resource)) {
 			continue;
 		}
-		if (!Resources.Contains(res.Resource)) {
-			Resources.Add(res.Resource, 0);
+		int count = 0;
+		if (Resources.Contains(res.Resource)) {
+			count = Resources[res.Resource];
 		}
-		if (!CanHasResourceCount(res.Resource, Resources[res.Resource] + res.Count * mult)) {
+		if (!CanHasResourceCount(res.Resource, count + res.Count * mult)) {
 			success = false;
 			break;
 		}
-		Resources[res.Resource] += res.Count * mult;
-
+		if (count + res.Count * mult == 0) {
+			Resources.Remove(res.Resource);
+		} else {
+			Resources.Add(res.Resource, count + res.Count * mult);
+		}
 	}
 	if (!(success || withRb)) {
 		for (int j = 0; j < i; j++) {
