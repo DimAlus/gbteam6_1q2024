@@ -69,6 +69,9 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Default|SaveLoadGame")
 	FTouchSignature OnGameLoadedEvent;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	TArray<TSubclassOf<AActor>> TreesClasses;
+
 /***************************************
 ***    Tables            
 ****************************************/

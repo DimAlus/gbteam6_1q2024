@@ -28,6 +28,7 @@ enum class ETileType : uint8 {
 	Any			UMETA(DisplayName = "Any"),
 	Earth		UMETA(DisplayName = "Earth"),
 	Water		UMETA(DisplayName = "Water"),
+	Trees		UMETA(DisplayName = "Trees"),
 	Nothing		UMETA(DisplayName = "Nothing")
 };
 

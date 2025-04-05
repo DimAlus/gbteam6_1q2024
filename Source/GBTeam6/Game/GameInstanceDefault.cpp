@@ -104,6 +104,8 @@ void UGameInstanceDefault::GameLoading(UWorld* world) {
 				world->GetTimerManager().SetTimerForNextTick([this]() {
 					GetSaveService()->SaveGame(this->GameSaveSlot, true);
 				});
+				FGameProgressSaveData _;
+				GetMappingService()->Load(_);
 			}
 			else {
 				UE_LOG(LgGame, Error, TEXT("Can't find APaperTileMapActor at development map!"));

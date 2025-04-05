@@ -1,6 +1,7 @@
 #include "./MappingService.h"
 #include "GBTeam6/Game/GameInstanceDefault.h"
 #include "GBTeam6/Service/ConfigService.h"
+#include "GBTeam6/Service/SaveService.h"
 
 #include "GBTeam6/Interface/GameObjectCore.h"
 
@@ -18,6 +19,8 @@ void UMappingService::InitializeService() {
 	GameInstance->GetConfigService()->GetConfig(EConfig::FV_TileSize, config);
 	this->tileSize = FIntVector(config.VectorValue);
 	createdTiles.Reset();
+
+	GameInstance->GetSaveService()->AddSaveProgressOwner(this);
 
 	tileContainer = nullptr;
 }
@@ -40,6 +43,56 @@ void UMappingService::BeginDestroy() {
 
 	ClearTileInfoArray();
 	Super::BeginDestroy();
+}
+
+void UMappingService::Save(FGameProgressSaveData& data) {
+}
+
+void UMappingService::Load(FGameProgressSaveData& data) {
+	const TArray<TSubclassOf<AActor>>& TreesClasses = GameInstance->TreesClasses;
+	if (TreesClasses.Num() == 0) {
+		return;
+	}
+	TSet<int> hasTrees;
+	for (int i = 0; i < MapHeight; i++) {
+		for (int j = 0; j < MapWidth; j++) {
+			const auto& info = GetTileInfo(j, i);
+			if (info.type == ETileType::Trees && !hasTrees.Contains((i << 16) | j)) {
+				int size = 1;
+				while (size < TreesClasses.Num()) {
+					bool brk = false;
+					for (int ii = i; ii < i + size + 1; ii++) {
+						if (GetTileInfo(j + size, ii).type != ETileType::Trees || hasTrees.Contains((ii << 16) | (j + size))) {
+							brk = true;
+							break;
+						}
+					}
+					if (brk) {
+						break;
+					}
+					for (int jj = j; jj < j + size; jj++) {
+						if (GetTileInfo(jj, i + size).type != ETileType::Trees || hasTrees.Contains(((i + size) << 16) | jj)) {
+							brk = true;
+							break;
+						}
+					}
+					if (brk) {
+						break;
+					}
+					size++;
+				}
+				FVector loc{ (j + size / 2.f) * tileSize.X, (i + size / 2.f) * tileSize.Y, 0 };
+				GameInstance->GetWorld()->SpawnActor<AActor>(TreesClasses[size - 1], loc, FRotator());
+
+				for (int ii = i; ii < i + size; ii++) {
+					for (int jj = j; jj < j + size; jj++) {
+						hasTrees.Add((ii << 16) | jj);
+					}
+				}
+				j += size - 1;
+			}
+		}
+	}
 }
 
 void UMappingService::ClearTileInfoArray() {

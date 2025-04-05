@@ -6,6 +6,7 @@
 #include "PaperTileLayer.h"
 
 #include "./AGameService.h"
+#include "GBTeam6/Interface/CanSaveInterface.h"
 
 #include "MappingService.generated.h"
 
@@ -17,7 +18,7 @@ class UGameObjectCore;
  * 
  */
 UCLASS(BlueprintType)
-class GBTEAM6_API UMappingService : public UAGameService
+class GBTEAM6_API UMappingService : public UAGameService, public ICanSaveInterface
 {
 	GENERATED_BODY()
 protected:
@@ -27,6 +28,9 @@ protected:
 public:
 	UMappingService();
 	virtual void BeginDestroy() override;
+
+	virtual void Save(FGameProgressSaveData& data) override;
+	virtual void Load(FGameProgressSaveData& data) override;
 
 // Meta Info
 private:
