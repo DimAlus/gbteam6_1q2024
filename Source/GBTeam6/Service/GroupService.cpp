@@ -83,6 +83,10 @@ void UGroupService::Ungroup(const TArray<UGameObjectCore*>& cores) {
 	for (int groupId : groups) {
 		if (GroupsData.Contains(groupId)) {
 			for (const auto& core : GroupsData[groupId].Cores) {
+				if (!IsValid(core)) {
+					GroupsData[groupId].Cores.Remove(core);
+					continue;
+				}
 				if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 					ai->OnGroupDataChanging.Broadcast();
 				}
