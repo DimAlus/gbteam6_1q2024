@@ -135,11 +135,17 @@ void UMappingDefaultComponent::SetFullRotation(float rotation) {
 }
 
 void UMappingDefaultComponent::AddRotation(int direction) {
+	if (direction > 0 && CurrentActorRelaticveRotation < 0) {
+		direction--;
+	} else if (direction < 0 && CurrentActorRelaticveRotation > 0) {
+		direction++;
+	}
 	CurrentRotation += direction;
 	if (CurrentRotation < 0) {
 		CurrentRotation += CurrentRotation / 4 * 4 + 8;
 	}
 	CurrentRotation %= 4;
+	CurrentActorRelaticveRotation = 0;
 	UpdateActorRotation();
 }
 
