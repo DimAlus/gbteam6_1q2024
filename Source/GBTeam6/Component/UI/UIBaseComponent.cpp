@@ -10,6 +10,7 @@ void UUIBaseComponent::Initialize(const FUIComponentInitializer& initializer) {
 	this->ShowMana = initializer.ShowMana;
 	this->ObjectName = initializer.ObjectName;
 	this->Icon = initializer.Icon;
+	this->IconMini = initializer.IconMini;
 	this->IconConstructionBackground = initializer.IconConstructionBackground;
 	this->EnabledCommands = initializer.EnabledCommands;
 	this->EnabledPanels = initializer.EnabledPanels;

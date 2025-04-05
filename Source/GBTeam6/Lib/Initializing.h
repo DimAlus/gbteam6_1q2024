@@ -187,6 +187,9 @@ struct FUIComponentInitializer {
 	UTexture* Icon{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UTexture* IconMini{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UTexture* IconConstructionBackground{};
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

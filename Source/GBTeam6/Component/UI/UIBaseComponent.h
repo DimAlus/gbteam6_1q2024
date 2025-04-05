@@ -27,6 +27,7 @@ protected:
 	bool ShowMana;
 	FString ObjectName;
 	UTexture* Icon;
+	UTexture* IconMini;
 	UTexture* IconConstructionBackground;
 	TArray<EComandType> EnabledCommands;
 	TArray<FUIGameObjectPanelData> EnabledPanels;
@@ -45,6 +46,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE UTexture* GetIcon() const { return Icon; };
+
+	UFUNCTION(BlueprintCallable)
+	FORCEINLINE UTexture* GetIconMini() const { return IconMini; };
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE UTexture* GetIconConstructionBackground() const { return IconConstructionBackground; };
