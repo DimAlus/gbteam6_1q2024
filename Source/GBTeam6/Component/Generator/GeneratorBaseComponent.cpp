@@ -89,6 +89,15 @@ const FGeneratorContext& UGeneratorBaseComponent::GetGeneratorContext(FString ge
 	return EmptyContext;
 }
 
+const TArray<FString>& UGeneratorBaseComponent::GetGeneratorsWithTasks(FString threadName) {
+	static TArray<FString> EmptyArray;
+	return EmptyArray;
+}
+
+TArray<FString> UGeneratorBaseComponent::GetAllGeneratorsWithTasks() {
+	return TArray<FString>();
+}
+
 void UGeneratorBaseComponent::AddTask(FString generatorName) {
 }
 

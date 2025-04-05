@@ -120,6 +120,8 @@ public:
 	virtual const FGeneratorContext& GetCurrentGeneratorContext(FString threadName, bool& exists) override;
 	virtual const FGeneratorElementInfo& GetGenerator(FString generatorName, bool& exists) override;
 	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName, bool& exists) override;
+	virtual const TArray<FString>& GetGeneratorsWithTasks(FString threadName) override;
+	virtual TArray<FString> GetAllGeneratorsWithTasks() override;
 
 	virtual void AddTask(FString generatorName) override;
 	virtual void RemoveTask(FString generatorName) override;

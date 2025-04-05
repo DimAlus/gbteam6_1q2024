@@ -132,6 +132,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual const FGeneratorContext& GetGeneratorContext(FString generatorName, bool& exists);
 
+	UFUNCTION(BlueprintCallable)
+	virtual const TArray<FString>& GetGeneratorsWithTasks(FString threadName);
+
+	UFUNCTION(BlueprintCallable)
+	virtual TArray<FString> GetAllGeneratorsWithTasks();
+
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AddTask(FString generatorName);

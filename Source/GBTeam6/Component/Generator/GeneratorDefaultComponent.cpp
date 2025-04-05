@@ -681,6 +681,21 @@ const FGeneratorContext& UGeneratorDefaultComponent::GetGeneratorContext(FString
 	return EmptyContext;
 }
 
+const TArray<FString>& UGeneratorDefaultComponent::GetGeneratorsWithTasks(FString threadName) {
+	if (this->ThreadsIterators.Contains(threadName)) {
+		return this->ThreadsIterators[threadName].Tasks.Iterable;
+	}
+	return Super::GetGeneratorsWithTasks(threadName);
+}
+
+TArray<FString> UGeneratorDefaultComponent::GetAllGeneratorsWithTasks() {
+	TArray<FString> result;
+	for (const auto& iter : this->ThreadsIterators) {
+		result.Append(iter.Value.Tasks.Iterable);
+	}
+	return result;
+}
+
 
 void UGeneratorDefaultComponent::AddTask(FString generatorName) {
 	FGeneratorContext& context = this->GeneratorsContext[generatorName];
