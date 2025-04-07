@@ -22,6 +22,7 @@ void UMappingService::InitializeService() {
 
 	GameInstance->GetSaveService()->AddSaveProgressOwner(this);
 
+	TreesActor = nullptr;
 	tileContainer = nullptr;
 }
 
@@ -48,51 +49,77 @@ void UMappingService::BeginDestroy() {
 void UMappingService::Save(FGameProgressSaveData& data) {
 }
 
+#define RAND_FLOAT static_cast<float>(rand()) / static_cast<float>(RAND_MAX)
+
 void UMappingService::Load(FGameProgressSaveData& data) {
-	const TArray<TSubclassOf<AActor>>& TreesClasses = GameInstance->TreesClasses;
-	if (TreesClasses.Num() == 0) {
+	if (IsValid(TreesActor)) {
 		return;
 	}
-	TSet<int> hasTrees;
-	for (int i = 0; i < MapHeight; i++) {
-		for (int j = 0; j < MapWidth; j++) {
-			const auto& info = GetTileInfo(j, i);
-			if (info.type == ETileType::Trees && !hasTrees.Contains((i << 16) | j)) {
-				int size = 1;
-				while (size < TreesClasses.Num()) {
-					bool brk = false;
-					for (int ii = i; ii < i + size + 1; ii++) {
-						if (GetTileInfo(j + size, ii).type != ETileType::Trees || hasTrees.Contains((ii << 16) | (j + size))) {
-							brk = true;
-							break;
-						}
-					}
-					if (brk) {
-						break;
-					}
-					for (int jj = j; jj < j + size; jj++) {
-						if (GetTileInfo(jj, i + size).type != ETileType::Trees || hasTrees.Contains(((i + size) << 16) | jj)) {
-							brk = true;
-							break;
-						}
-					}
-					if (brk) {
-						break;
-					}
-					size++;
-				}
-				FVector loc{ (j + size / 2.f) * tileSize.X, (i + size / 2.f) * tileSize.Y, 0 };
-				GameInstance->GetWorld()->SpawnActor<AActor>(TreesClasses[size - 1], loc, FRotator());
+	FActorSpawnParameters par;
+	par.Name = "Trees Container";
+	TreesActor = GameInstance->GetWorld()->SpawnActor<AActor>(par);
+#if UE_EDITOR
+	TreesActor->SetActorLabel(TEXT("Tiles Preview Container"));
+#endif
 
-				for (int ii = i; ii < i + size; ii++) {
-					for (int jj = j; jj < j + size; jj++) {
-						hasTrees.Add((ii << 16) | jj);
+	TArray<FTreeGenerationInfo>& Trees = GameInstance->TreesClasses;
+	float fullChance = 0.f;
+	float distance = GameInstance->TreesDistance;
+	float diapason = GameInstance->TreesDiapason * distance;
+	if (Trees.Num() == 0) {
+		return;
+	}
+	for (const auto& tree : Trees) {
+		fullChance += tree.RelativeChance;
+	}
+	float yShift = tileSize.Y / 4.f * distance;
+	FHitResult Hit;
+	FTransform trans;
+	for (float x = tileSize.X / 2.f; x < MapWidth * tileSize.X; x += distance * tileSize.X) {
+		yShift *= -1;
+		for (float y = tileSize.Y / 4.f + yShift + tileSize.Y / 2.f; y < MapHeight * tileSize.Y; y += distance * tileSize.Y) {
+			if (GetTileInfo(x / tileSize.X, y / tileSize.Y).type == ETileType::Trees) {
+				FVector location = FRotator(0, RAND_FLOAT * 360, 0).RotateVector({ tileSize.X * diapason * RAND_FLOAT, 0, 0 }) + FVector(x, y, 0);
+				GameInstance->GetWorld()->LineTraceSingleByChannel(Hit, location + FVector(0, 0, 5000), location - FVector(0, 0, 1000), ECollisionChannel::ECC_Visibility);
+				trans.SetLocation(Hit.Location);
+				trans.SetRotation(FRotator(0, RAND_FLOAT * 360, 0).Quaternion());
+
+				FTreeGenerationInfo* info = nullptr;
+				float chance = RAND_FLOAT * fullChance;
+				for (int i = 0; i < Trees.Num(); i++) {
+					if ((chance -= Trees[i].RelativeChance) < 0) {
+						info = &Trees[i];
+						break;
 					}
 				}
-				j += size - 1;
+				if (!info) {
+					info = &Trees[Trees.Num() - 1];
+				}
+				FVector scale = FVector(info->ScaleBase * (1 - info->ScaleDiapason + RAND_FLOAT * 2 * info->ScaleDiapason));
+				trans.SetScale3D(scale);
+
+				UStaticMeshComponent* meshComp = NewObject<UStaticMeshComponent>(Cast<UObject>(TreesActor));
+				check(meshComp);
+					
+				meshComp->AttachToComponent(
+					TreesActor->GetRootComponent(),
+					FAttachmentTransformRules::KeepRelativeTransform
+				);
+				TreesActor->AddInstanceComponent(meshComp);
+				meshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				meshComp->SetWorldTransform(trans);
+
+				meshComp->RegisterComponent();
+				
+				meshComp->SetStaticMesh(info->Mesh);
 			}
 		}
 	}
+}
+
+void UMappingService::LoadTrees() {
+	FGameProgressSaveData _;
+	this->Load(_);
 }
 
 void UMappingService::ClearTileInfoArray() {

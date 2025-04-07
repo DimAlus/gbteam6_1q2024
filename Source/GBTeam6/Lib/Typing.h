@@ -170,6 +170,25 @@ struct FTRTileType : public FTableRowBase {
 
 
 USTRUCT(BlueprintType)
+struct FTreeGenerationInfo {
+	GENERATED_BODY()
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMesh* Mesh{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ScaleBase{ 1.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ScaleDiapason{ 0.f };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float RelativeChance{ 1.f };
+};
+
+
+USTRUCT(BlueprintType)
 struct FConfig {
 	GENERATED_BODY()
 public:

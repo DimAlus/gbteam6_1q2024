@@ -70,7 +70,13 @@ public:
 	FTouchSignature OnGameLoadedEvent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
-	TArray<TSubclassOf<AActor>> TreesClasses;
+	TArray<FTreeGenerationInfo> TreesClasses;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	float TreesDistance = 1.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	float TreesDiapason = 0.2f;
 
 /***************************************
 ***    Tables            

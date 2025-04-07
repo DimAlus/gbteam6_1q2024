@@ -13,6 +13,7 @@
 
 class AGameStateDefault;
 class UGameObjectCore;
+class AActor;
 
 /** Service manager of map's tiles, its types and busyness
  * 
@@ -32,12 +33,17 @@ public:
 	virtual void Save(FGameProgressSaveData& data) override;
 	virtual void Load(FGameProgressSaveData& data) override;
 
+	UFUNCTION(BlueprintCallable)
+	void LoadTrees();
+
 // Meta Info
 private:
 	// Info about parents of TileType
 	TMap<ETileType, TSet<ETileType>> TileTypesTree;
 	// Info for associate TileSetIndex with TileType
 	TMap<int, ETileType> TileTypes;
+
+	AActor* TreesActor;
 
 private:
 	void InitTileTypes();
