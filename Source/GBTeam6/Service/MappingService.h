@@ -92,6 +92,8 @@ public:
 protected:
 	UGameObjectCore* LocatedCore = nullptr;
 	bool bCanSetLocatedCore;
+	bool bHasZoneConflicts;
+	TArray<UGameObjectCore*> CurrentConfictedCores;
 
 	bool currentTileViewVisibility = false;
 
@@ -99,6 +101,7 @@ protected:
 	UStaticMeshComponent* CreateTilePreview();
 	void UpdateTiles();
 	void SetShowTileView (bool isShowTileView);
+	void UpdateZoneConflicts();
 
 public:
 	UFUNCTION(BlueprintCallable)

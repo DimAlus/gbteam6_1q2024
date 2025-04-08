@@ -6,6 +6,8 @@
 #include "GBTeam6/Interface/GameObjectCore.h"
 
 #include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
+#include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
+#include "GBTeam6/Component/AI/AIBaseComponent.h"
 
 #include "MappingService.h"
 
@@ -378,6 +380,67 @@ void UMappingService::SetShowTileView(bool isShowTileView) {
 	}
 }
 
+void UMappingService::UpdateZoneConflicts() {
+	bHasZoneConflicts = false;
+	if (!IsValid(LocatedCore)) {
+		for (const auto& core : CurrentConfictedCores) {
+			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+				ai->GetSelection().ZoneConflict = false;
+				ai->OnSelectionChanging.Broadcast();
+			}
+		}
+		CurrentConfictedCores.Reset();
+		return;
+	}
+	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(LocatedCore->GetComponent(EGameComponentType::SkillHeaver))) {
+		USocialService* socialService = GameInstance->GetSocialService();
+		bool _;
+		const FSkill& skill = skillHeaver->GetSkillData(ESkillSlot::Auto, _);
+		if (skill.ConfictedRadiusName == "None") {
+			return;
+		}
+
+		float skillRadius = socialService->GetFinderRadius(skill.SkillProjectiles[0].TargetFinder);
+		FVector location = Cast<IGameObjectInterface>(LocatedCore->GetOwner())
+							->GetLocationByType(ELocationType::Actor).GetLocation();
+		TArray<UGameObjectCore*> conflictedCores;
+
+		for (const auto& core : socialService->GetObjectsByTag(ESocialTag::Zonable)) {
+			if (auto otherSkillHeaver = Cast<USkillHeaverBaseComponent>(core->GetComponent(EGameComponentType::SkillHeaver))) {
+				const FSkill& otherSkill = otherSkillHeaver->GetSkillData(ESkillSlot::Auto, _);
+				if (skill.ConfictedRadiusName != otherSkill.ConfictedRadiusName) {
+					continue;
+				}
+				float distance = ((Cast<IGameObjectInterface>(core->GetOwner())
+						->GetLocationByType(ELocationType::Actor).GetLocation()
+						- location) * FVector(1, 1, 0)).Length();
+				if (distance < skillRadius + socialService->GetFinderRadius(otherSkill.SkillProjectiles[0].TargetFinder)) {
+					conflictedCores.Add(core);
+				}
+			}
+		}
+
+		for (const auto& core : CurrentConfictedCores) {
+			if (IsValid(core) && !conflictedCores.Contains(core)) {
+				if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+					ai->GetSelection().ZoneConflict = false;
+					ai->OnSelectionChanging.Broadcast();
+				}
+			}
+		}
+		for (const auto& core : conflictedCores) {
+			if (!CurrentConfictedCores.Contains(core)) {
+				if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
+					ai->GetSelection().ZoneConflict = true;
+					ai->OnSelectionChanging.Broadcast();
+				}
+			}
+		}
+		CurrentConfictedCores = conflictedCores;
+		bHasZoneConflicts = CurrentConfictedCores.Num() > 0;
+	}
+}
+
 bool UMappingService::CanPlaceAtWorld(UGameObjectCore* core) {
 	auto mapping = Cast<UMappingBaseComponent>(core->GetComponent(EGameComponentType::Mapping));
 	if (!mapping) {
@@ -403,6 +466,7 @@ void UMappingService::SetLocatedCore(UGameObjectCore* core) {
 	LocatedCore = core;
 	bCanSetLocatedCore = false;
 	UpdateTiles();
+	UpdateZoneConflicts();
 }
 
 void UMappingService::SetLocatedCoreLocation(FVector location) {
@@ -416,6 +480,7 @@ void UMappingService::SetLocatedCoreLocation(FVector location) {
 				currentLookedLocation.X = currentLocation.X; currentLookedLocation.Y = currentLocation.Y;
 				bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 				UpdateTiles();
+				UpdateZoneConflicts();
 			}
 		}
 	}
@@ -430,6 +495,7 @@ void UMappingService::AddLocatedCoreRotation(int direction) {
 			mapping->AddRotation(direction);
 			bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 			UpdateTiles();
+			UpdateZoneConflicts();
 		}
 	}
 }
@@ -440,12 +506,13 @@ void UMappingService::AddLocatedCoreRotationSlowly(float delta) {
 			mapping->SetFullRotation(mapping->GetFullRotation() + delta);
 			bCanSetLocatedCore = CanPlaceAtWorld(LocatedCore);
 			UpdateTiles();
+			UpdateZoneConflicts();
 		}
 	}
 }
 
 bool UMappingService::CanSetLocatedCore() { 
-	return IsValid(LocatedCore) && bCanSetLocatedCore;
+	return IsValid(LocatedCore) && bCanSetLocatedCore && !bHasZoneConflicts;
 }
 
 
@@ -458,6 +525,7 @@ bool UMappingService::InstallLocatedCore() {
 			mapping->SetIsPlaced(true);
 			LocatedCore = nullptr;
 			UpdateTiles();
+			UpdateZoneConflicts();
 			return true;
 		}
 	}

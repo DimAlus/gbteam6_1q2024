@@ -946,6 +946,9 @@ struct FSkill {
 	FString Name{"None"};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ConfictedRadiusName{"None"};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSkillProjectileData> SkillProjectiles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -1066,6 +1069,8 @@ struct FObjectSelection {
 	uint8 MouseTurn : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 ShowZone : 1 {};
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 ZoneConflict : 1 {};
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	uint8 SkillApplyingPreview : 1 {};
 };
