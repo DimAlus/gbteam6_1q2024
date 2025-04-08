@@ -69,14 +69,20 @@ public:
 	UPROPERTY(BlueprintAssignable, BlueprintCallable, Category = "Default|SaveLoadGame")
 	FTouchSignature OnGameLoadedEvent;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|Trees")
 	TArray<FTreeGenerationInfo> TreesClasses;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	/** Size tree's grid cell as tile cell count */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|Trees", meta=(ClampMin=0.1f))
 	float TreesDistance = 1.f;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|SaveLoadGame")
+	/** Randomized tree location at cell as TileDistance partition */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|Trees", meta=(ClampMin=0.f, ClampMax=1.f))
 	float TreesDiapason = 0.2f;
+
+	/** Shift every next tree's row as cell partition */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Default|Trees", meta=(ClampMin=0.f, ClampMax=1.f))
+	float TreesYShift = 0.5f;
 
 /***************************************
 ***    Tables            

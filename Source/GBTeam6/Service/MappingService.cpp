@@ -66,6 +66,7 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 	float fullChance = 0.f;
 	float distance = GameInstance->TreesDistance;
 	float diapason = GameInstance->TreesDiapason * distance;
+	float shft = GameInstance->TreesYShift - (int)GameInstance->TreesYShift;
 	if (Trees.Num() == 0) {
 		return;
 	}
@@ -76,8 +77,11 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 	FHitResult Hit;
 	FTransform trans;
 	for (float x = tileSize.X / 2.f; x < MapWidth * tileSize.X; x += distance * tileSize.X) {
-		yShift *= -1;
-		for (float y = tileSize.Y / 4.f + yShift + tileSize.Y / 2.f; y < MapHeight * tileSize.Y; y += distance * tileSize.Y) {
+		yShift += shft;
+		if (yShift > 1) {
+			yShift -= 1;
+		}
+		for (float y = tileSize.Y * (0.5f + yShift); y < MapHeight * tileSize.Y; y += distance * tileSize.Y) {
 			if (GetTileInfo(x / tileSize.X, y / tileSize.Y).type == ETileType::Trees) {
 				FVector location = FRotator(0, RAND_FLOAT * 360, 0).RotateVector({ tileSize.X * diapason * RAND_FLOAT, 0, 0 }) + FVector(x, y, 0);
 				GameInstance->GetWorld()->LineTraceSingleByChannel(Hit, location + FVector(0, 0, 5000), location - FVector(0, 0, 1000), ECollisionChannel::ECC_Visibility);
