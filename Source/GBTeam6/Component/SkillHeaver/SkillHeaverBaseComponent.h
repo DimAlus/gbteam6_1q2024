@@ -79,4 +79,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	virtual float GetCurrentManaPercents();
 	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	virtual FString GetConfictedRadiusName();
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	virtual float GetConflictedRadius();
 };

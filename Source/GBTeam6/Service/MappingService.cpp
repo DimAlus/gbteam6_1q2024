@@ -2,8 +2,10 @@
 #include "GBTeam6/Game/GameInstanceDefault.h"
 #include "GBTeam6/Service/ConfigService.h"
 #include "GBTeam6/Service/SaveService.h"
+#include "GBTeam6/Service/SocialService.h"
 
 #include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/GameObjectInterface.h"
 
 #include "GBTeam6/Component/Mapping/MappingBaseComponent.h"
 #include "GBTeam6/Component/SkillHeaver/SkillHeaverBaseComponent.h"
@@ -384,6 +386,9 @@ void UMappingService::UpdateZoneConflicts() {
 	bHasZoneConflicts = false;
 	if (!IsValid(LocatedCore)) {
 		for (const auto& core : CurrentConfictedCores) {
+			if (!IsValid(core)) {
+				continue;
+			}
 			if (auto ai = Cast<UAIBaseComponent>(core->GetComponent(EGameComponentType::AI))) {
 				ai->GetSelection().ZoneConflict = false;
 				ai->OnSelectionChanging.Broadcast();
@@ -393,31 +398,37 @@ void UMappingService::UpdateZoneConflicts() {
 		return;
 	}
 	if (auto skillHeaver = Cast<USkillHeaverBaseComponent>(LocatedCore->GetComponent(EGameComponentType::SkillHeaver))) {
-		USocialService* socialService = GameInstance->GetSocialService();
-		bool _;
-		const FSkill& skill = skillHeaver->GetSkillData(ESkillSlot::Auto, _);
-		if (skill.ConfictedRadiusName == "None") {
+		if (skillHeaver->GetConfictedRadiusName() == "None") {
 			return;
 		}
 
-		float skillRadius = socialService->GetFinderRadius(skill.SkillProjectiles[0].TargetFinder);
-		FVector location = Cast<IGameObjectInterface>(LocatedCore->GetOwner())
-							->GetLocationByType(ELocationType::Actor).GetLocation();
+		USocialService* socialService = GameInstance->GetSocialService();
+		bool _;
+
+		float skillRadius = skillHeaver->GetConflictedRadius();
+		FVector location = IGameObjectInterface::Execute_GetLocationByType(LocatedCore->GetOwner(), ELocationType::Actor, _)
+			.GetLocation();
 		TArray<UGameObjectCore*> conflictedCores;
 
 		for (const auto& core : socialService->GetObjectsByTag(ESocialTag::Zonable)) {
+			if (core == LocatedCore) {
+				continue;
+			}
 			if (auto otherSkillHeaver = Cast<USkillHeaverBaseComponent>(core->GetComponent(EGameComponentType::SkillHeaver))) {
-				const FSkill& otherSkill = otherSkillHeaver->GetSkillData(ESkillSlot::Auto, _);
-				if (skill.ConfictedRadiusName != otherSkill.ConfictedRadiusName) {
+				if (skillHeaver->GetConfictedRadiusName() != otherSkillHeaver->GetConfictedRadiusName()) {
 					continue;
 				}
-				float distance = ((Cast<IGameObjectInterface>(core->GetOwner())
-						->GetLocationByType(ELocationType::Actor).GetLocation()
-						- location) * FVector(1, 1, 0)).Length();
-				if (distance < skillRadius + socialService->GetFinderRadius(otherSkill.SkillProjectiles[0].TargetFinder)) {
+				float distance = ((
+					IGameObjectInterface::Execute_GetLocationByType(core->GetOwner(), ELocationType::Actor, _).GetLocation()
+						- location
+					) * FVector(1, 1, 0)).Length();
+				if (distance < skillRadius + otherSkillHeaver->GetConflictedRadius()) {
 					conflictedCores.Add(core);
 				}
 			}
+		}
+		if (conflictedCores.Num() > 0) {
+			conflictedCores.Add(LocatedCore);
 		}
 
 		for (const auto& core : CurrentConfictedCores) {

@@ -45,6 +45,8 @@ private:
 	FTouchBlueprintableSignature TimerCallback;
 	float UpdateInterval = 0.1f;
 
+	FString ConfictedRadiusName;
+	float ConflictedRadius;
 private:
 
 	UFUNCTION()
@@ -78,5 +80,7 @@ public:
 	virtual float GetCurrentMana() override;
 	virtual float GetCurrentManaPercents() override;
 
+	virtual FString GetConfictedRadiusName() override;
+	virtual float GetConflictedRadius() override;
 };
 

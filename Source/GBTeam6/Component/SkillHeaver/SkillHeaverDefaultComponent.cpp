@@ -20,6 +20,8 @@ void USkillHeaverDefaultComponent::Initialize(const FSkillHeaverComponentInitial
 	Super::Initialize(Initializer);
 	this->MaxMana = this->CurrentMana = Initializer.MaxMana;
 	this->ManaRegeneration = Initializer.ManaRegeneration;
+	this->ConfictedRadiusName = Initializer.ConfictedRadiusName;
+	this->ConflictedRadius = Initializer.ConflictedRadius;
 
 	for (const auto& iter : Initializer.Skills) {
 		FSkill skill = iter.Value;
@@ -289,4 +291,12 @@ float USkillHeaverDefaultComponent::GetCurrentMana() {
 
 float USkillHeaverDefaultComponent::GetCurrentManaPercents() {
 	return this->CurrentMana / this->MaxMana;
+}
+
+FString USkillHeaverDefaultComponent::GetConfictedRadiusName() {
+	return ConfictedRadiusName;
+}
+
+float USkillHeaverDefaultComponent::GetConflictedRadius() {
+	return ConflictedRadius;
 }

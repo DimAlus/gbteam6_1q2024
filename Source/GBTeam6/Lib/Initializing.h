@@ -354,6 +354,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ManaRegeneration{5.f};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString ConfictedRadiusName{ "None" };
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ConflictedRadius{};
 };
 
 USTRUCT(BlueprintType)

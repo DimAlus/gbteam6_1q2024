@@ -69,3 +69,11 @@ float USkillHeaverBaseComponent::GetCurrentMana() {
 float USkillHeaverBaseComponent::GetCurrentManaPercents() {
 	return 0.0f;
 }
+
+FString USkillHeaverBaseComponent::GetConfictedRadiusName() {
+	return FString("None");
+}
+
+float USkillHeaverBaseComponent::GetConflictedRadius() {
+	return 0.f;
+}

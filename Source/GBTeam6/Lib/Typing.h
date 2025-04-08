@@ -946,9 +946,6 @@ struct FSkill {
 	FString Name{"None"};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString ConfictedRadiusName{"None"};
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FSkillProjectileData> SkillProjectiles;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
