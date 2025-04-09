@@ -1,7 +1,13 @@
 #include "./CanSaveInterface.h"
 
-void ICanSaveInterface::Save(FGameProgressSaveData& data) {
+void ICanSaveInterface::SaveProgress_Implementation(FGameProgressSaveData& data) {
 }
 
-void ICanSaveInterface::Load(FGameProgressSaveData& data) {
+void ICanSaveInterface::LoadProgress_Implementation(FGameProgressSaveData& data) {
+}
+
+void ICanSaveInterface::Save_Implementation() {
+}
+
+void ICanSaveInterface::Load_Implementation() {
 }

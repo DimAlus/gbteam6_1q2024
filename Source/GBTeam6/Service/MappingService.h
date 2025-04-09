@@ -30,8 +30,8 @@ public:
 	UMappingService();
 	virtual void BeginDestroy() override;
 
-	virtual void Save(FGameProgressSaveData& data) override;
-	virtual void Load(FGameProgressSaveData& data) override;
+	virtual void Save_Implementation() override;
+	virtual void Load_Implementation() override;
 
 	UFUNCTION(BlueprintCallable)
 	void LoadTrees();

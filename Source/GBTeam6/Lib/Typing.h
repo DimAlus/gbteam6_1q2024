@@ -178,6 +178,13 @@ public:
 	UStaticMesh* Mesh{};
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<float, UMaterialInstance*> Materials{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (EditCondition =
+										"false", EditConditionHides))
+	float FullMaterialChance{};
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ScaleBase{ 1.f };
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

@@ -29,7 +29,7 @@ protected:
 
 private:
 	// UPROPERTY()
-	TArray<ICanSaveInterface*> ProgressSavers;
+	TArray<UObject*> ProgressSavers;
 
 public:
 	bool bSaveMe;
@@ -51,6 +51,9 @@ private:
 
 	void SaveProgress(USaveProgress* saver);
 	void LoadProgress(USaveProgress* saver);
+
+	void SaveAfter();
+	void LoadAfter();
 public:
 
 	UFUNCTION(BlueprintCallable)
@@ -73,7 +76,7 @@ private:
 	void InitGameObject(UGameObjectCore* core, FGameObjectSaveData& objectSaveData);
 
 public:
-	void AddSaveProgressOwner(ICanSaveInterface* saver);
-	void RemoveSaveProgressOwner(ICanSaveInterface* saver);
+	void AddSaveProgressOwner(UObject* saver);
+	void RemoveSaveProgressOwner(UObject* saver);
 
 };

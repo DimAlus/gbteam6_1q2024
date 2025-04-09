@@ -40,13 +40,13 @@ void UGameEventsService::ClearService() {
 	}
 }
 
-void UGameEventsService::Save(FGameProgressSaveData& data) {
+void UGameEventsService::SaveProgress_Implementation(FGameProgressSaveData& data) {
 	for (auto evt : this->Events) {
 		data.EventsData.Context.Add(evt.Value.Context);
 	}
 }
 
-void UGameEventsService::Load(FGameProgressSaveData& data) {
+void UGameEventsService::LoadProgress_Implementation(FGameProgressSaveData& data) {
 	for (auto ctx : data.EventsData.Context) {
 		if (this->Events.Contains(ctx.EventName)) {
 			this->Events[ctx.EventName].Context = ctx;

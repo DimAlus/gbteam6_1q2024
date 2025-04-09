@@ -21,6 +21,19 @@ class GBTEAM6_API ICanSaveInterface
 	GENERATED_BODY()
 
 public:
-	virtual void Save(FGameProgressSaveData& data);
-	virtual void Load(FGameProgressSaveData& data);
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Saving)
+	void SaveProgress(FGameProgressSaveData& data);
+	virtual void SaveProgress_Implementation(FGameProgressSaveData& data);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Saving)
+	void LoadProgress(FGameProgressSaveData& data);
+	virtual void LoadProgress_Implementation(FGameProgressSaveData& data);
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Saving)
+	void Save();
+	virtual void Save_Implementation();
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = Saving)
+	void Load();
+	virtual void Load_Implementation();
 };

@@ -50,12 +50,12 @@ void UMappingService::BeginDestroy() {
 	Super::BeginDestroy();
 }
 
-void UMappingService::Save(FGameProgressSaveData& data) {
+void UMappingService::Save_Implementation() {
 }
 
 #define RAND_FLOAT static_cast<float>(rand()) / static_cast<float>(RAND_MAX)
 
-void UMappingService::Load(FGameProgressSaveData& data) {
+void UMappingService::Load_Implementation() {
 	if (IsValid(TreesActor)) {
 		return;
 	}
@@ -66,7 +66,18 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 	TreesActor->SetActorLabel(TEXT("Tiles Preview Container"));
 #endif
 
+	srand(0xFFF);
+
 	TArray<FTreeGenerationInfo>& Trees = GameInstance->TreesClasses;
+	for (auto& tree : Trees) {
+		float chance = 0.f;
+		for (const auto& iter : tree.Materials) {
+			chance += iter.Key;
+		}
+		tree.FullMaterialChance = chance;
+	}
+
+
 	float fullChance = 0.f;
 	float distance = GameInstance->TreesDistance;
 	float diapason = GameInstance->TreesDiapason * distance;
@@ -77,7 +88,7 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 	for (const auto& tree : Trees) {
 		fullChance += tree.RelativeChance;
 	}
-	float yShift = tileSize.Y / 4.f * distance;
+	float yShift = 0;
 	FHitResult Hit;
 	FTransform trans;
 	for (float x = tileSize.X / 2.f; x < MapWidth * tileSize.X; x += distance * tileSize.X) {
@@ -118,6 +129,17 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 				meshComp->SetWorldTransform(trans);
 
 				meshComp->RegisterComponent();
+
+				if (info->Materials.Num() > 0) {
+					meshComp->SetMaterial(0, info->Materials.begin()->Value);
+					chance = RAND_FLOAT * info->FullMaterialChance;
+					for (const auto& iter : info->Materials) {
+						if ((chance -= iter.Key) <= 0) {
+							meshComp->SetMaterial(0, iter.Value);
+							break;
+						}
+					}
+				}
 				
 				meshComp->SetStaticMesh(info->Mesh);
 			}
@@ -126,8 +148,7 @@ void UMappingService::Load(FGameProgressSaveData& data) {
 }
 
 void UMappingService::LoadTrees() {
-	FGameProgressSaveData _;
-	this->Load(_);
+	this->Load_Implementation();
 }
 
 void UMappingService::ClearTileInfoArray() {
@@ -340,8 +361,9 @@ void UMappingService::UpdateTiles() {
 				}
 				FIntVector loc = FIntVector(currentLookedLocation.X + i, currentLookedLocation.Y + j, 0);
 				bool intoCore = atCore.Contains({ loc.X, loc.Y });
-				bool enabled = !(GetTileInfo(loc.X, loc.Y).state == ETileState::Busy ||
-					(intoCore && !atCore[{ loc.X, loc.Y }]));
+				bool enabled = !(GetTileInfo(loc.X, loc.Y).state == ETileState::Busy 
+					|| (intoCore && !atCore[{ loc.X, loc.Y }])
+					|| GetTileInfo(loc.X, loc.Y).type == ETileType::Trees);
 				if (createdTiles.Num() <= ind) {
 					createdTiles.Add(CreateTilePreview());
 				}

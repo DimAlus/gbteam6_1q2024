@@ -40,8 +40,8 @@ class GBTEAM6_API AGameStateDefault : public AGameStateBase, public ICanSaveInte
 public:
 	virtual void BeginPlay() override;
 
-	virtual void Save(FGameProgressSaveData& data) override;
-	virtual void Load(FGameProgressSaveData& data) override;
+	virtual void SaveProgress_Implementation(FGameProgressSaveData& data) override;
+	virtual void LoadProgress_Implementation(FGameProgressSaveData& data) override;
 
 
 protected:

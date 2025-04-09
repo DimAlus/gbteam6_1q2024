@@ -230,14 +230,14 @@ void AGameStateDefault::BeginPlay() {
 }
 
 
-void AGameStateDefault::Save(FGameProgressSaveData& data) {
+void AGameStateDefault::SaveProgress_Implementation(FGameProgressSaveData& data) {
 	data.GameStateData.PlayerResources = this->PlayerResources;
 	data.GameStateData.CurrentDayTime = this->CurrentDayTime;
 	data.GameStateData.IsDay = this->CurrentIsDay;
 	data.GameStateData.DayNumber = this->CurrentDayNum;
 }
 
-void AGameStateDefault::Load(FGameProgressSaveData& data) {
+void AGameStateDefault::LoadProgress_Implementation(FGameProgressSaveData& data) {
 	this->PlayerResources = data.GameStateData.PlayerResources;
 	this->CurrentDayTime = data.GameStateData.CurrentDayTime;
 	this->CurrentIsDay = data.GameStateData.IsDay;

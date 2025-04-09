@@ -15,6 +15,7 @@
 
 #include "GBTeam6/Interface/GameObjectInterface.h"
 #include "GBTeam6/Interface/GameObjectCore.h"
+#include "GBTeam6/Interface/CanSaveInterface.h"
 #include "GBTeam6/Game/GameInstanceDefault.h"
 #include "GBTeam6/Game/GameStateDefault.h"
 
@@ -166,8 +167,8 @@ void USaveService::LoadConfig(USaveConfig* saver) {
 /// Saving Loading Progress
 void USaveService::SaveProgress(USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
-		if (IsValid(ptr->_getUObject())) {
-			ptr->Save(saver->GameProgressSaveData);
+		if (Cast<ICanSaveInterface>(ptr)) {
+			ICanSaveInterface::Execute_SaveProgress(ptr, saver->GameProgressSaveData);
 		}
 		
 	}
@@ -175,8 +176,24 @@ void USaveService::SaveProgress(USaveProgress* saver) {
 
 void USaveService::LoadProgress(USaveProgress* saver) {
 	for (auto ptr : this->ProgressSavers) {
-		if (IsValid(ptr->_getUObject())) {
-			ptr->Load(saver->GameProgressSaveData);
+		if (Cast<ICanSaveInterface>(ptr)) {
+			ICanSaveInterface::Execute_LoadProgress(ptr, saver->GameProgressSaveData);
+		}
+	}
+}
+
+void USaveService::SaveAfter() {
+	for (auto ptr : this->ProgressSavers) {
+		if (Cast<ICanSaveInterface>(ptr)) {
+			ICanSaveInterface::Execute_Save(ptr);
+		}
+	}
+}
+
+void USaveService::LoadAfter() {
+	for (auto ptr : this->ProgressSavers) {
+		if (Cast<ICanSaveInterface>(ptr)) {
+			ICanSaveInterface::Execute_Load(ptr);
 		}
 	}
 }
@@ -253,6 +270,7 @@ void USaveService::SaveGame(FString SlotName, bool isDevMap) {
 			SaveSave(saveProgress);
 		}
 	}
+	SaveAfter();
 }
 
 void USaveService::LoadGame(FString SlotName, bool isDevMap, UWorld* currentWorld) {
@@ -297,6 +315,8 @@ void USaveService::LoadGame(FString SlotName, bool isDevMap, UWorld* currentWorl
 		if (IsValid(saveProgress)) {
 			LoadProgress(saveProgress);
 		}
+
+		LoadAfter();
 	}
 }
 
@@ -424,10 +444,10 @@ void USaveService::InitGameObject(UGameObjectCore* core, FGameObjectSaveData& ob
 	}
 }
 
-void USaveService::AddSaveProgressOwner(ICanSaveInterface* saver) {
-	//ProgressSavers.Add(saver);
+void USaveService::AddSaveProgressOwner(UObject* saver) {
+	ProgressSavers.Add(saver);
 }
 
-void USaveService::RemoveSaveProgressOwner(ICanSaveInterface* saver) {
+void USaveService::RemoveSaveProgressOwner(UObject* saver) {
 	ProgressSavers.Remove(saver);
 }
